@@ -1,68 +1,41 @@
-# Raptor Network: Infraestructura del Servidor (Source Code)
+# 🌿 Eden Network (Server)
 
-![Estado: Archivo Histórico](https://img.shields.io/badge/Estado-Legacy_Source-green.svg)
-![Rol: Backend/API](https://img.shields.io/badge/Rol-Network_Orchestrator-blue.svg)
+**Eden Network** es el nuevo servidor diseñado para dar soporte y evolucionar la infraestructura del antiguo proyecto *Raptor Network*. 
 
-## 📌 Resumen del Servidor
-Este repositorio contiene el código fuente original del servidor de **Raptor Network**. Este backend era el núcleo encargado de coordinar las conexiones de los clientes (basados en el motor Yuzu), gestionar la persistencia de datos de la blockchain y actuar como puente de comunicación en la red descentralizada.
-
-Tener acceso a este código permite realizar una ingeniería inversa completa "del lado del servidor" para entender cómo se procesaban las transacciones, la autenticación y la interacción con los emuladores remotos.
+Este servidor actúa como el "cerebro" de la red, permitiendo que los clientes basados en el motor de emulación **Yuzu** puedan conectarse, sincronizarse y operar en un entorno moderno y estable.
 
 ---
 
-## 📁 Estructura del Código Fuente
+## 🚀 ¿Qué hace este servidor?
 
-* **`/src`**: Lógica principal del servidor (Endpoints, Controladores, Modelos).
-* **`/database` / `/models`**: Definiciones de tablas (SQL) o colecciones (NoSQL). Aquí se entiende cómo se almacenaba la información de los usuarios y la red.
-* **`/protocol`**: Definición de los mensajes de red. Es fundamental para entender el lenguaje que habla el cliente.
-* **`/scripts`**: Herramientas de migración, despliegue o mantenimiento de los nodos.
-
----
-
-## ⚙️ Tecnologías Detectadas
-* **Lenguaje:** [Específica aquí: ej. Node.js / Go / Python / C#]
-* **Comunicación:** [Ej. REST API, WebSockets (WS), gRPC]
-* **Base de Datos:** [Ej. PostgreSQL, MongoDB, Redis]
+1. **Punto de Conexión:** Recibe las peticiones del cliente (basado en Yuzu) y gestiona la comunicación.
+2. **Capa de Compatibilidad:** Entiende el protocolo antiguo de Raptor para que los binarios originales sigan funcionando.
+3. **Nueva Infraestructura:** Implementa mejoras de seguridad y velocidad que el servidor original no tenía.
+4. **Gestión de Red:** Coordina la base de datos y los estados de la red descentralizada.
 
 ---
 
-## 🔍 Objetivos de la Investigación (Backend)
+## 📁 Estructura Simple
 
-1.  **Mapeo de Endpoints:** Identificar todas las rutas de la API que el cliente basado en Yuzu consume (ej. `/api/v1/sync_state`).
-2.  **Lógica de Validación:** Entender cómo el servidor validaba los datos provenientes de los emuladores para evitar trampas o inconsistencias en la red.
-3.  **Simulación Local:** Reconstruir el entorno de ejecución para levantar una instancia local del servidor que pueda responder a los binarios del cliente original.
-
----
-
-## 🚀 Guía de Instalación (Entorno de Desarrollo)
-
-> **Nota:** Este código es legacy y puede requerir versiones específicas de compiladores o intérpretes.
-
-1.  **Clonar el repositorio:**
-    ```bash
-    git clone [url-del-repositorio]
-    ```
-2.  **Instalar dependencias:**
-    [Añadir comando según el lenguaje, ej: `npm install` o `pip install -r requirements.txt`]
-3.  **Configuración de Variables de Entorno:**
-    Revisar el archivo `.env.example` o la configuración por defecto para apuntar a una base de datos local.
-4.  **Ejecución:**
-    [Añadir comando de inicio, ej: `npm start` o `python main.py`]
+* `src/` - El código fuente del servidor Eden.
+* `docs/` - Notas sobre cómo funciona el protocolo de red.
+* `config/` - Archivos para configurar la conexión y la base de datos.
 
 ---
 
-## 🛠 Colaboración y Análisis
-Buscamos desarrolladores y analistas de sistemas para:
-* **Documentar la API:** Crear una especificación (Swagger/OpenAPI) basada en el código.
-* **Seguridad:** Identificar posibles vulnerabilidades en el manejo de sesiones o en la lógica de la blockchain.
-* **Interoperabilidad:** Ayudar a mapear cómo el servidor enviaba instrucciones específicas al núcleo de Yuzu en el cliente.
+## 🛠 Estado del Proyecto: **En Desarrollo**
+
+Actualmente estamos utilizando **ingeniería inversa** sobre el cliente original de Raptor para mapear todas las funciones necesarias y replicarlas en este nuevo servidor.
+
+### Próximos pasos:
+* [ ] Completar el sistema de "Handshake" (saludo inicial del cliente).
+* [ ] Replicar la base de datos de usuarios.
+* [ ] Habilitar la sincronización de estados de emulación.
 
 ---
 
-## ⚠️ Aviso Legal y de Seguridad
-Este código se preserva con fines de **investigación, auditoría y preservación histórica**. 
-* No se garantiza que el código sea seguro para entornos de producción modernos.
-* Se recomienda ejecutarlo en redes locales aisladas para evitar riesgos de seguridad.
+## ⚠️ Nota de Seguridad
+Este es un proyecto de investigación y desarrollo. El código está en fase **Alpha** y debe ser utilizado en entornos controlados de prueba.
 
 ---
-*Documentando la espina dorsal de Raptor Network para la posteridad técnica.*
+*Construyendo un nuevo paraíso para la emulación descentralizada.*
