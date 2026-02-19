@@ -1,28 +1,31 @@
-# 🌌 Eden Network Server
+# 🌌 Eden Network Server: Arquitectura de Preservación NSO
 
-El núcleo de servicios en la nube para el ecosistema **Eden**. Este servidor es el motor que transforma una experiencia de emulación solitaria en una red social viva, gestionando la identidad, la persistencia y la conectividad global de los usuarios.
+Este repositorio constituye el núcleo de servicios de red (Backend) del proyecto **Eden**. Su función principal es la ingeniería inversa y el despliegue de una infraestructura capaz de emular las funciones de **Nintendo Switch Online (NSO)**, utilizando la robusta base de **RaptorNetwork** para su integración en el ecosistema **Yuzu (Eden)**.
 
-## 📡 El Corazón de la Red
-Eden Server replica y evoluciona la arquitectura de servicios web de alto rendimiento. No es solo un almacén de datos; es el árbitro que valida cada conexión y mantiene la integridad de la comunidad.
+## ⚙️ Especificaciones Técnicas
 
-* **Identidad Digital:** Gestión avanzada de perfiles de usuario y sincronización de estados.
-* **Seguridad por Hardware:** Implementación de validación mediante `R-HardwareId` para garantizar un entorno justo y seguro.
-* **Sistema de Tokens:** Autenticación dinámica basada en JWT (JSON Web Tokens) para sesiones fluidas y protegidas.
-* **Social Hub:** El backend que alimenta las listas de amigos y las notificaciones en tiempo real que verás en el cliente.
+El servidor actúa como un **Middleware de Servicios Web**, gestionando la capa de comunicación entre el emulador y los datos persistentes del usuario.
 
-## 🛠️ Arquitectura de Comunicación
-El servidor está diseñado para responder con precisión quirúrgica a las peticiones del **[Eden Client](https://forgejo.joustech.space/Eden/Client)**.
+* **Protocolo de Comunicación:** Implementación de una API RESTful que procesa peticiones HTTP/JSON mediante el motor `httplib` del cliente.
+* **Capa de Seguridad (Auth):** Sistema de autenticación basado en **JWT (JSON Web Tokens)**, permitiendo sesiones seguras sin necesidad de re-validación constante.
+* **Integridad de Red (HWID):** Validación de identidad a nivel de hardware mediante el rastreo de `R-HardwareId`, garantizando la seguridad y trazabilidad de las conexiones.
+* **Social Engine:** Microservicios dedicados a la gestión de *Presence* (estado online), *Friends List* y *Notification Queues* en tiempo real.
 
-1.  **Handshake:** El cliente solicita acceso mediante el sistema de login.
-2.  **Validación:** El servidor comprueba las credenciales y el Hardware ID.
-3.  **Autorización:** Se emite un JWT interno que permite al cliente acceder a los servicios online.
-4.  **Servicios:** Apertura de endpoints para amigos, mensajería y presencia online.
+## 🛠️ Flujo de Trabajo: El "Trasplante"
 
-## 📂 Organización del Proyecto
-* `/api`: Endpoints de alto rendimiento para la comunicación directa con el emulador.
-* `/database`: Lógica de persistencia y esquemas de datos para el ecosistema.
-* `/config`: Gestión de variables de entorno y conectividad de red.
+Para lograr la integración total, este servidor se sincroniza con el código fuente del **[Eden Client](https://forgejo.joustech.space/Eden/Client)** siguiendo este proceso:
+
+1. **Intercepción:** El cliente Eden utiliza el `web_backend` heredado de Raptor para redirigir las llamadas de red hacia este servidor local.
+2. **Handshake Técnico:** Se valida el hardware y se emite un token de acceso temporal.
+3. **Sincronización:** El servidor sirve los archivos JSON necesarios para que el emulador active las pestañas de "Amigos" y "Juego Online".
+
+
+
+## 📂 Organización de Módulos
+* `/api`: Controladores de los endpoints (Login, JWT, Social).
+* `/database`: Esquemas de persistencia SQL para perfiles y estadísticas.
+* `/lib`: Lógica compartida para el procesamiento de cabeceras de red.
 
 ---
-> "Conectando mundos, construyendo el jardín digital."  
-> **Eden Emulator Project - 2026**
+> "Ingeniería aplicada a la preservación del juego conectado."  
+> **Eden Network Project - 2026**
