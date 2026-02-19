@@ -1,41 +1,31 @@
-# 🌿 Eden Network (Server)
+# 🌌 Eden Network Server: Arquitectura de Preservación NSO
 
-**Eden Network** es el nuevo servidor diseñado para dar soporte y evolucionar la infraestructura del antiguo proyecto *Raptor Network*. 
+Este repositorio constituye el núcleo de servicios de red (Backend) del proyecto **Eden**. Su función principal es la ingeniería inversa y el despliegue de una infraestructura capaz de emular las funciones de **Nintendo Switch Online (NSO)**, utilizando la robusta base de **RaptorNetwork** para su integración en el ecosistema **Yuzu (Eden)**.
 
-Este servidor actúa como el "cerebro" de la red, permitiendo que los clientes basados en el motor de emulación **Yuzu** puedan conectarse, sincronizarse y operar en un entorno moderno y estable.
+## ⚙️ Especificaciones Técnicas
 
----
+El servidor actúa como un **Middleware de Servicios Web**, gestionando la capa de comunicación entre el emulador y los datos persistentes del usuario.
 
-## 🚀 ¿Qué hace este servidor?
+* **Protocolo de Comunicación:** Implementación de una API RESTful que procesa peticiones HTTP/JSON mediante el motor `httplib` del cliente.
+* **Capa de Seguridad (Auth):** Sistema de autenticación basado en **JWT (JSON Web Tokens)**, permitiendo sesiones seguras sin necesidad de re-validación constante.
+* **Integridad de Red (HWID):** Validación de identidad a nivel de hardware mediante el rastreo de `R-HardwareId`, garantizando la seguridad y trazabilidad de las conexiones.
+* **Social Engine:** Microservicios dedicados a la gestión de *Presence* (estado online), *Friends List* y *Notification Queues* en tiempo real.
 
-1. **Punto de Conexión:** Recibe las peticiones del cliente (basado en Yuzu) y gestiona la comunicación.
-2. **Capa de Compatibilidad:** Entiende el protocolo antiguo de Raptor para que los binarios originales sigan funcionando.
-3. **Nueva Infraestructura:** Implementa mejoras de seguridad y velocidad que el servidor original no tenía.
-4. **Gestión de Red:** Coordina la base de datos y los estados de la red descentralizada.
+## 🛠️ Flujo de Trabajo: El "Trasplante"
 
----
+Para lograr la integración total, este servidor se sincroniza con el código fuente del **[Eden Client](https://forgejo.joustech.space/Eden/Client)** siguiendo este proceso:
 
-## 📁 Estructura Simple
+1. **Intercepción:** El cliente Eden utiliza el `web_backend` heredado de Raptor para redirigir las llamadas de red hacia este servidor local.
+2. **Handshake Técnico:** Se valida el hardware y se emite un token de acceso temporal.
+3. **Sincronización:** El servidor sirve los archivos JSON necesarios para que el emulador active las pestañas de "Amigos" y "Juego Online".
 
-* `src/` - El código fuente del servidor Eden.
-* `docs/` - Notas sobre cómo funciona el protocolo de red.
-* `config/` - Archivos para configurar la conexión y la base de datos.
 
----
 
-## 🛠 Estado del Proyecto: **En Desarrollo**
-
-Actualmente estamos utilizando **ingeniería inversa** sobre el cliente original de Raptor para mapear todas las funciones necesarias y replicarlas en este nuevo servidor.
-
-### Próximos pasos:
-* [ ] Completar el sistema de "Handshake" (saludo inicial del cliente).
-* [ ] Replicar la base de datos de usuarios.
-* [ ] Habilitar la sincronización de estados de emulación.
+## 📂 Organización de Módulos
+* `/api`: Controladores de los endpoints (Login, JWT, Social).
+* `/database`: Esquemas de persistencia SQL para perfiles y estadísticas.
+* `/lib`: Lógica compartida para el procesamiento de cabeceras de red.
 
 ---
-
-## ⚠️ Nota de Seguridad
-Este es un proyecto de investigación y desarrollo. El código está en fase **Alpha** y debe ser utilizado en entornos controlados de prueba.
-
----
-*Construyendo un nuevo paraíso para la emulación descentralizada.*
+> "Ingeniería aplicada a la preservación del juego conectado."  
+> **Eden Network Project - 2026**
