@@ -1,35 +1,28 @@
-# Eden Network Server 🌐
+# 🌌 Eden Network Server
 
-Este repositorio contiene el **Backend Core** de Eden Network. Es el encargado de gestionar la autenticación, la persistencia de datos de usuario y los servicios sociales para el ecosistema Eden.
+El núcleo de servicios en la nube para el ecosistema **Eden**. Este servidor es el motor que transforma una experiencia de emulación solitaria en una red social viva, gestionando la identidad, la persistencia y la conectividad global de los usuarios.
 
-## 🚀 Arquitectura del Sistema
-El servidor actúa como el puente entre el Cliente (Emulador) y la Base de Datos, replicando el comportamiento del antiguo RaptorNetwork pero optimizado para Eden.
+## 📡 El Corazón de la Red
+Eden Server replica y evoluciona la arquitectura de servicios web de alto rendimiento. No es solo un almacén de datos; es el árbitro que valida cada conexión y mantiene la integridad de la comunidad.
 
-* **API Engine:** Escrito en PHP para una implementación rápida en entornos tipo aaPanel/Nginx.
-* **Autenticación:** Sistema basado en JWT (JSON Web Tokens) para sesiones seguras.
-* **Identificación:** Validación de usuarios mediante Hardware ID (HWID) único.
-* **Base de Datos:** Estructura SQL para la gestión de amigos, perfiles y estadísticas.
+* **Identidad Digital:** Gestión avanzada de perfiles de usuario y sincronización de estados.
+* **Seguridad por Hardware:** Implementación de validación mediante `R-HardwareId` para garantizar un entorno justo y seguro.
+* **Sistema de Tokens:** Autenticación dinámica basada en JWT (JSON Web Tokens) para sesiones fluidas y protegidas.
+* **Social Hub:** El backend que alimenta las listas de amigos y las notificaciones en tiempo real que verás en el cliente.
 
-## 📂 Estructura del Repositorio
-* `/api`: Endpoints que consume el cliente (ej. `verify_login`, `friends`, `jwt`).
-* `/database`: Esquemas `.sql` para la creación de tablas.
-* `/config`: Archivos de configuración para la conexión a la DB (ignorar en commits).
-* `/logs`: Registro de actividad del servidor y auditoría de hardware.
+## 🛠️ Arquitectura de Comunicación
+El servidor está diseñado para responder con precisión quirúrgica a las peticiones del **[Eden Client](https://forgejo.joustech.space/Eden/Client)**.
 
-## 🛠️ Requisitos de Instalación
-1.  **Web Server:** Nginx o Apache (recomendado usar aaPanel).
-2.  **PHP:** Versión 7.4 o superior con extensiones `pdo_mysql` y `openssl`.
-3.  **MySQL:** Base de datos activa para el almacenamiento de usuarios.
+1.  **Handshake:** El cliente solicita acceso mediante el sistema de login.
+2.  **Validación:** El servidor comprueba las credenciales y el Hardware ID.
+3.  **Autorización:** Se emite un JWT interno que permite al cliente acceder a los servicios online.
+4.  **Servicios:** Apertura de endpoints para amigos, mensajería y presencia online.
 
-## 🔗 Conexión con el Cliente
-Este servidor está diseñado para responder a las peticiones del **[Eden Client](https://forgejo.joustech.space/Eden/Client)**. 
-Para una implementación local (Desarrollo), asegúrese de que el cliente apunte a la IP de su servidor o a `http://127.0.0.1/eden/`.
+## 📂 Organización del Proyecto
+* `/api`: Endpoints de alto rendimiento para la comunicación directa con el emulador.
+* `/database`: Lógica de persistencia y esquemas de datos para el ecosistema.
+* `/config`: Gestión de variables de entorno y conectividad de red.
 
 ---
-
-## 🔒 Seguridad
-* El servidor valida el `R-HardwareId` enviado por el cliente en cada petición.
-* Los tokens JWT tienen una duración limitada y se refrescan mediante el endpoint `/jwt/internal`.
-
----
-*Desarrollado para Eden Emulator Project - 2026*
+> "Conectando mundos, construyendo el jardín digital."  
+> **Eden Emulator Project - 2026**
