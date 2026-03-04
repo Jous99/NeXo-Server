@@ -53,11 +53,9 @@ Este roadmap marca la evolución de **Eden Network** de un simple servidor de lo
 * [ ] **Dashboard de Usuario**: Interfaz web funcional para cambiar contraseñas y ver estadísticas.
 * [ ] **Sistema de Logs Avanzado**: Registro de auditoría para detectar intentos de login fallidos.
 * [ ] **Middleware de Roles**: Diferenciación clara entre usuarios Free, Premium y Administradores.
-* [ ] **Auto-Mirror**: Sincronización automática de Forgejo a GitHub para backups.
 
 ### 🔵 Fase 3: Ecosistema Completo (Futuro)
-* [ ] **Tienda Integrada (Shop)**: API para compra de ítems o mejoras desde el perfil.
-* [ ] **Launcher Propietario**: Creación de un ejecutable que automatice la configuración de hosts y certificados.
+* [ ] **Emulador Modificado**: Creación de un ejecutable que automatice la configuración de hosts y certificados.
 * [ ] **Multi-Server Support**: Capacidad para gestionar múltiples instancias de juego desde un solo panel.
 
 ---
