@@ -1,37 +1,64 @@
 # 🌌 Eden Network Core
 
-![Version](https://img.shields.io/badge/Version-0.0.1-gold?style=for-the-badge)
-![Environment](https://img.shields.io/badge/Environment-Development-blue?style=for-the-badge)
-![Network](https://img.shields.io/badge/Network-Eden_Network-blueviolet?style=for-the-badge)
+![Project Status](https://img.shields.io/badge/Status-Active_Development-green?style=for-the-badge)
+![Purpose](https://img.shields.io/badge/Purpose-Preservation-orange?style=for-the-badge)
+![Platform](https://img.shields.io/badge/Platform-Nintendo_Switch_Online_Emulator-red?style=for-the-badge)
 
-## 📖 Sobre el Proyecto
-**Eden Network Core** es una infraestructura de servidor centralizada diseñada para actuar como el "cerebro" de un ecosistema de juegos emulados. A diferencia de los servidores estándar, Eden Network integra un sistema de **bypass de redirección** que permite tomar el control total sobre el cliente (emulador), eliminando la dependencia de servidores externos y centralizando la gestión de usuarios en una base de datos local privada.
-
-### Características Principales:
-* **Gestión de Identidad**: Sistema de registro y login persistente mediante Sequelize.
-* **Protocolo de Intercepción**: Rutas específicas para engañar al emulador y forzar el uso de interfaces locales.
-* **Seguridad End-to-End**: Implementación nativa de HTTPS para cumplir con los requisitos de seguridad del cliente.
-* **Sincronización de Perfiles**: Motor de entrega de metadatos de usuario (niveles, suscripciones, rangos).
+**Eden Network** es un proyecto de ingeniería inversa dedicado a la creación de un servidor de reemplazo para los servicios de **Nintendo Switch Online (NSO)**. Al igual que proyectos como *Pretendo* o *Wiimmfi*, nuestro objetivo es emular la infraestructura de red para permitir que los usuarios mantengan sus funciones sociales, de perfil y de juego activas en entornos controlados y privados.
 
 ---
 
-## 🛠 Arquitectura de Conexión
+## ⚠️ Aviso Legal y Descargo de Responsabilidad
+**Este proyecto NO está afiliado, asociado, autorizado, respaldado ni conectado oficialmente de ninguna manera con Nintendo Co., Ltd. ni con ninguna de sus subsidiarias.**
 
-
-
-1.  **Handshake**: El emulador consulta si debe redirigir al usuario. Eden responde `redirect: false`.
-2.  **Auth**: El usuario ingresa credenciales; el servidor valida contra MySQL (XAMPP).
-3.  **Session**: Se genera un token de sesión único para Eden Network.
-4.  **Sync**: El emulador descarga el perfil y el estado de suscripción para habilitar el acceso.
+* **Código 100% Original**: Eden Network no utiliza, distribuye ni contiene código propietario, archivos binarios ni recursos filtrados de los servidores oficiales de Nintendo. 
+* **Finalidad**: Este es un proyecto de investigación y preservación histórica. Se basa exclusivamente en la observación del tráfico de red y la ingeniería inversa de protocolos públicos.
+* **Uso Responsable**: El uso de este software debe realizarse respetando los términos de servicio locales y solo con fines educativos o de respaldo personal.
 
 ---
 
-## 🚀 Guía de Inicio Rápido
+## 🤔 ¿Qué es Eden Network?
+Cuando una consola se conecta a internet, busca servidores específicos para validar la identidad del usuario, su suscripción y sus datos de perfil. **Eden Network** emula estas respuestas.
 
-1.  **Infraestructura**: Inicia MySQL en XAMPP.
-2.  **Red**: Configura el archivo `hosts` con los dominios de Raptor Network apuntando a `127.0.0.1`.
-3.  **Certificados**: Asegúrate de que `server.key` y `server.cert` estén en `/certs`.
-4.  **Ejecución**:
+Actúa como un "Man-in-the-Middle" (MitM) que intercepta las peticiones dirigidas a la infraestructura original (Raptor/NSO) y las resuelve localmente. Esto permite:
+1.  **Autenticación Independiente**: Crear cuentas sin depender de los servidores oficiales.
+2.  **Gestión de Suscripciones**: Simular estados "Premium" o "Lifetime" para desbloquear funciones del cliente.
+3.  **Preservación de Perfiles**: Almacenar localmente el progreso y metadatos del jugador.
+
+
+
+---
+
+## 🚀 Roadmap de Desarrollo
+
+### 🟢 Fase 1: Núcleo de Identidad (Completado)
+* [x] **Bypass de Redirección**: Evita que el cliente fuerce el uso de portales web externos.
+* [x] **Motor de Autenticación**: Sistema de login basado en MySQL con persistencia real.
+* [ ] **Servicio de Suscripción**: Emulación de respuestas de estado de cuenta activo.
+* [x] **Infraestructura HTTPS**: Implementación de seguridad mediante TLS para cumplimiento de protocolos del cliente.
+
+### 🟡 Fase 2: Servicios Sociales (En Desarrollo)
+* [ ] **Friend Search**: Emulación de búsqueda y gestión de amigos.
+* [ ] **Presence API**: Sistema para mostrar qué está jugando el usuario en tiempo real.
+* [ ] **Eden Dashboard**: Panel web para que el usuario gestione su perfil desde cualquier navegador.
+* [ ] **Centralización de Logs**: Monitorización de errores de protocolo en tiempo real.
+
+### 🔵 Fase 3: Ecosistema Extendido (Futuro)
+* [ ] **Matchmaking Privado**: Infraestructura básica para salas de juego locales.
+* [ ] **Ranking & Leaderboards**: Tablas de clasificación globales de la red.
+* [ ] **DNS Automático**: Script para configurar el entorno de red con un solo clic.
+
+---
+
+## 🛠 Instalación Técnica
+
+1.  **Requisitos**: Node.js, MySQL (XAMPP) y certificados SSL en `/certs`.
+2.  **Red**: Redirige los dominios mediante el archivo `hosts`:
+    ```text
+    127.0.0.1 accounts-api-lp1.raptor.network
+    127.0.0.1 login-lp1.raptor.network
+    ```
+3.  **Arranque**:
     ```bash
     npm install
     node index.js
@@ -39,32 +66,10 @@
 
 ---
 
-## 🗺 Roadmap de Desarrollo (2026)
-
-Este roadmap marca la evolución de **Eden Network** de un simple servidor de login a una plataforma completa de gestión.
-
-### 🟢 Fase 1: Cimentación (Completado)
-* [x] Configuración de servidor HTTPS base.
-* [x] Bypass de redirección del emulador.
-* [x] Integración de base de datos MySQL/Sequelize.
-* [x] Rutas de Login y Registro básico.
-
-### 🟡 Fase 2: Expansión de Servicios (En progreso)
-* [ ] **Dashboard de Usuario**: Interfaz web funcional para cambiar contraseñas y ver estadísticas.
-* [ ] **Sistema de Logs Avanzado**: Registro de auditoría para detectar intentos de login fallidos.
-* [ ] **Middleware de Roles**: Diferenciación clara entre usuarios Free, Premium y Administradores.
-
-### 🔵 Fase 3: Ecosistema Completo (Futuro)
-* [ ] **Emulador Modificado**: Creación de un ejecutable que automatice la configuración de hosts y certificados.
-* [ ] **Multi-Server Support**: Capacidad para gestionar múltiples instancias de juego desde un solo panel.
+## 📂 Estructura del Repositorio
+* `src/models/`: Modelos de datos para usuarios y sesiones.
+* `src/routes/`: Controladores de red que imitan los endpoints de NSO.
+* `public/`: Assets para la interfaz web de Eden.
 
 ---
-
-## 📂 Organización de Archivos
-* `src/models/`: Definición de la estructura de datos.
-* `src/routes/`: Cerebro de la lógica del cliente y la web.
-* `public/`: La cara visible de Eden Network (Frontend).
-* `certs/`: Capa de seguridad SSL.
-
----
-**© 2026 Eden Network.** *Construyendo el futuro de la emulación privada.*
+© 2026 **Eden Network Ecosystem**. *Dedicados a la preservación de la experiencia online.*
