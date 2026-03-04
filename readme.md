@@ -1,8 +1,8 @@
 # 🌌 Eden Network Core
 
-![Version](https://img.shields.io/badge/Version-1.0.0-gold?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-0.0.1-gold?style=for-the-badge)
 ![Environment](https://img.shields.io/badge/Environment-Development-blue?style=for-the-badge)
-![Network](https://img.shields.io/badge/Network-Eden_Exclusive-blueviolet?style=for-the-badge)
+![Network](https://img.shields.io/badge/Network-Eden_Network-blueviolet?style=for-the-badge)
 
 ## 📖 Sobre el Proyecto
 **Eden Network Core** es una infraestructura de servidor centralizada diseñada para actuar como el "cerebro" de un ecosistema de juegos emulados. A diferencia de los servidores estándar, Eden Network integra un sistema de **bypass de redirección** que permite tomar el control total sobre el cliente (emulador), eliminando la dependencia de servidores externos y centralizando la gestión de usuarios en una base de datos local privada.
