@@ -1,81 +1,83 @@
+/**
+ * EDEN NETWORK - MAIN ENTRY POINT
+ * Operating Tier: Free | Model: Gemini 3 Flash
+ */
+
 const express = require('express');
 const https = require('https');
-const path = require('path');
+const config = require('./src/config/config');
 const certManager = require('./src/middleware/certManager');
+const { initDatabase } = require('./src/models/index');
+const apiRoutes = require('./src/routes/api');
 
 const app = express();
-const PORT = 443;
 
-// --- CONFIGURACIÓN DE MIDDLEWARES ---
+// --- 1. MIDDLEWARES ---
+// Parse incoming JSON requests
+app.use(express.json());
 
-// Importante: Esto debe ir ANTES de las rutas
-app.use(express.json()); 
-
-// LOGGER CORREGIDO: Blindado contra 'undefined'
+// Global Logging Middleware
 app.use((req, res, next) => {
-    const now = new Date().toLocaleTimeString();
-    console.log(`[${now}] 📡 ${req.method} -> ${req.url}`);
+    const timestamp = new Date().toLocaleTimeString();
+    console.log(`[${timestamp}] 📡 ${req.method} -> ${req.url}`);
     
-    // Verificamos si req.body existe y si tiene claves antes de procesarlo
+    // Log body only if it contains data to avoid clutter
     if (req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0) {
-        console.log(`   📦 Body Data:`, JSON.stringify(req.body, null, 2));
+        console.log(`   📦 Body: ${JSON.stringify(req.body, null, 2)}`);
     }
     next();
 });
 
-// --- RUTAS DE LA API ---
+// --- 2. ROUTES ---
+// Mount all API routes under /api/v1
+app.use('/api/v1', apiRoutes);
 
-// 1. Identificador de cuenta (GET)
-app.get('/api/v1/client/account_id', (req, res) => {
-    console.log("👤 Enviando Account ID al cliente");
-    res.send("0x123456789ABCDEF");
+// Health check or landing page for the redirect
+app.get('/register', (req, res) => {
+    res.send(`
+        <body style="background:#0f172a; color:white; font-family:sans-serif; text-align:center; padding-top:50px;">
+            <h1 style="color:#38bdf8;">🌿 Eden Network 🌿</h1>
+            <p>Server status: <span style="color:#4ade80;">ONLINE</span></p>
+            <p>Database: <span style="color:#4ade80;">CONNECTED (MySQL)</span></p>
+        </body>
+    `);
 });
 
-// 2. Redirección de registro (POST) - La que pedía el emulador
-app.post('/api/v1/client/register/redirect', (req, res) => {
-    console.log("🔗 Redirigiendo flujo de registro...");
-    res.json({
-        "status": "success",
-        "url": "https://accounts-api-lp1.raptor.network/register"
-    });
-});
+// --- 3. DATABASE & SERVER INITIALIZATION ---
+async function startServer() {
+    try {
+        // Initialize MySQL Database
+        await initDatabase();
 
-// 3. Tabla de reenvíos
-app.get('/api/v1/rewrites', (req, res) => {
-    res.json([
-        { "source": "nintendo.net", "destination": "127.0.0.1" }
-    ]);
-});
+        // Get or generate SSL Certificates
+        const pems = certManager.getOrCreate();
+        const httpsOptions = {
+            key: pems.key,
+            cert: pems.cert,
+            secureOptions: require('constants').SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION,
+            minVersion: 'TLSv1'
+        };
 
-// --- INICIO DEL SERVIDOR SEGURO ---
+        // Create HTTPS Server
+        https.createServer(httpsOptions, app).listen(config.port, () => {
+            console.log("\n" + "=".repeat(50));
+            console.log(`🟢 EDEN CORE INFRASTRUCTURE ONLINE`);
+            console.log(`🚀 Port: ${config.port} | Mode: ${process.env.NODE_ENV || 'development'}`);
+            console.log(`🌐 Base URL: https://${config.raptor.baseUrl}`);
+            console.log("=".repeat(50) + "\n");
+        });
 
-try {
-    const pems = certManager.getOrCreate();
-
-    const httpsOptions = {
-        key: pems.key,
-        cert: pems.cert,
-        secureOptions: require('constants').SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION,
-        minVersion: 'TLSv1'
-    };
-
-    const server = https.createServer(httpsOptions, app);
-
-    // Manejo de errores de conexión para que no se cierre el proceso
-    server.on('tlsClientError', (err) => {
-        // Ignoramos errores comunes de handshake mientras el usuario instala el cert
-        if (err.message.includes('renegotiation')) return;
-        console.log(`⚠️  Aviso SSL: ${err.message}`);
-    });
-
-    server.listen(PORT, () => {
-        console.log("\n" + "=".repeat(40));
-        console.log("🟢 EDEN INFRASTRUCTURE ONLINE");
-        console.log(`🚀 Escuchando peticiones en puerto ${PORT}`);
-        console.log("=".repeat(40) + "\n");
-    });
-
-} catch (error) {
-    console.error("❌ Error fatal al cargar certificados:", error.message);
-    process.exit(1);
+    } catch (error) {
+        console.error("❌ Critical error during server startup:");
+        console.error(error.message);
+        process.exit(1);
+    }
 }
+
+// Global Exception Handlers
+process.on('uncaughtException', (err) => {
+    console.error('💥 Uncaught Exception:', err.stack);
+});
+
+// Execute startup
+startServer();

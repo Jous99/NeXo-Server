@@ -1,13 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const userController = require('../controllers/userController');
 
-// Aquí es donde pondrás lo que descubras en el código del cliente
-router.get('/client/account_id', (req, res) => {
-    res.send("0x123456789ABCDEF");
-});
+// Account Routes
+router.get('/client/account_id', userController.getAccountIdentifier);
 
-router.get('/rewrites', (req, res) => {
-    res.json([{ source: "nintendo.net", destination: "127.0.0.1" }]);
+// Registration & Auth
+router.post('/client/register/redirect', (req, res) => {
+    res.json({
+        status: "success",
+        url: "https://accounts-api-lp1.raptor.network/register"
+    });
 });
 
 module.exports = router;
