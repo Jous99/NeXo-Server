@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Eden | Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .sw-home-bg { background: #e8e8e8; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        .top-user-bar { display: flex; padding: 30px 60px; align-items: center; border-bottom: 2px solid #dcdcdc; background: white; }
+        .avatar-l { width: 60px; height: 60px; background: var(--sw-red); border-radius: 50%; border: 4px solid white; box-shadow: 0 0 0 3px var(--sw-red); }
+        
+        .tiles-row { display: flex; gap: 15px; padding: 60px; overflow-x: auto; flex: 1; align-items: center; }
+        .app-tile { 
+            min-width: 280px; height: 280px; background: white; border: 5px solid transparent; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: 0.2s; cursor: pointer;
+        }
+        .app-tile:hover { border-color: var(--sw-blue); transform: scale(1.05); }
+        .app-tile h4 { margin: 20px 0 0; color: #888; text-transform: uppercase; font-size: 0.8rem; }
+        .app-tile .val { font-size: 5rem; font-weight: 900; color: var(--sw-dark); }
+
+        .footer-icons { display: flex; justify-content: center; gap: 30px; padding: 40px; background: white; border-top: 2px solid #dcdcdc; }
+        .circle-btn { width: 65px; height: 65px; background: white; border: 3px solid #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; transition: 0.2s; }
+        .circle-btn:hover { background: var(--sw-red); border-color: var(--sw-red); color: white; transform: translateY(-5px); }
+    </style>
+</head>
+<body class="sw-home-bg">
+
+    <div class="top-user-bar">
+        <div class="avatar-l"></div>
+        <div style="margin-left: 20px;">
+            <h2 id="u-name" style="margin:0;">Cargando...</h2>
+            <span style="color: #28a745; font-weight: bold; font-size: 0.8rem;">● En línea</span>
+        </div>
+        <div style="margin-left: auto; font-weight: 900; font-size: 1.2rem;" id="clock">12:00</div>
+    </div>
+
+    <div class="tiles-row">
+        <div class="app-tile">
+            <h4>Nivel de Usuario</h4>
+            <div class="val" id="u-lvl">01</div>
+        </div>
+        <div class="app-tile">
+            <h4>Experiencia Total</h4>
+            <div class="val" id="u-xp" style="color: var(--sw-blue);">0</div>
+        </div>
+        <div class="app-tile">
+            <h4>Logros Raptor</h4>
+            <div class="val" style="color: #ffcc00;">0</div>
+        </div>
+        <div class="app-tile" style="background: var(--sw-red); color: white;">
+            <h2 style="font-size: 2rem;">JUGAR</h2>
+            <p>Iniciar Cliente</p>
+        </div>
+    </div>
+
+    <div class="footer-icons">
+        <div class="circle-btn" title="Noticias">📰</div>
+        <div class="circle-btn" title="eShop">🛒</div>
+        <div class="circle-btn" title="Álbum">🖼️</div>
+        <div class="circle-btn" title="Configuración">⚙️</div>
+        <div class="circle-btn" title="Cerrar" onclick="location.href='/'">⭕</div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        }
+        setInterval(updateTime, 1000); updateTime();
+
+        fetch('/api/v1/user/profile')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('u-name').innerText = data.username;
+                document.getElementById('u-lvl').innerText = data.level;
+                document.getElementById('u-xp').innerText = data.experience;
+            });
+    </script>
+</body>
+</html>

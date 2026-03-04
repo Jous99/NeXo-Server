@@ -1,0 +1,108 @@
+:root {
+    --sw-red: #e60012;
+    --sw-blue: #00c3e3;
+    --sw-dark: #2d2d2d;
+    --sw-bg: #ebedef;
+    --sw-card: #ffffff;
+    --sw-text: #4a4a4a;
+    --glass: rgba(255, 255, 255, 0.8);
+}
+
+body {
+    background: var(--sw-bg);
+    color: var(--sw-text);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* Barra Superior Estilo Consola */
+header {
+    background: var(--sw-card);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 60px;
+    border-bottom: 2px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo-section h1 {
+    font-size: 1.8rem;
+    margin: 0;
+    letter-spacing: -1px;
+    font-weight: 800;
+}
+
+/* Hero Section con profundidad */
+.hero {
+    padding: 80px 60px;
+    background: linear-gradient(135deg, #fdfdfd 0%, #ebedef 100%);
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Estilo de Tarjetas Grandes (Tiles) */
+.tiles-container {
+    display: flex;
+    gap: 20px;
+    padding: 40px 60px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+}
+
+.tile {
+    min-width: 300px;
+    height: 300px;
+    background: var(--sw-card);
+    border: 5px solid transparent;
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: 0.3s all cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 25px;
+    box-sizing: border-box;
+}
+
+.tile:hover {
+    border-color: var(--sw-blue);
+    transform: scale(1.05) translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,195,227,0.2);
+}
+
+/* Sección de Información Detallada */
+.info-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    padding: 40px 60px;
+}
+
+.info-card {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: var(--sw-shadow);
+}
+
+/* Botones con estilo Joy-Con */
+.btn-group { display: flex; gap: 20px; justify-content: center; margin-top: 40px; }
+
+.btn-joycon {
+    padding: 20px 50px;
+    font-weight: 900;
+    text-decoration: none;
+    border-radius: 50px;
+    transition: 0.2s;
+    text-transform: uppercase;
+}
+
+.btn-left { background: var(--sw-blue); color: white; box-shadow: 0 6px 0 #009db8; }
+.btn-right { background: var(--sw-red); color: white; box-shadow: 0 6px 0 #b3000e; }
+
+.btn-joycon:active { transform: translateY(4px); box-shadow: 0 2px 0 transparent; }

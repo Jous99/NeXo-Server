@@ -1,83 +1,81 @@
-/**
- * EDEN NETWORK - MAIN ENTRY POINT
- * Operating Tier: Free | Model: Gemini 3 Flash
- */
-
+require('dotenv').config();
 const express = require('express');
 const https = require('https');
-const config = require('./src/config/config');
-const certManager = require('./src/middleware/certManager');
-const { initDatabase } = require('./src/models/index');
-const apiRoutes = require('./src/routes/api');
+const fs = require('fs');
+const path = require('path');
+const morgan = require('morgan'); 
+const db = require('./src/models/index'); // Asegúrate de que este archivo exporta 'sequelize'
+
+const webRoutes = require('./src/routes/webRoutes');
+const clientRoutes = require('./src/routes/clientRoutes');
 
 const app = express();
+const PORT = 443;
 
-// --- 1. MIDDLEWARES ---
-// Parse incoming JSON requests
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev'));
 
-// Global Logging Middleware
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use((req, res, next) => {
-    const timestamp = new Date().toLocaleTimeString();
-    console.log(`[${timestamp}] 📡 ${req.method} -> ${req.url}`);
-    
-    // Log body only if it contains data to avoid clutter
-    if (req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0) {
-        console.log(`   📦 Body: ${JSON.stringify(req.body, null, 2)}`);
-    }
+    console.log(`\n[${new Date().toLocaleTimeString()}] 📡 PETICIÓN: ${req.method} ${req.originalUrl}`);
     next();
 });
 
-// --- 2. ROUTES ---
-// Mount all API routes under /api/v1
-app.use('/api/v1', apiRoutes);
-
-// Health check or landing page for the redirect
-app.get('/register', (req, res) => {
-    res.send(`
-        <body style="background:#0f172a; color:white; font-family:sans-serif; text-align:center; padding-top:50px;">
-            <h1 style="color:#38bdf8;">🌿 Eden Network 🌿</h1>
-            <p>Server status: <span style="color:#4ade80;">ONLINE</span></p>
-            <p>Database: <span style="color:#4ade80;">CONNECTED (MySQL)</span></p>
-        </body>
-    `);
+app.get('/', (req, res) => {
+    const indexPath = path.join(__dirname, 'public', 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.send('<h1>Eden Network Online</h1>');
+    }
 });
 
-// --- 3. DATABASE & SERVER INITIALIZATION ---
-async function startServer() {
+app.use('/api/v1/web', webRoutes);
+app.use('/api/v1/client', clientRoutes);
+app.use('/api/v1/user', clientRoutes);
+
+const certPath = path.join(__dirname, 'certs');
+let httpsOptions;
+
+try {
+    httpsOptions = {
+        key: fs.readFileSync(path.join(certPath, 'server.key')),
+        cert: fs.readFileSync(path.join(certPath, 'server.cert'))
+    };
+    console.log('🔒 Certificados SSL cargados correctamente.');
+} catch (e) {
+    console.error("❌ ERROR CRÍTICO: No se encontraron los certificados.");
+    process.exit(1);
+}
+
+async function startEdenServer() {
     try {
-        // Initialize MySQL Database
-        await initDatabase();
+        console.log('⏳ Conectando a MySQL...');
+        
+        // Intentamos sincronizar usando la propiedad sequelize
+        if (db.sequelize) {
+            await db.sequelize.sync();
+            console.log('✅ Base de datos sincronizada.');
+        } else if (typeof db.syncDatabase === 'function') {
+            await db.syncDatabase();
+            console.log('✅ Base de datos sincronizada.');
+        } else {
+            console.log('⚠️ Advertencia: No se encontró función de sincronización, saltando...');
+        }
 
-        // Get or generate SSL Certificates
-        const pems = certManager.getOrCreate();
-        const httpsOptions = {
-            key: pems.key,
-            cert: pems.cert,
-            secureOptions: require('constants').SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION,
-            minVersion: 'TLSv1'
-        };
-
-        // Create HTTPS Server
-        https.createServer(httpsOptions, app).listen(config.port, () => {
-            console.log("\n" + "=".repeat(50));
-            console.log(`🟢 EDEN CORE INFRASTRUCTURE ONLINE`);
-            console.log(`🚀 Port: ${config.port} | Mode: ${process.env.NODE_ENV || 'development'}`);
-            console.log(`🌐 Base URL: https://${config.raptor.baseUrl}`);
-            console.log("=".repeat(50) + "\n");
+        https.createServer(httpsOptions, app).listen(PORT, '0.0.0.0', () => {
+            console.log(`
+            ===========================================
+            ✅ EDEN NETWORK TOTALMENTE OPERATIVO
+            🌐 WEB: https://accounts-api-lp1.raptor.network
+            ===========================================
+            `);
         });
-
     } catch (error) {
-        console.error("❌ Critical error during server startup:");
-        console.error(error.message);
-        process.exit(1);
+        console.error('❌ Error al iniciar el servidor:', error.message);
     }
 }
 
-// Global Exception Handlers
-process.on('uncaughtException', (err) => {
-    console.error('💥 Uncaught Exception:', err.stack);
-});
-
-// Execute startup
-startServer();
+startEdenServer();

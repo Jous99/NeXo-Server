@@ -1,28 +1,69 @@
-// src/models/index.js
-const { Sequelize, DataTypes } = require('sequelize');
-const config = require('../config/config');
+const express = require('express');
+const router = express.Router();
+const db = require('../models/index');
 
-const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, {
-    host: config.db.host,
-    dialect: config.db.dialect,
-    logging: false
-});
-
-const User = sequelize.define('User', {
-    uuid: { type: DataTypes.STRING(64), primaryKey: true },
-    username: { type: DataTypes.STRING(32), allowNull: false },
-    token: { type: DataTypes.STRING(255), defaultValue: 'eden_token' }
-});
-
-const initDatabase = async () => {
-    try {
-        await sequelize.authenticate();
-        await sequelize.sync({ alter: true });
-        console.log("🗄️  [Database] Connected and Synced.");
-    } catch (error) {
-        console.error("❌ [Database] Error:", error);
-    }
+// --- 1. REDIRECCIÓN ---
+const handleRedirect = (req, res) => {
+    console.log(`🔄 [REDIRECT] Respondiendo a consulta (${req.method})`);
+    res.status(200).json({
+        success: true,
+        status: "success",
+        data: { redirect: false, url: "" }
+    });
 };
+router.post('/register/redirect', handleRedirect);
+router.get('/register/redirect', handleRedirect);
 
-// ¡ESTO ES LO MÁS IMPORTANTE!
-module.exports = { User, initDatabase, sequelize };
+// --- 2. PERFIL DE USUARIO (La que daba 404) ---
+router.get('/profile', (req, res) => {
+    console.log("👤 [PROFILE] El emulador solicita datos del perfil.");
+    res.status(200).json({
+        success: true,
+        status: "success",
+        data: {
+            user_id: 1,
+            username: "EdenPlayer",
+            nickname: "EdenPlayer",
+            email: "admin@eden-network.com",
+            level: 1,
+            points: 1000,
+            is_verified: true
+        }
+    });
+});
+
+// --- 3. SUSCRIPCIÓN ---
+router.get('/subscription', (req, res) => {
+    console.log("💎 [SUBSCRIPTION] Verificando estado de cuenta.");
+    res.status(200).json({
+        success: true,
+        status: "success",
+        data: { active: true, type: "lifetime", expires_at: "2099-12-31 23:59:59" }
+    });
+});
+
+// --- 4. LOGIN ---
+router.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await db.User.findOne({ where: { username } });
+
+        if (!user || user.password !== password) {
+            return res.status(401).json({ success: false, message: "Error" });
+        }
+
+        console.log(`✅ [LOGIN EXITOSO] ${user.username}`);
+        res.status(200).json({
+            success: true,
+            status: "success",
+            data: {
+                token: "eden_tk_" + Buffer.from(username).toString('base64'),
+                user: { id: user.id, username: user.username }
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false });
+    }
+});
+
+module.exports = router;

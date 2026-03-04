@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Eden | Login</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; background: var(--sw-blue); margin: 0; }
+        .login-card {
+            background: white;
+            padding: 50px;
+            border-radius: 4px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        .profile-circle {
+            width: 100px;
+            height: 100px;
+            background: #eee;
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            border: 5px solid var(--sw-blue);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="profile-circle">👤</div>
+        <h2 style="margin-bottom: 30px; letter-spacing: -1px;">INICIAR SESIÓN</h2>
+        <form action="/api/v1/web/login" method="POST">
+            <input type="text" name="username" placeholder="Usuario" required style="width:100%; padding:15px; margin-bottom:15px; border:2px solid #eee; border-radius:10px;">
+            <input type="password" name="password" placeholder="Contraseña" required style="width:100%; padding:15px; margin-bottom:20px; border:2px solid #eee; border-radius:10px;">
+            <button type="submit" class="btn-joycon btn-left" style="width:100%; border:none; cursor:pointer;">Entrar</button>
+        </form>
+        <a href="/" style="display:block; margin-top:20px; color:var(--sw-blue); text-decoration:none; font-weight:bold;">Atrás</a>
+    </div>
+</body>
+</html>
