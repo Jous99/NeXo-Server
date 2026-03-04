@@ -1,83 +1,61 @@
 const express = require('express');
+const https = require('https');
+const certManager = require('./src/middleware/certManager');
+
 const app = express();
 
-// Configuración de puertos: 80 (Admin) o 3000
-const PORT = 80; 
+// --- CONFIGURACI��N DE MIDDLEWARES ---
+app.use(express.json()); // Para entender JSON
 
-// Middleware para procesar diferentes tipos de datos que envían los emuladores
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.text({ type: '*/*' }));
-
-// --- INTERCEPTOR DE INVESTIGACIÓN (PROTEGIDO) ---
+// Logger corregido para evitar el error "Cannot convert undefined or null to object"
 app.use((req, res, next) => {
-    console.log(`\n--- [🔍 EDEN RESEARCH LOG] ---`);
-    console.log(`TIMESTAMP: ${new Date().toLocaleTimeString()}`);
-    console.log(`MÉTODO:    ${req.method}`);
-    console.log(`URL:       ${req.originalUrl || req.url}`);
+    const now = new Date().toLocaleTimeString();
+    console.log(`[${now}] ?? ${req.method} -> ${req.url}`);
     
-    // Log de User-Agent (clave para saber qué dispositivo conecta)
-    if (req.headers['user-agent']) {
-        console.log(`CLIENTE:   ${req.headers['user-agent']}`);
+    // Verificamos de forma segura si hay datos en el cuerpo de la petici��n
+    if (req.body && Object.keys(req.body).length > 0) {
+        console.log(`   ?? Body:`, req.body);
     }
-
-    // PROTECCIÓN CONTRA EL ERROR 'undefined or null'
-    // Verificamos que req.body exista antes de intentar usar Object.keys
-    try {
-        if (req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0) {
-            console.log(`BODY (JSON/URL):`, req.body);
-        } else if (req.body && typeof req.body === 'string' && req.body.length > 0) {
-            console.log(`BODY (TEXT):`, req.body);
-        }
-    } catch (e) {
-        console.log(`⚠️ Error procesando body, pero el servidor sigue vivo.`);
-    }
-    
-    console.log(`-----------------------------\n`);
-    next(); 
+    next();
 });
 
-// --- RUTAS DE EMULACIÓN (EDEN NETWORK CORE) ---
+// --- RUTAS DE LA API (Descifrando el cliente) ---
 
-// 1. Test de Conexión (Fundamental para evitar errores de 'Sin Internet')
-app.get('/conntest', (req, res) => {
-    res.set('X-Organization', 'Nintendo');
-    res.send("OK"); 
+// El que ya funcionaba
+app.get('/api/v1/client/account_id', (req, res) => {
+    res.send("0x123456789ABCDEF");
 });
 
-// 2. Simulación de NAS / Login (Basado en la lógica de Raptor)
-app.post('/nas/login', (req, res) => {
-    console.log("🔑 Intento de login detectado...");
-    // Respuesta estándar que el emulador espera para dar el OK
-    const response = "auth_token=EDEN_DEV_TOKEN_001&status=success&datetime=" + Date.now();
-    res.send(response);
+// El nuevo que te apareci�� en los logs
+app.post('/api/v1/client/register/redirect', (req, res) => {
+    console.log("?? Redirigiendo registro del cliente...");
+    res.json({
+        "status": "success",
+        "url": "https://accounts-api-lp1.raptor.network/register" 
+    });
 });
 
-// 3. Sistema de Amigos (Ruta para tus pruebas de investigación)
-app.get('/api/friends', (req, res) => {
+// Reenv��os de dominios
+app.get('/api/v1/rewrites', (req, res) => {
     res.json([
-        { pid: 100, name: "Jous", status: "online" },
-        { pid: 101, name: "Gemini", status: "coding" }
+        { "source": "nintendo.net", "destination": "127.0.0.1" }
     ]);
 });
 
-// --- MANEJO DE RUTAS NO ENCONTRADAS ---
-app.use((req, res) => {
-    // Si la petición llega aquí, es que no tenemos programada esa URL
-    if (!res.headersSent) {
-        console.log(`⚠️  RUTA NO PROGRAMADA: ${req.url}`);
-        res.status(404).send("Eden Route Not Found");
-    }
-});
+// --- INICIO DEL SERVIDOR ---
 
-// --- LANZAMIENTO DEL SERVIDOR ---
-app.listen(PORT, () => {
-    console.log(`
-    ===========================================
-       EDEN NETWORK SERVER - INVESTIGACIÓN
-    ===========================================
-    🚀 Servidor activo en http://localhost:${PORT}
-    🛠️  Modo: Aprendizaje Raptor Core
-    ===========================================
-    `);
-});
+try {
+    const pems = certManager.getOrCreate();
+    const options = {
+        key: pems.key,
+        cert: pems.cert,
+        secureOptions: require('constants').SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
+    };
+
+    https.createServer(options, app).listen(443, () => {
+        console.log("\n?? EDEN SERVER: COMUNICACI��N ESTABLECIDA");
+        console.log("Esperando peticiones del emulador...\n");
+    });
+} catch (err) {
+    console.error("? Error con el CertManager:", err.message);
+}
