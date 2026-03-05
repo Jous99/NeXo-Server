@@ -1,37 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Dashboard | Eden Online</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Eden Network | Dashboard</title>
+    <style>
+        body { background: #0b0e14; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: #1c1f26; padding: 30px; border-radius: 15px; border: 1px solid #363a45; width: 400px; text-align: center; }
+        h1 { color: #00d1ff; margin-bottom: 20px; }
+        .info-box { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: left; }
+        .label { color: #8a8d97; font-size: 0.8em; font-weight: bold; }
+        .value { font-family: monospace; font-size: 1.1em; color: #fff; margin-top: 5px; }
+        .btn { background: #00d1ff; color: black; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .logout { background: transparent; color: #ff4b2b; border: 1px solid #ff4b2b; margin-top: 20px; }
+    </style>
 </head>
-<body style="background: white;">
-    <nav class="navbar">
-        <div class="logo-container"><span class="logo-text">EDEN DASHBOARD</span></div>
-        <a href="index.html" class="btn btn-outline" style="padding: 8px 20px;">Salir</a>
-    </nav>
-
-    <div style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
-        <div style="background: var(--nintendo-red); color: white; padding: 40px; border-radius: 30px; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h1 style="margin:0">Hola, <span id="displayUser">Explorador</span></h1>
-                <p>Tu cuenta está vinculada a la red Eden Network Global.</p>
-            </div>
-            <div style="background:rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 50px; font-weight: bold;">
-                Status: Lifetime Premium
-            </div>
+<body>
+    <div class="card">
+        <h1>Mi Perfil Eden</h1>
+        <div class="info-box">
+            <div class="label">USUARIO</div>
+            <div id="user" class="value">---</div>
         </div>
-
-        <div class="info-grid" style="padding: 30px 0;">
-            <div class="info-card" style="border: 1px solid #eee;">
-                <h3>Configuración Emulador</h3>
-                <p>Tu ID de usuario para el cliente EdenOnline es único. Úsalo para iniciar sesión dentro de la aplicación.</p>
-                <code style="background: #f0f0f0; padding: 5px; border-radius: 5px;">Server: Global_Node_Alpha</code>
-            </div>
+        <div class="info-box">
+            <div class="label">PRINCIPAL ID (PID)</div>
+            <div id="pid" class="value" style="color: #ffcc00;">---</div>
         </div>
+        <div class="info-box">
+            <div class="label">FRIEND CODE</div>
+            <div id="fc" class="value" style="color: #00ff88;">---</div>
+        </div>
+        <div class="info-box">
+            <div class="label">RANGO</div>
+            <div id="role" class="value">---</div>
+        </div>
+        <button class="btn logout" onclick="logout()">Cerrar Sesión</button>
     </div>
+
     <script>
-        // Simulación sencilla de carga de datos
-        document.getElementById('displayUser').innerText = localStorage.getItem('eden_user') || 'Usuario';
+        const data = JSON.parse(localStorage.getItem('eden_user'));
+        if (!data) window.location.href = "/login";
+
+        document.getElementById('user').innerText = data.username;
+        document.getElementById('pid').innerText = data.pid || "Generando...";
+        document.getElementById('fc').innerText = data.friend_code || "Generando...";
+        document.getElementById('role').innerText = (data.role || 'user').toUpperCase();
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "/login";
+        }
     </script>
 </body>
 </html>

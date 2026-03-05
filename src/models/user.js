@@ -16,20 +16,37 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING,
             allowNull: false
         },
-        // ✅ Definimos PID (Imagen 8)
+        // PID: Identificador principal de 9 dígitos para el emulador
         pid: {
             type: DataTypes.INTEGER,
             allowNull: true,
             unique: true
         },
-        // ✅ Definimos ROLE (Imagen 7)
+        // Friend Code: Código visible para compartir (formato XXXX-XXXX-XXXX)
+        friend_code: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            unique: true
+        },
         role: {
             type: DataTypes.STRING,
             defaultValue: 'user'
-        },
-        friend_code: {
-            type: DataTypes.STRING,
-            allowNull: true
+        }
+    }, {
+        hooks: {
+            beforeCreate: (user) => {
+                // Genera un PID aleatorio de 9 dígitos si no existe
+                if (!user.pid) {
+                    user.pid = Math.floor(100000000 + Math.random() * 900000000);
+                }
+                
+                // Genera un Friend Code aleatorio
+                if (!user.friend_code) {
+                    const parts = Array.from({ length: 3 }, () => 
+                        Math.floor(1000 + Math.random() * 9000));
+                    user.friend_code = parts.join('-');
+                }
+            }
         }
     });
 
