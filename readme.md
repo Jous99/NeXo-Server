@@ -2,7 +2,7 @@
 
 ![Project Status](https://img.shields.io/badge/Status-Active_Development-green?style=for-the-badge)
 ![Purpose](https://img.shields.io/badge/Purpose-Preservation-orange?style=for-the-badge)
-![Platform](https://img.shields.io/badge/Platform-Nintendo_Switch_Online_Emulator-red?style=for-the-badge)
+![Platform](https://img.shields.io/badge/Platform-Yuzu-red?style=for-the-badge)
 
 **Eden Network** es un proyecto de ingeniería inversa dedicado a la creación de un servidor de reemplazo para los servicios de **Nintendo Switch Online (NSO)**. Al igual que proyectos como *Pretendo* o *Wiimmfi*, nuestro objetivo es emular la infraestructura de red para permitir que los usuarios mantengan sus funciones sociales, de perfil y de juego activas en entornos controlados y privados.
 
