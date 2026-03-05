@@ -1,86 +1,34 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Eden | Vincular ID</title>
+    <title>Unirse a Eden Online</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: #e1e1e1; /* Gris base de Switch */
-            margin: 0;
-        }
-        .register-container {
-            background: white;
-            width: 500px;
-            border-radius: 4px; /* Las ventanas en Switch no son muy redondas */
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            overflow: hidden;
-            border-left: 12px solid var(--sw-red);
-            animation: slideIn 0.4s ease-out;
-        }
-        @keyframes slideIn { from { opacity:0; transform: translateX(50px); } to { opacity:1; transform: translateX(0); } }
-        
-        .header-box { background: #3c3c3c; color: white; padding: 25px; font-weight: bold; font-size: 1.2rem; display: flex; justify-content: space-between; }
-        .form-content { padding: 40px; }
-        
-        .input-group { margin-bottom: 25px; }
-        .input-group label { display: block; margin-bottom: 8px; font-weight: 800; color: #666; font-size: 0.8rem; }
-        .input-group input {
-            width: 100%;
-            padding: 18px;
-            border: 3px solid #eee;
-            border-radius: 8px;
-            font-size: 1rem;
-            box-sizing: border-box;
-            transition: 0.2s;
-            background: #f9f9f9;
-        }
-        .input-group input:focus { border-color: var(--sw-blue); outline: none; background: white; }
-
-        .btn-submit {
-            width: 100%;
-            background: var(--sw-red);
-            color: white;
-            border: none;
-            padding: 20px;
-            font-weight: 900;
-            font-size: 1.1rem;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 6px 0 #b3000e;
-            transition: 0.1s;
-        }
-        .btn-submit:active { transform: translateY(4px); box-shadow: 0 2px 0 #b3000e; }
-    </style>
 </head>
 <body>
-    <div class="register-container">
-        <div class="header-box">
-            <span>REGISTRAR NUEVA ID</span>
-            <span>✚</span>
-        </div>
-        <div class="form-content">
-            <form action="/api/v1/web/register" method="POST">
-                <div class="input-group">
-                    <label>DIRECCIÓN DE CORREO</label>
-                    <input type="email" name="email" placeholder="ejemplo@raptor.com" required>
-                </div>
-                <div class="input-group">
-                    <label>APODO (USUARIO)</label>
-                    <input type="text" name="username" placeholder="Tu nombre en el sistema" required>
-                </div>
-                <div class="input-group">
-                    <label>CONTRASEÑA</label>
-                    <input type="password" name="password" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn-submit">ACEPTAR</button>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2 style="color:var(--nintendo-red)">Crear Cuenta</h2>
+            <p>Introduce un nombre de usuario y contraseña para empezar.</p>
+            <form id="regForm">
+                <input type="text" id="username" placeholder="Usuario" required>
+                <input type="password" id="password" placeholder="Contraseña" required>
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px;">REGISTRARSE</button>
             </form>
-            <a href="/" style="display:block; text-align:center; margin-top:20px; color:#aaa; text-decoration:none; font-weight:bold;">VOLVER</a>
+            <p style="font-size:12px; margin-top:20px;">¿Ya tienes cuenta? <a href="login.html" style="color:var(--nintendo-red)">Inicia sesión</a></p>
         </div>
     </div>
+    <script>
+        document.getElementById('regForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const res = await fetch('/api/v1/web/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username.value, password: password.value })
+            });
+            const data = await res.json();
+            if(data.success) { alert("¡Cuenta creada!"); window.location.href = 'login.html'; }
+            else { alert(data.message); }
+        };
+    </script>
 </body>
 </html>

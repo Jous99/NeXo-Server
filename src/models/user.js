@@ -1,4 +1,6 @@
-module.exports = (sequelize, DataTypes) => {
+const { DataTypes } = require('sequelize');
+
+module.exports = (sequelize) => {
     const User = sequelize.define('User', {
         id: {
             type: DataTypes.INTEGER,
@@ -10,24 +12,25 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             unique: true
         },
-        email: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            unique: true,
-            validate: { isEmail: true }
-        },
         password: {
             type: DataTypes.STRING,
             allowNull: false
         },
-        uuid: {
+        // ✅ Definimos PID (Imagen 8)
+        pid: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            unique: true
+        },
+        // ✅ Definimos ROLE (Imagen 7)
+        role: {
             type: DataTypes.STRING,
-            unique: true,
-            defaultValue: DataTypes.UUIDV4
+            defaultValue: 'user'
+        },
+        friend_code: {
+            type: DataTypes.STRING,
+            allowNull: true
         }
-    }, {
-        tableName: 'users', // Forzamos minúsculas
-        timestamps: true
     });
 
     return User;
