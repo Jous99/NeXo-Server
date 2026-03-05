@@ -1,41 +1,184 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Eden Network - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eden Network - Iniciar Sesión</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #0f111a; color: white; font-family: sans-serif; text-align: center; padding-top: 100px; }
-        .card { background: #1a1d2e; display: inline-block; padding: 40px; border-radius: 15px; border: 1px solid #303651; }
-        input { display: block; width: 250px; margin: 10px auto; padding: 12px; border-radius: 5px; border: none; background: #252943; color: white; }
-        button { width: 100%; padding: 12px; background: #00d1ff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        :root {
+            --nintendo-red: #e60012;
+            --nintendo-dark: #2d2d2d;
+            --nintendo-grey: #f0f0f0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--nintendo-grey);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Fondo decorativo con círculos */
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, #ffcbd1 0%, transparent 20%),
+                        radial-gradient(circle at 80% 70%, #ffcbd1 0%, transparent 20%);
+            z-index: -1;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            border-bottom: 8px solid var(--nintendo-red);
+            transition: transform 0.3s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background-color: var(--nintendo-red);
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(230, 0, 18, 0.3);
+        }
+
+        h2 {
+            color: var(--nintendo-dark);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        p {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--nintendo-red);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--nintendo-red);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            background-color: #c4000f;
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        .footer-links {
+            margin-top: 20px;
+            font-size: 13px;
+        }
+
+        .footer-links a {
+            color: var(--nintendo-red);
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
+    <div class="bg-pattern"></div>
+    
+    <div class="login-card">
+        <div class="logo">E</div>
         <h2>Eden Network</h2>
-        <form id="loginForm">
-            <input type="text" name="username" placeholder="Usuario" required>
-            <input type="password" name="password" placeholder="Contraseña" required>
-            <button type="submit">ENTRAR</button>
-        </form>
+        <p>Inicia sesión para jugar en el emulador</p>
+        
+        <div class="input-group">
+            <input type="text" id="username" placeholder="Nombre de usuario" required>
+        </div>
+        
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Contraseña" required>
+        </div>
+        
+        <button class="btn-login" onclick="doLogin()">Entrar</button>
+
+        <div class="footer-links">
+            ¿No tienes cuenta? <a href="/register">Crear ID de Eden</a>
+        </div>
     </div>
+
     <script>
-        document.getElementById('loginForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const body = JSON.stringify(Object.fromEntries(new FormData(e.target)));
-            const res = await fetch('/api/v1/web/login', {
+        function doLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if(!user || !pass) return alert("Rellena todos los campos");
+
+            fetch('/api/v1/web/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body
-            });
-            const data = await res.json();
-            if (data.success) {
-                localStorage.setItem('eden_user', JSON.stringify(data.user));
-                window.location.href = data.redirect;
-            } else {
-                alert(data.message);
-            }
-        };
+                body: JSON.stringify({ username: user, password: pass })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Animación de salida y redirección
+                    document.querySelector('.login-card').style.opacity = '0.5';
+                    window.location.href = '/dashboard';
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(err => alert("Servidor no responde"));
+        }
     </script>
 </body>
 </html>

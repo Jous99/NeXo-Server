@@ -1,42 +1,49 @@
 const express = require('express');
 const router = express.Router();
+const db = require('../models');
 
-// 1. Handshake de Registro (POST)
-router.post('/register/redirect', (req, res) => {
-    const hardwareId = req.headers['r-hardwareid'] || 'eden_default';
+router.post('/register/redirect', async (req, res) => {
+    // Buscamos tu usuario real en la base de datos
+    const user = await db.User.findOne({ order: [['createdAt', 'DESC']] });
     
-    // Generamos un token alfanumérico puro
-    const sessionToken = "EDEN" + Math.random().toString(36).toUpperCase().substring(2, 15);
+    const pid = user ? user.pid : 243684027;
+    const pnm = user ? user.username : "jous";
+    const token = "EDEN_AUTH_" + Date.now();
 
-    console.log(`   🚀 [EDEN] Handshake enviado. Token generado: ${sessionToken}`);
+    console.log(`   🚀 [EDEN] Aplicando parche de estructura para: ${pnm}`);
 
-    // Nota: Algunos emuladores fallan si ven objetos anidados complejos. 
-    // Enviamos una estructura plana y exitosa.
-    res.status(200).json({
+    // Respuesta con "Double-Wrap" (Requerida por RaptorCitrus para validar el login)
+    const response = {
         success: true,
         status: "completed",
-        token: sessionToken,
-        session_token: sessionToken,
-        pid: 100000001,
-        pnm: "EdenPlayer",
+        token: token,
+        session_token: token,
+        // Raptor lee de aquí para el perfil
+        user: {
+            pid: pid,
+            pnm: pnm,
+            username: pnm,
+            region: "EU",
+            mapped: true
+        },
+        // Raptor lee de aquí para la Friend List
+        account: {
+            pid: pid,
+            pnm: pnm,
+            nickname: pnm
+        },
         redirect_url: "https://accounts-api-lp1.raptor.network/dashboard"
-    });
+    };
+
+    res.status(200).json(response);
 });
 
-// 2. Suscripción (Vital para que no reintente el registro)
-router.get('/subscription', (req, res) => {
+// Esta ruta es vital. El emulador la pide justo después de recibir el JSON anterior.
+router.get('/me', async (req, res) => {
+    const user = await db.User.findOne({ order: [['createdAt', 'DESC']] });
     res.json({
-        status: "active",
-        type: "premium",
-        expires_at: "2099-12-31T23:59:59Z"
-    });
-});
-
-// 3. Perfil (/me)
-router.get('/me', (req, res) => {
-    res.json({
-        pid: 100000001,
-        pnm: "EdenPlayer",
+        pid: user ? user.pid : 243684027,
+        pnm: user ? user.username : "jous",
         region: "EU"
     });
 });
