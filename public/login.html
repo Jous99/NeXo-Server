@@ -1,46 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Eden Network - Login</title>
     <style>
-        body { background: #121212; color: white; font-family: Arial; text-align: center; padding-top: 50px; }
-        form { display: inline-block; background: #1e1e1e; padding: 20px; border-radius: 10px; }
-        input { display: block; margin: 10px auto; padding: 10px; width: 200px; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        body { background: #0f111a; color: white; font-family: sans-serif; text-align: center; padding-top: 100px; }
+        .card { background: #1a1d2e; display: inline-block; padding: 40px; border-radius: 15px; border: 1px solid #303651; }
+        input { display: block; width: 250px; margin: 10px auto; padding: 12px; border-radius: 5px; border: none; background: #252943; color: white; }
+        button { width: 100%; padding: 12px; background: #00d1ff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-    <h2>Iniciar Sesión</h2>
-    <form id="loginForm">
-        <input type="text" name="username" placeholder="Usuario" required>
-        <input type="password" name="password" placeholder="Contraseña" required>
-        <button type="submit">Entrar</button>
-    </form>
-
+    <div class="card">
+        <h2>Eden Network</h2>
+        <form id="loginForm">
+            <input type="text" name="username" placeholder="Usuario" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <button type="submit">ENTRAR</button>
+        </form>
+    </div>
     <script>
         document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
-            const data = Object.fromEntries(new FormData(e.target));
-
-            try {
-                const response = await fetch('/api/v1/web/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    // Guardamos el PID y datos para el Dashboard
-                    localStorage.setItem('eden_user', JSON.stringify(result.user));
-                    // Redirigimos al dashboard real
-                    window.location.href = "/dashboard"; 
-                } else {
-                    alert("Error: " + result.message);
-                }
-            } catch (err) {
-                alert("Servidor no responde. Revisa la consola.");
+            const body = JSON.stringify(Object.fromEntries(new FormData(e.target)));
+            const res = await fetch('/api/v1/web/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body
+            });
+            const data = await res.json();
+            if (data.success) {
+                localStorage.setItem('eden_user', JSON.stringify(data.user));
+                window.location.href = data.redirect;
+            } else {
+                alert(data.message);
             }
         };
     </script>

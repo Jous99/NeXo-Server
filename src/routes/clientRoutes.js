@@ -1,42 +1,44 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path');
-const jwt = require('jsonwebtoken');
-const db = require('../models');
 
-const EDEN_SECRET = "EDEN_CORE_SYSTEM_2026";
-
-// --- SOLUCIÓN "CANNOT GET" (Navegador) ---
-
-// Para la Imagen 1: /api/v1/client/register
-router.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../public/register.html'));
-});
-
-// Para la Imagen 2: /api/v1/client/register/redirect
-router.get('/register/redirect', (req, res) => {
-    res.redirect('/api/v1/client/register');
-});
-
-// Para la Imagen 3: /api/v1/client/login.html o /api/v1/client/login
-router.get(['/login', '/login.html'], (req, res) => {
-    res.sendFile(path.join(__dirname, '../../public/login.html'));
-});
-
-// --- RUTA PARA EL EMULADOR (POST) ---
+// 1. Handshake de Registro (POST)
 router.post('/register/redirect', (req, res) => {
-    res.json({ success: true, data: { redirect: false, action: "login", network: "Eden Network" } });
+    const hardwareId = req.headers['r-hardwareid'] || 'eden_default';
+    
+    // Generamos un token alfanumérico puro
+    const sessionToken = "EDEN" + Math.random().toString(36).toUpperCase().substring(2, 15);
+
+    console.log(`   🚀 [EDEN] Handshake enviado. Token generado: ${sessionToken}`);
+
+    // Nota: Algunos emuladores fallan si ven objetos anidados complejos. 
+    // Enviamos una estructura plana y exitosa.
+    res.status(200).json({
+        success: true,
+        status: "completed",
+        token: sessionToken,
+        session_token: sessionToken,
+        pid: 100000001,
+        pnm: "EdenPlayer",
+        redirect_url: "https://accounts-api-lp1.raptor.network/dashboard"
+    });
 });
 
-router.post('/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const user = await db.User.findOne({ where: { username, password } });
-        if (!user) return res.status(401).json({ success: false, message: "Error en Eden" });
-        
-        const token = jwt.sign({ id: user.id, pid: user.pid }, EDEN_SECRET);
-        res.json({ success: true, data: { token, user: { pid: user.pid, username: user.username } } });
-    } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+// 2. Suscripción (Vital para que no reintente el registro)
+router.get('/subscription', (req, res) => {
+    res.json({
+        status: "active",
+        type: "premium",
+        expires_at: "2099-12-31T23:59:59Z"
+    });
+});
+
+// 3. Perfil (/me)
+router.get('/me', (req, res) => {
+    res.json({
+        pid: 100000001,
+        pnm: "EdenPlayer",
+        region: "EU"
+    });
 });
 
 module.exports = router;
