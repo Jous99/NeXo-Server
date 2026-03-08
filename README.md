@@ -2,29 +2,23 @@
 
 ![Backend](https://img.shields.io/badge/Backend-Go%20%7C%20C%23-blue)
 ![License](https://img.shields.io/badge/License-GPL--3.0-blue.svg)
-![Network](https://img.shields.io/badge/Protocol-Eden%20Network-green)
+![Status](https://img.shields.io/badge/Status-Development-green)
 
-**NeXoNetwork-Server** es el núcleo de infraestructura diseñado para emular y reemplazar los servicios propietarios de Nintendo Switch Online (NSO). Este servidor permite la creación de redes privadas seguras para el juego en línea, gestión de perfiles, matchmaking y servicios de datos en la nube.
+**NeXoNetwork-Server** es la infraestructura de backend diseñada para emular y sustituir los servicios propietarios de Nintendo Switch Online (NSO). Este servidor actúa como el núcleo central para el ecosistema **NeXo**, permitiendo el juego en línea, la gestión de perfiles y la persistencia de datos en servidores independientes controlados por la comunidad.
 
 ## 🎯 Objetivos del Proyecto
 
-El servidor de **NeXoNetwork** busca devolver la soberanía del juego en línea a la comunidad mediante:
-* **Reemplazo de NSO:** Implementación de protocolos compatibles con servicios de matchmaking y listas de amigos.
-* **Persistencia de Datos:** Sistema de guardado en la nube (Cloud Saves) independiente.
-* **Latencia Ultra Baja:** Optimización de rutas para partidas multijugador competitivas.
-
-## 🌐 Configuración de Red Obligatoria
-
-Para el correcto funcionamiento de la infraestructura y la interconexión con los clientes **NeXo**, este servidor requiere el uso de **Eden Network**.
-
-> [!IMPORTANT]
-> **Compatibilidad de Red:** Este servidor ha sido testeado y optimizado exclusivamente para **Eden Network**. El uso de redes alternativas como Raptor Network no está soportado y puede causar fallos críticos en la sincronización de paquetes y en la validación de sesiones de usuario.
+El servidor de **NeXoNetwork** proporciona las herramientas necesarias para una experiencia online completa:
+* **Matchmaking Independiente:** Sistema de emparejamiento compatible con los protocolos de red de los juegos.
+* **Gestión de Cuentas:** Registro y autenticación segura para los clientes NeXo.
+* **Cloud Saves:** Almacenamiento y sincronización de partidas guardadas en la nube.
+* **Social Hub:** Listas de amigos, presencia en línea y notificaciones en tiempo real.
 
 ## 🚀 Requisitos del Sistema
 
-* **Entorno:** Docker (recomendado) o entorno compatible con .NET Core / Go (según la rama).
-* **Base de Datos:** PostgreSQL o Redis para el almacenamiento de sesiones en tiempo real.
-* **Puertos:** Asegúrate de abrir los puertos UDP/TCP configurados en el archivo `config.yaml`.
+* **Entorno:** Docker (altamente recomendado) o entorno compatible con .NET Core / Go.
+* **Base de Datos:** PostgreSQL para datos persistentes y Redis para la gestión de sesiones en tiempo real.
+* **Red:** Acceso a internet con puertos específicos abiertos para la comunicación con los clientes (configurable en `config.yaml`).
 
 ## 🛠️ Instalación y Despliegue
 
