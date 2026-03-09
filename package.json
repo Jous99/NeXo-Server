@@ -1,7 +1,11 @@
 {
-  "name": "server",
+  "dependencies": {
+    "express": "^5.2.1",
+    "morgan": "^1.10.1"
+  },
+  "name": "nexonetwork-server",
   "version": "1.0.0",
-  "description": "**Eden Network** es el nuevo servidor diseñado para dar soporte y evolucionar la infraestructura del antiguo proyecto *Raptor Network*.",
+  "description": "![Server Status](https://img.shields.io/badge/Server-Development-00BDFF?style=for-the-badge&logo=node.js&logoColor=white)\r ![Database](https://img.shields.io/badge/Database-MySQL_8.0-orange?style=for-the-badge&logo=mysql&logoColor=white)\r ![Network](https://img.shields.io/badge/Protocol-HTTPS_|_WSS-E60012?style=for-the-badge)",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,25 +13,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://forgejo.joustech.space/Eden/Server.git"
+    "url": "https://forgejo.joustech.space/NeXo/NeXoNetwork-Server.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "cookie-parser": "^1.4.7",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.3",
-    "morgan": "^1.10.1",
-    "mysql2": "^3.18.2",
-    "node-forge": "^1.3.3",
-    "selfsigned": "^5.5.0",
-    "sequelize": "^6.37.7"
-  },
-  "directories": {
-    "lib": "lib"
-  }
+  "type": "commonjs"
 }
