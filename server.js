@@ -1,22 +1,29 @@
 const express = require('express');
 const vhost = require('vhost');
-const app = express();
+require('dotenv').config();
 
-// Importar los servicios
+const app = express();
+app.use(express.json());
+
+// Importar Lógica de Servicios
 const accounts = require('./services/accounts');
 const config = require('./services/config');
 const bcat = require('./services/bcat');
+const friends = require('./services/friends');
 
-app.use(express.json());
+// --- MAPEADO DE SUBDOMINIOS EXACTOS (Para NexoEmu) ---
+const domain = 'nexonetwork.space';
 
-// Mapeo de subdominios exactos
-app.use(vhost('accounts-api-lp1.nexonetwork.space', accounts));
-app.use(vhost('config-lp1.nexonetwork.space', config));
-app.use(vhost('bcat-lp1.nexonetwork.space', bcat));
+app.use(vhost(`accounts-api-lp1.${domain}`, accounts));
+app.use(vhost(`config-lp1.${domain}`, config));
+app.use(vhost(`bcat-lp1.${domain}`, bcat));
+app.use(vhost(`friends-lp1.${domain}`, friends));
+app.use(vhost(`profile-lp1.${domain}`, accounts)); // Perfil suele ir con accounts
+app.use(vhost(`status-lp1.${domain}`, (req, res) => res.redirect('https://nexonetwork.space/status.html')));
 
-// Puerto de escucha (Interno, luego Nginx hará el Bridge a 443)
-const PORT = process.env.PORT || 3000;
+// Puerto interno (El que pondrás en el Reverse Proxy de aaPanel)
+const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`[Nexo Network] Servidor corriendo en puerto ${PORT}`);
-    console.log(`[Nexo Network] Escuchando subdominios *-lp1.nexonetwork.space`);
+    console.log(`[NEXO BACKEND] Online en puerto ${PORT}`);
+    console.log(`[INFO] Escuchando subdominios *-lp1.${domain}`);
 });

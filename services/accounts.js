@@ -1,22 +1,27 @@
 const express = require('express');
 const router = express.Router();
+const db = require('../database');
 
-// Endpoint: POST /api/v1/login
-router.post('/api/v1/login', (req, res) => {
+// Login y registro de Hardware ID
+router.post('/api/v1/login', async (req, res) => {
     const { username, password, hwid } = req.body;
     
-    console.log(`[Accounts] Intento de login: ${username} | HWID: ${hwid}`);
+    try {
+        // Buscamos si el HWID está registrado o baneado
+        const [rows] = await db.execute('SELECT * FROM users WHERE hwid = ?', [hwid]);
+        
+        if (rows.length === 0) {
+            // Si es nuevo, podrías registrarlo automáticamente o pedir registro
+            return res.status(401).json({ error: "Dispositivo no registrado en Nexo" });
+        }
 
-    // Simulamos validación de Nexo Network
-    if (username && hwid) {
         res.json({
-            token: "NEXO_SESSION_" + Math.random().toString(36).substr(2),
-            user_id: 1,
-            username: username,
-            hwid_verified: true
+            token: "NEXO_TOKEN_" + Date.now(),
+            username: rows[0].username,
+            status: "success"
         });
-    } else {
-        res.status(401).json({ error: "Credenciales o HWID no válidos" });
+    } catch (err) {
+        res.status(500).json({ error: "Error de servidor" });
     }
 });
 
