@@ -1,44 +1,48 @@
 const express = require('express');
 const app = express();
+require('dotenv').config();
+
+const accountsRouter = require('./src/accounts');
+const configRouter = require('./src/config');
+const friendsRouter = require('./src/friends');
 
 app.use(express.json());
 
-// 1. Emulación de Configuración (Game List & Titles)
-// Referencia: src/yuzu/game_list.cpp -> /api/v1/titles
-const configApp = express();
-configApp.get('/api/v1/titles', (req, res) => {
-    res.json([
-        { title_id: "0100000000010000", name: "Super Mario Odyssey", version: "1.3.0" },
-        // Aquí irán los juegos compatibles con NeXo
-    ]);
-});
-
-// 2. Emulación de Cuentas (Login)
-// Referencia: src/yuzu/online/monitor.cpp
-const accountsApp = express();
-accountsApp.post('/api/v1/login', (req, res) => {
-    console.log("Intento de login recibido del emulador");
-    res.status(200).json({
-        token: "nexo_token_secure_xyz",
-        user: { id: 1, username: "NexoUser" }
-    });
-});
-
-// 3. Sistema de Amigos y Presencia
-const friendsApp = express();
-friendsApp.get('/api/v1/friends', (req, res) => {
-    res.json({ friends: [] });
-});
-
-// Lógica de enrutamiento por subdominio
+// Log para debuguear en tiempo real
 app.use((req, res, next) => {
-    const host = req.headers.host;
-    if (host.startsWith('config-lp1')) return configApp(req, res, next);
-    if (host.startsWith('accounts-api-lp1')) return accountsApp(req, res, next);
-    if (host.startsWith('friends-lp1')) return friendsApp(req, res, next);
+    const host = req.headers.host || '';
+    console.log(`[PETICIÓN] Host detectado: ${host} | Ruta: ${req.url}`);
     next();
 });
 
-app.listen(80, () => {
-    console.log("NeXo Network Server activo en puerto 80");
+// Lógica de enrutamiento por subdominio corregida
+app.use((req, res, next) => {
+    const host = req.headers.host || '';
+
+    // Usamos .includes para ignorar si viene con puerto o no
+    if (host.includes('accounts-api-lp1')) {
+        return accountsRouter(req, res, next);
+    } 
+    else if (host.includes('config-lp1')) {
+        return configRouter(req, res, next);
+    } 
+    else if (host.includes('friends-lp1')) {
+        return friendsRouter(req, res, next);
+    }
+
+    next();
+});
+
+// Respuesta por defecto si no entra en ningún subdominio
+app.use((req, res) => {
+    res.status(404).json({
+        error: "Subdominio no reconocido por NeXo Network",
+        host_recibido: req.headers.host
+    });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`--- NeXo Network ONLINE ---`);
+    console.log(`Escuchando en puerto ${PORT}`);
 });
