@@ -1,55 +1,44 @@
 const express = require('express');
-const morgan = require('morgan');
-const path = require('path');
 const app = express();
-const PORT = 3000;
 
-// --- MIDDLEWARES ---
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Log detallado: nos dirá el dominio (Host) que envía el aaPanel
-app.use(morgan(':method :host :url :status - :response-time ms'));
-morgan.token('host', (req) => req.hostname);
+// 1. Emulación de Configuración (Game List & Titles)
+// Referencia: src/yuzu/game_list.cpp -> /api/v1/titles
+const configApp = express();
+configApp.get('/api/v1/titles', (req, res) => {
+    res.json([
+        { title_id: "0100000000010000", name: "Super Mario Odyssey", version: "1.3.0" },
+        // Aquí irán los juegos compatibles con NeXo
+    ]);
+});
 
-// Cabeceras de compatibilidad con Raptor/Nexo
+// 2. Emulación de Cuentas (Login)
+// Referencia: src/yuzu/online/monitor.cpp
+const accountsApp = express();
+accountsApp.post('/api/v1/login', (req, res) => {
+    console.log("Intento de login recibido del emulador");
+    res.status(200).json({
+        token: "nexo_token_secure_xyz",
+        user: { id: 1, username: "NexoUser" }
+    });
+});
+
+// 3. Sistema de Amigos y Presencia
+const friendsApp = express();
+friendsApp.get('/api/v1/friends', (req, res) => {
+    res.json({ friends: [] });
+});
+
+// Lógica de enrutamiento por subdominio
 app.use((req, res, next) => {
-    res.header("Content-Type", "application/json; charset=utf-8");
-    res.header("Server", "Raptor-Network-Emulator");
-    res.header("X-Powered-By", "NeXo-Backend");
+    const host = req.headers.host;
+    if (host.startsWith('config-lp1')) return configApp(req, res, next);
+    if (host.startsWith('accounts-api-lp1')) return accountsApp(req, res, next);
+    if (host.startsWith('friends-lp1')) return friendsApp(req, res, next);
     next();
 });
 
-// --- IMPORTACIÓN DE RUTAS (API MODULES) ---
-// Asegúrate de que estos archivos existan en la carpeta /routes/
-const accounts = require('./routes/accounts');
-const config   = require('./routes/config');
-const profile  = require('./routes/profile');
-const status   = require('./routes/status');
-
-// --- MAPEADO DE RUTAS ---
-// Mapeamos según los subdirectorios y la estructura real de la API
-app.use('/api/v1/client', accounts); // Login y ID
-app.use('/api/v1/client', profile);  // Suscripción y Perfil
-app.use('/api/v1', config);          // Services y Rewrites
-app.use('/api/v1', status);          // Notifications y Status
-
-// --- MANEJO DE RUTAS NO ENCONTRADAS ---
-app.use((req, res) => {
-    console.log(`⚠️  Ruta desconocida solicitada: ${req.hostname}${req.path}`);
-    res.status(404).json({ error: "Endpoint not found in NeXo Server" });
-});
-
-// --- INICIO DEL SERVIDOR ---
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`
-    =============================================
-    🚀 NEXO MODULAR SERVER ONLINE
-    =============================================
-    Puerto:    ${PORT}
-    IP Local:  192.168.0.198
-    IP Panel:  192.168.0.200
-    ---------------------------------------------
-    Esperando peticiones de Raptor Network...
-    `);
+app.listen(80, () => {
+    console.log("NeXo Network Server activo en puerto 80");
 });
