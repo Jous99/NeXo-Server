@@ -1,92 +1,41 @@
-const express = require('express');
-const router = express.Router();
-const accountService = require('../services/accounts');
+const db = require('../db');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// Raíz del subdominio para comprobación rápida
-router.get('/', (req, res) => {
-    res.json({
-        status: "online",
-        service: "NeXo Accounts API (lp1)",
-        version: "0.0.1",
-        message: "Network Authentication System Operational"
-    });
-});
-
-// --- RUTA AGREGADA PARA EL CLIENTE ---
-// Captura la petición de registro/redirección del emulador o consola
-router.get('/api/v1/client/register/redirect', (req, res) => {
-    res.json({
-        status: "success",
-        version: "0.0.1",
-        action: "redirect",
-        target_url: "https://nexonetwork.space/register",
-        message: "Redirigiendo al portal de registro de NeXo Network"
-    });
-});
-
-// 1. RUTA DE REGISTRO: POST /v1/register
-router.post('/v1/register', async (req, res) => {
-    try {
-        const result = await accountService.registerUser(req.body);
-        res.status(201).json({
-            status: "success",
-            version: "0.0.1",
-            message: "Usuario NeXo creado correctamente",
-            data: {
-                nexo_id: result.nexoId
-            }
-        });
-    } catch (error) {
-        res.status(400).json({ 
-            status: "error", 
-            error_code: "REGISTRATION_FAILED",
-            message: error.message 
-        });
+class AccountService {
+    // Registro de usuario
+    async registerUser({ username, email, password, nickname }) {
+        const hash = await bcrypt.hash(password, 10);
+        const nexoId = `NX-${Math.floor(1000+Math.random()*9000)}-${Math.floor(1000+Math.random()*9000)}`;
+        await db.execute(
+            'INSERT INTO users (username, email, password_hash, nexo_id, nickname) VALUES (?,?,?,?,?)',
+            [username, email, hash, nexoId, nickname]
+        );
+        return { nexoId };
     }
-});
 
-// 2. RUTA DE LOGIN: POST /v1/login
-router.post('/v1/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const authData = await accountService.authenticate(username, password);
+    // Login de usuario
+    async authenticate(username, password) {
+        const [users] = await db.execute('SELECT * FROM users WHERE username = ?', [username]);
+        if (users.length === 0) throw new Error('Usuario no encontrado');
+
+        const isMatch = await bcrypt.compare(password, users[0].password_hash);
+        if (!isMatch) throw new Error('Contraseña incorrecta');
+
+        const user = users[0];
+        const token = jwt.sign({ id: user.id, nexo_id: user.nexo_id }, 'nexo_secret_001', { expiresIn: '24h' });
         
-        res.json({
-            status: "success",
-            version: "0.0.1",
-            message: "Sesión iniciada en NeXo Network",
-            data: authData
-        });
-    } catch (error) {
-        res.status(401).json({ 
-            status: "error", 
-            error_code: "AUTH_INVALID",
-            message: error.message 
-        });
+        return { token, nickname: user.nickname, nexo_id: user.nexo_id };
     }
-});
 
-// 3. RUTA DE PERFIL: GET /v1/profile/:nexoId
-router.get('/v1/profile/:nexoId', async (req, res) => {
-    try {
-        const profile = await accountService.getProfile(req.params.nexoId);
-        if (!profile) {
-            return res.status(404).json({ 
-                status: "error", 
-                message: "Nexo ID no encontrado" 
-            });
-        }
-        res.json({
-            status: "success",
-            version: "0.0.1",
-            data: profile
-        });
-    } catch (error) {
-        res.status(500).json({ 
-            status: "error", 
-            message: "Error al consultar el perfil" 
-        });
+    // OBTENER PERFIL (Lo que faltaba)
+    async getProfile(nexoId) {
+        const [users] = await db.execute(
+            'SELECT nickname, nexo_id, username, created_at FROM users WHERE nexo_id = ?', 
+            [nexoId]
+        );
+        return users.length > 0 ? users[0] : null;
     }
-});
+}
 
-module.exports = router;
+module.exports = new AccountService();
