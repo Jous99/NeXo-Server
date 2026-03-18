@@ -1,36 +1,25 @@
 # NeXoNetwork-Server
-> **Core Network Infrastructure for NeXoEmulator Ecosystem**
+> **Infraestructura de red para el ecosistema NeXo / Network infrastructure for the NeXo ecosystem**
 
 ---
 
-## 🇪🇸 Español
+### 🇪🇸 Descripción (Español)
+**NeXoNetwork-Server** es el componente de servidor encargado de gestionar la comunicación de red del proyecto **NeXo**. Su función principal es servir como puente de datos, procesar la lógica de conexión y garantizar una sincronización estable con el cliente **NeXoEmulator**.
 
-### **Descripción**
-**NeXoNetwork-Server** es el motor de red central diseñado para el ecosistema **NeXo**. Este servidor gestiona la comunicación de datos, la sincronización de protocolos y la lógica fundamental necesaria para el funcionamiento del cliente NeXoEmulator. Se enfoca en la estabilidad y en proporcionar una base sólida para conexiones de alto rendimiento.
-
-### **Características Principales**
-* 🚀 **Alto Rendimiento:** Optimizado para procesar múltiples conexiones con baja latencia.
-* 🧩 **Arquitectura Modular:** Diseñado para ser escalable y fácil de mantener.
-* 📦 **Gestión de Protocolos:** Manejo eficiente de paquetes de datos y seguridad en la red.
-* 🔗 **Integración Nativa:** Totalmente compatible con el cliente NeXoEmulator.
+**Objetivos del proyecto:**
+* Gestión eficiente de paquetes y protocolos de red.
+* Soporte para múltiples conexiones simultáneas.
+* Estabilidad y alto rendimiento en el intercambio de datos.
 
 ---
 
-## 🇺🇸 English
+### 🇺🇸 Description (English)
+**NeXoNetwork-Server** is the server-side component responsible for handling network communication for the **NeXo** project. Its main purpose is to act as a data bridge, process connection logic, and ensure stable synchronization with the **NeXoEmulator** client.
 
-### **Description**
-**NeXoNetwork-Server** is the central network engine designed for the **NeXo** ecosystem. This server manages data communication, protocol synchronization, and the core logic required for the NeXoEmulator client to operate. It focuses on stability and providing a robust foundation for high-performance connections.
-
-### **Key Features**
-* 🚀 **High Performance:** Optimized to handle multiple connections with minimal latency.
-* 🧩 **Modular Architecture:** Built to be scalable and easy to maintain.
-* 📦 **Protocol Management:** Efficient handling of data packets and network security.
-* 🔗 **Native Integration:** Fully compatible with the NeXoEmulator client.
+**Project Goals:**
+* Efficient packet and network protocol management.
+* Support for multiple simultaneous connections.
+* Stability and high performance in data exchange.
 
 ---
-
-### 🤝 Contribuciones / Contributing
-Las contribuciones y reportes de errores son bienvenidos a través de **Pull Requests** o **Issues** en este repositorio.
-Contributions and bug reports are welcome via **Pull Requests** or **Issues** in this repository.
-
 **Developed by NeXo Team**
