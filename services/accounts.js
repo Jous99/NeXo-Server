@@ -1,83 +1,91 @@
-const db = require('../db'); // Tu archivo de conexión que lee el .env
-const bcrypt = require('bcrypt');
+const db = require('../db');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
+// Clave secreta para firmar tokens. 
+// Se intenta leer del .env, si no existe, usa la de respaldo para evitar errores.
+const JWT_SECRET = process.env.JWT_SECRET || 'nexo_network_secret_key_2026_safe';
 
 class AccountService {
     
-    // 1. Generar un Nexo ID único (Formato Switch: NX-XXXX-XXXX)
-    generateNexoId() {
-        const part1 = Math.floor(1000 + Math.random() * 9000);
-        const part2 = Math.floor(1000 + Math.random() * 9000);
-        return `NX-${part1}-${part2}`;
-    }
+    // Función para registrar un nuevo usuario
+    async registerUser({ username, email, password, nickname }) {
+        if (!username || !password || !nickname) {
+            throw new Error('Todos los campos son obligatorios');
+        }
 
-    // 2. Registrar un nuevo usuario
-    async registerUser(userData) {
-        const { username, email, password, nickname } = userData;
+        const hash = await bcrypt.hash(password, 10);
         
-        // Encriptar contraseña (10 rondas de sal)
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const nexoId = this.generateNexoId();
+        // Genera un Nexo ID aleatorio (Ej: NX-4521-8892)
+        const nexoId = `NX-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-        const query = `
-            INSERT INTO users (username, email, password_hash, nexo_id, nickname, online_status) 
-            VALUES (?, ?, ?, ?, ?, 'offline')
-        `;
-        
         try {
-            const [result] = await db.execute(query, [username, email, hashedPassword, nexoId, nickname]);
-            return { id: result.insertId, nexoId };
+            await db.execute(
+                'INSERT INTO users (username, email, password_hash, nexo_id, nickname) VALUES (?, ?, ?, ?, ?)',
+                [username, email, hash, nexoId, nickname]
+            );
+            return { nexoId };
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
-                throw new Error('El usuario o email ya existe en NeXo.');
+                throw new Error('El nombre de usuario o email ya están registrados');
             }
             throw error;
         }
     }
 
-    // 3. Autenticar Usuario (Login)
+    // Función para iniciar sesión
     async authenticate(username, password) {
-        const query = 'SELECT * FROM users WHERE username = ? OR email = ?';
-        const [users] = await db.execute(query, [username, username]);
-
-        if (users.length === 0) throw new Error('Usuario no encontrado.');
+        // Buscamos al usuario por nombre de usuario o por su Nexo ID
+        const [users] = await db.execute(
+            'SELECT * FROM users WHERE username = ? OR nexo_id = ?', 
+            [username, username]
+        );
+        
+        if (users.length === 0) {
+            throw new Error('Usuario no encontrado');
+        }
 
         const user = users[0];
+
+        // Validamos la contraseña
         const isMatch = await bcrypt.compare(password, user.password_hash);
+        if (!isMatch) {
+            throw new Error('Contraseña incorrecta');
+        }
 
-        if (!isMatch) throw new Error('Credenciales inválidas.');
-
-        // Actualizar estado a ONLINE y última conexión
-        await db.execute(
-            'UPDATE users SET online_status = "online", last_seen = NOW() WHERE id = ?',
-            [user.id]
-        );
-
-        // Crear Token JWT usando el secret de tu .env
+        // Creamos el Token de sesión
         const token = jwt.sign(
-            { id: user.id, nexo_id: user.nexo_id, role: user.role },
-            process.env.JWT_SECRET,
+            { id: user.id, nexo_id: user.nexo_id }, 
+            JWT_SECRET, 
             { expiresIn: '24h' }
         );
 
+        // Retornamos los datos necesarios para el frontend
         return {
             token,
-            user: {
-                nickname: user.nickname,
-                nexo_id: user.nexo_id,
-                avatar: user.avatar_url,
-                role: user.role
-            }
+            nexo_id: user.nexo_id,
+            nickname: user.nickname,
+            username: user.username
         };
     }
 
-    // 4. Obtener perfil por Nexo ID (Para la búsqueda de amigos)
+    // Función para obtener los datos de un perfil público
     async getProfile(nexoId) {
+        if (!nexoId) throw new Error('Se requiere un Nexo ID');
+
         const [users] = await db.execute(
-            'SELECT nickname, avatar_url, online_status, last_seen, bio FROM users WHERE nexo_id = ?',
+            'SELECT nickname, nexo_id, username, created_at FROM users WHERE nexo_id = ?', 
             [nexoId]
         );
-        return users[0] || null;
+
+        if (users.length === 0) return null;
+
+        return {
+            nickname: users[0].nickname,
+            nexo_id: users[0].nexo_id,
+            username: users[0].username,
+            created_at: users[0].created_at
+        };
     }
 }
 
