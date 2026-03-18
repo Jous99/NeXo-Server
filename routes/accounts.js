@@ -1,95 +1,88 @@
-const express = require('express');
-const router = express.Router();
-const accountService = require('../services/accounts');
+const db = require('../db');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// 1. RAIZ DEL SUBDOMINIO (Prueba de estado)
-router.get('/', (req, res) => {
-    res.json({
-        status: "online",
-        service: "NeXo Accounts API (lp1)",
-        version: "0.0.1",
-        message: "Network Authentication System Operational"
-    });
-});
+// Usamos la clave del .env, y si no existe, una de respaldo para que no explote
+const JWT_SECRET = process.env.JWT_SECRET || 'nexo_network_ultra_secret_key_2026';
 
-// 2. REDIRECCIÓN PARA EL CLIENTE (Emuladores/Consola)
-router.get('/api/v1/client/register/redirect', (req, res) => {
-    res.json({
-        status: "success",
-        version: "0.0.1",
-        action: "redirect",
-        target_url: "https://nexonetwork.space/register.html",
-        message: "Redirigiendo al portal de registro de NeXo Network"
-    });
-});
-
-// 3. REGISTRO DE USUARIO: POST /v1/register
-router.post('/v1/register', async (req, res) => {
-    try {
-        const result = await accountService.registerUser(req.body);
-        res.status(201).json({
-            status: "success",
-            version: "0.0.1",
-            message: "Usuario NeXo creado correctamente",
-            data: {
-                nexo_id: result.nexoId
-            }
-        });
-    } catch (error) {
-        console.error('[NeXo Error] Registro:', error.message);
-        res.status(400).json({ 
-            status: "error", 
-            error_code: "REGISTRATION_FAILED",
-            message: error.message 
-        });
-    }
-});
-
-// 4. LOGIN DE USUARIO: POST /v1/login
-router.post('/v1/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const authData = await accountService.authenticate(username, password);
-        
-        res.json({
-            status: "success",
-            version: "0.0.1",
-            message: "Sesión iniciada en NeXo Network",
-            data: authData
-        });
-    } catch (error) {
-        console.error('[NeXo Error] Login:', error.message);
-        res.status(401).json({ 
-            status: "error", 
-            error_code: "AUTH_INVALID",
-            message: error.message 
-        });
-    }
-});
-
-// 5. CONSULTA DE PERFIL: GET /v1/profile/:nexoId
-router.get('/v1/profile/:nexoId', async (req, res) => {
-    try {
-        const profile = await accountService.getProfile(req.params.nexoId);
-        if (!profile) {
-            return res.status(404).json({ 
-                status: "error", 
-                message: "Nexo ID no encontrado" 
-            });
+class AccountService {
+    
+    // 1. REGISTRO DE USUARIO
+    async registerUser({ username, email, password, nickname }) {
+        if (!username || !password || !nickname) {
+            throw new Error('Faltan campos obligatorios');
         }
-        res.json({
-            status: "success",
-            version: "0.0.1",
-            data: profile
-        });
-    } catch (error) {
-        console.error('[NeXo Error] Perfil:', error.message);
-        res.status(500).json({ 
-            status: "error", 
-            message: "Error al consultar el perfil" 
-        });
-    }
-});
 
-// MUY IMPORTANTE: Esta línea es la que evita el error "handler must be a function"
-module.exports = router;
+        const hash = await bcrypt.hash(password, 10);
+        
+        // Generar un Nexo ID estilo Switch (NX-XXXX-XXXX)
+        const nexoId = `NX-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+        try {
+            await db.execute(
+                'INSERT INTO users (username, email, password_hash, nexo_id, nickname) VALUES (?, ?, ?, ?, ?)',
+                [username, email, hash, nexoId, nickname]
+            );
+            return { nexoId };
+        } catch (error) {
+            if (error.code === 'ER_DUP_ENTRY') {
+                throw new Error('El usuario o email ya existe');
+            }
+            throw error;
+        }
+    }
+
+    // 2. AUTENTICACIÓN (LOGIN) - AQUÍ ESTABA EL ERROR
+    async authenticate(username, password) {
+        // Buscar usuario
+        const [users] = await db.execute('SELECT * FROM users WHERE username = ?', [username]);
+        
+        if (users.length === 0) {
+            throw new Error('Usuario no encontrado');
+        }
+
+        const user = users[0];
+
+        // Verificar contraseña
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        if (!isMatch) {
+            throw new Error('Contraseña incorrecta');
+        }
+
+        // GENERAR TOKEN (Corregido para que nunca sea undefined)
+        const token = jwt.sign(
+            { id: user.id, nexo_id: user.nexo_id }, 
+            JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
+
+        // Devolvemos los datos que el frontend necesita guardar
+        return {
+            token,
+            nexo_id: user.nexo_id,
+            nickname: user.nickname,
+            username: user.username
+        };
+    }
+
+    // 3. OBTENER PERFIL
+    async getProfile(nexoId) {
+        if (!nexoId) throw new Error('Nexo ID es requerido');
+
+        const [users] = await db.execute(
+            'SELECT nickname, nexo_id, username, created_at FROM users WHERE nexo_id = ?', 
+            [nexoId]
+        );
+
+        if (users.length === 0) return null;
+
+        return {
+            nickname: users[0].nickname,
+            nexo_id: users[0].nexo_id,
+            username: users[0].username,
+            created_at: users[0].created_at
+        };
+    }
+}
+
+module.exports = new AccountService();
