@@ -2,38 +2,57 @@ require('dotenv').config();
 const express = require('express');
 const vhost = require('vhost');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 
-// Configuración Global
-app.use(cors()); // Permite peticiones desde nexonetwork.space
-app.use(express.json()); // Permite leer JSON en el body de las peticiones
+// --- CONFIGURACIÓN DE MIDDLEWARES ---
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// --- LOG DE ACCESO BÁSICO ---
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.hostname}${req.url}`);
+    next();
+});
 
 // --- IMPORTACIÓN DE RUTAS ---
 const accountsRouter = require('./routes/accounts');
 
-// Validación para evitar el error "argument handler must be a function"
-if (typeof accountsRouter !== 'function') {
-    console.error('❌ ERROR: routes/accounts.js no está exportando el router correctamente.');
+// Verificación de integridad del módulo
+if (!accountsRouter || typeof accountsRouter !== 'function') {
+    console.error('❌ ERROR CRÍTICO: El router de accounts no se cargó. Revisa routes/accounts.js');
     process.exit(1);
 }
 
 // --- CONFIGURACIÓN DE SUBDOMINIOS (VHOST) ---
-// Esto hace que la API responda solo en ese subdominio específico
+// Responde a: https://accounts-api-lp1.nexonetwork.space
 app.use(vhost('accounts-api-lp1.nexonetwork.space', accountsRouter));
 
-// Manejador de errores global
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Algo salió mal en el servidor de NeXo!');
+// --- RUTA DE SALUD Y DIAGNÓSTICO ---
+app.get('/health', (req, res) => {
+    res.json({
+        status: "online",
+        server: "NeXo-Core-Ubuntu",
+        timestamp: Date.now(),
+        node_version: process.version
+    });
+});
+
+// --- MANEJO DE ERRORES 404 ---
+app.use((req, res) => {
+    res.status(404).json({ status: "error", message: "Ruta no encontrada en NeXo Network" });
 });
 
 // --- INICIO DEL SERVIDOR ---
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-    console.log('--------------------------------------------------');
-    console.log(`🚀 NeXo Network Backend activo`);
+const HOST = '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+    console.log('==================================================');
+    console.log('🚀 NeXo Network Backend ACTIVO');
     console.log(`📡 Puerto: ${PORT}`);
-    console.log(`🔗 API: https://accounts-api-lp1.nexonetwork.space`);
-    console.log('--------------------------------------------------');
+    console.log(`🔗 Dominio: accounts-api-lp1.nexonetwork.space`);
+    console.log('==================================================');
 });

@@ -2,90 +2,51 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Clave secreta para firmar tokens. 
-// Se intenta leer del .env, si no existe, usa la de respaldo para evitar errores.
-const JWT_SECRET = process.env.JWT_SECRET || 'nexo_network_secret_key_2026_safe';
+// SOLUCIÓN DEFINITIVA: Si el .env no carga, usa esta clave maestra
+const JWT_SECRET = process.env.JWT_SECRET || 'NexoNetwork_Master_Key_2026_Secure';
 
 class AccountService {
     
-    // Función para registrar un nuevo usuario
     async registerUser({ username, email, password, nickname }) {
-        if (!username || !password || !nickname) {
-            throw new Error('Todos los campos son obligatorios');
-        }
-
-        const hash = await bcrypt.hash(password, 10);
+        if (!username || !password || !nickname) throw new Error('Faltan datos requeridos');
         
-        // Genera un Nexo ID aleatorio (Ej: NX-4521-8892)
+        const hash = await bcrypt.hash(password, 10);
         const nexoId = `NX-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-        try {
-            await db.execute(
-                'INSERT INTO users (username, email, password_hash, nexo_id, nickname) VALUES (?, ?, ?, ?, ?)',
-                [username, email, hash, nexoId, nickname]
-            );
-            return { nexoId };
-        } catch (error) {
-            if (error.code === 'ER_DUP_ENTRY') {
-                throw new Error('El nombre de usuario o email ya están registrados');
-            }
-            throw error;
-        }
+        
+        const query = 'INSERT INTO users (username, email, password_hash, nexo_id, nickname) VALUES (?, ?, ?, ?, ?)';
+        await db.execute(query, [username, email, hash, nexoId, nickname]);
+        
+        return { nexo_id: nexoId, nickname };
     }
 
-    // Función para iniciar sesión
     async authenticate(username, password) {
-        // Buscamos al usuario por nombre de usuario o por su Nexo ID
-        const [users] = await db.execute(
-            'SELECT * FROM users WHERE username = ? OR nexo_id = ?', 
-            [username, username]
-        );
-        
-        if (users.length === 0) {
-            throw new Error('Usuario no encontrado');
-        }
+        if (!username || !password) throw new Error('Usuario y contraseña requeridos');
+
+        const [users] = await db.execute('SELECT * FROM users WHERE username = ? OR nexo_id = ?', [username, username]);
+        if (users.length === 0) throw new Error('El usuario no existe');
 
         const user = users[0];
+        const valid = await bcrypt.compare(password, user.password_hash);
+        if (!valid) throw new Error('La contraseña es incorrecta');
 
-        // Validamos la contraseña
-        const isMatch = await bcrypt.compare(password, user.password_hash);
-        if (!isMatch) {
-            throw new Error('Contraseña incorrecta');
-        }
-
-        // Creamos el Token de sesión
+        // Generar Token con la clave asegurada
         const token = jwt.sign(
             { id: user.id, nexo_id: user.nexo_id }, 
             JWT_SECRET, 
             { expiresIn: '24h' }
         );
 
-        // Retornamos los datos necesarios para el frontend
         return {
             token,
             nexo_id: user.nexo_id,
-            nickname: user.nickname,
-            username: user.username
+            nickname: user.nickname
         };
     }
 
-    // Función para obtener los datos de un perfil público
     async getProfile(nexoId) {
-        if (!nexoId) throw new Error('Se requiere un Nexo ID');
-
-        const [users] = await db.execute(
-            'SELECT nickname, nexo_id, username, created_at FROM users WHERE nexo_id = ?', 
-            [nexoId]
-        );
-
-        if (users.length === 0) return null;
-
-        return {
-            nickname: users[0].nickname,
-            nexo_id: users[0].nexo_id,
-            username: users[0].username,
-            created_at: users[0].created_at
-        };
+        const query = 'SELECT nickname, nexo_id, created_at FROM users WHERE nexo_id = ?';
+        const [users] = await db.execute(query, [nexoId]);
+        return users.length > 0 ? users[0] : null;
     }
 }
 
