@@ -2,15 +2,13 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Clave secreta blindada para evitar el error de tus fotos
 const JWT_SECRET = process.env.JWT_SECRET || 'nexo_master_key_2026_fixed';
 
 class AccountService {
-    // Autenticación
+    // LOGIN
     async authenticate(username, password) {
         const [users] = await db.execute('SELECT * FROM users WHERE username = ? OR nexo_id = ?', [username, username]);
         if (users.length === 0) throw new Error('Usuario no encontrado');
-
         const user = users[0];
         const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch) throw new Error('Contraseña incorrecta');
@@ -19,15 +17,17 @@ class AccountService {
         return { token, nexo_id: user.nexo_id, nickname: user.nickname };
     }
 
-    // Obtener datos
+    // OBTENER PERFIL
     async getProfile(nexoId) {
         const [users] = await db.execute('SELECT nickname, nexo_id, created_at FROM users WHERE nexo_id = ?', [nexoId]);
         return users.length > 0 ? users[0] : null;
     }
 
-    // Editar Perfil (Actualizar apodo)
+    // MODIFICAR PERFIL (NUEVO)
     async updateProfile(nexoId, { nickname }) {
-        if (!nickname || nickname.trim() === "") throw new Error('El apodo no puede estar vacío');
+        if (!nickname || nickname.trim().length < 3) {
+            throw new Error('El apodo debe tener al menos 3 caracteres');
+        }
         await db.execute('UPDATE users SET nickname = ? WHERE nexo_id = ?', [nickname, nexoId]);
         return { nickname };
     }
