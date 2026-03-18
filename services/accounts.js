@@ -1,28 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../database');
 
-// Login y registro de Hardware ID
-router.post('/api/v1/login', async (req, res) => {
-    const { username, password, hwid } = req.body;
-    
-    try {
-        // Buscamos si el HWID está registrado o baneado
-        const [rows] = await db.execute('SELECT * FROM users WHERE hwid = ?', [hwid]);
-        
-        if (rows.length === 0) {
-            // Si es nuevo, podrías registrarlo automáticamente o pedir registro
-            return res.status(401).json({ error: "Dispositivo no registrado en Nexo" });
-        }
+// Esto es para que TÚ veas que funciona en el navegador
+router.get('/api/v1/login', (req, res) => {
+    res.send('✅ Servicio de Cuentas NeXo funcionando (GET OK)');
+});
 
-        res.json({
-            token: "NEXO_TOKEN_" + Date.now(),
-            username: rows[0].username,
-            status: "success"
-        });
-    } catch (err) {
-        res.status(500).json({ error: "Error de servidor" });
-    }
+// Esto es lo que usa el EMULADOR
+router.post('/api/v1/login', (req, res) => {
+    console.log('--- LOGIN RECIBIDO ---', req.body);
+    res.json({
+        status: "success",
+        token: "NEXO_OK_" + Date.now(),
+        user_id: 1,
+        permissions: ["online_play"]
+    });
 });
 
 module.exports = router;
