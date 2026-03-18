@@ -2,12 +2,23 @@ const express = require('express');
 const router = express.Router();
 const accountService = require('../services/accounts');
 
+// Raíz del subdominio para comprobación rápida
+router.get('/', (req, res) => {
+    res.json({
+        status: "online",
+        service: "NeXo Accounts API (lp1)",
+        version: "0.0.1",
+        message: "Network Authentication System Operational"
+    });
+});
+
 // 1. RUTA DE REGISTRO: POST /v1/register
-router.post('/register', async (req, res) => {
+router.post('/v1/register', async (req, res) => {
     try {
         const result = await accountService.registerUser(req.body);
         res.status(201).json({
             status: "success",
+            version: "0.0.1",
             message: "Usuario NeXo creado correctamente",
             data: {
                 nexo_id: result.nexoId
@@ -23,13 +34,14 @@ router.post('/register', async (req, res) => {
 });
 
 // 2. RUTA DE LOGIN: POST /v1/login
-router.post('/login', async (req, res) => {
+router.post('/v1/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         const authData = await accountService.authenticate(username, password);
         
         res.json({
             status: "success",
+            version: "0.0.1",
             message: "Sesión iniciada en NeXo Network",
             data: authData
         });
@@ -43,7 +55,7 @@ router.post('/login', async (req, res) => {
 });
 
 // 3. RUTA DE PERFIL: GET /v1/profile/:nexoId
-router.get('/profile/:nexoId', async (req, res) => {
+router.get('/v1/profile/:nexoId', async (req, res) => {
     try {
         const profile = await accountService.getProfile(req.params.nexoId);
         if (!profile) {
@@ -54,6 +66,7 @@ router.get('/profile/:nexoId', async (req, res) => {
         }
         res.json({
             status: "success",
+            version: "0.0.1",
             data: profile
         });
     } catch (error) {
