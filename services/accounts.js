@@ -1,19 +1,36 @@
 const express = require('express');
 const router = express.Router();
 
-// Esto es para que TÚ veas que funciona en el navegador
-router.get('/api/v1/login', (req, res) => {
-    res.send('✅ Servicio de Cuentas NeXo funcionando (GET OK)');
+// Middleware para loguear peticiones de la consola
+router.use((req, res, next) => {
+    console.log(`[ACCOUNTS] ${req.method} ${req.url}`);
+    next();
 });
 
-// Esto es lo que usa el EMULADOR
-router.post('/api/v1/login', (req, res) => {
-    console.log('--- LOGIN RECIBIDO ---', req.body);
+// Endpoint: Obtener información del servidor de cuentas
+router.get('/v1/api/provider/info', (req, res) => {
     res.json({
-        status: "success",
-        token: "NEXO_OK_" + Date.now(),
-        user_id: 1,
-        permissions: ["online_play"]
+        provider_name: "NeXoServer",
+        status: "UP",
+        region: "EU"
+    });
+});
+
+// Endpoint: Login (Simulado para que la consola no de error)
+router.post('/v1/api/auth/login', (req, res) => {
+    // Aquí es donde en el futuro conectarás con tu Base de Datos
+    res.json({
+        token: "nexo_session_token_example_12345",
+        user_id: "00000001",
+        nickname: "NexoUser"
+    });
+});
+
+// Endpoint para el "Mii" o perfil
+router.get('/v1/api/mii', (req, res) => {
+    res.json({
+        mii_data: "base64_mii_data_here",
+        user_id: "00000001"
     });
 });
 
