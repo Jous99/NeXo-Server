@@ -1,53 +1,34 @@
-# 🌐 NeXo Network: Independent Server Infrastructure
-### High-Performance Backend | Node.js & MySQL Implementation
-
-![Server Status](https://img.shields.io/badge/Server-Development-00BDFF?style=for-the-badge&logo=node.js&logoColor=white)
-![Database](https://img.shields.io/badge/Database-MySQL_8.0-orange?style=for-the-badge&logo=mysql&logoColor=white)
-![Network](https://img.shields.io/badge/Protocol-HTTPS_|_WSS-E60012?style=for-the-badge)
-
-## 📖 Explicación del Proyecto
-**NeXo Network Server** es el núcleo de servicios diseñado para recibir, procesar y responder a las peticiones del cliente `raptorcitrus` previamente interceptadas. Este servidor actúa como un "espejo" de alta fidelidad que emula el comportamiento de la red original, permitiendo una infraestructura de juego totalmente independiente. 
-
-Utilizando **Node.js** para la lógica de red y **MySQL** para la persistencia, NeXo habilita funciones sociales y de sincronización que normalmente estarían bloqueadas tras servidores propietarios.
+# NeXoNetwork-Server
+> **Reviviendo la infraestructura de red para el ecosistema NeXo (Yuzu-based Emulator)**
 
 ---
 
-## 🚀 Características del Servidor
+### 🇪🇸 Descripción (Español)
+**NeXoNetwork-Server** es el corazón de red del proyecto **NeXo**, un emulador basado en el legado de **Yuzu**. Este servidor nace con la misión de aplicar **ingeniería inversa** al proyecto **RaptorNetwork** para rescatar, estabilizar y evolucionar sus capacidades de conexión.
 
-### 1. Sistema de Amistad Online Real (Social Engine)
-* **Presence Server:** Gestión de estados en tiempo real (Disponible, Ausente, Jugando) mediante WebSockets para una respuesta inmediata.
-* **Relational Social Graph:** Base de datos en **MySQL** diseñada para manejar solicitudes de amistad, listas de contactos y bloqueos de forma bidireccional.
-* **Rich Presence Data:** Difusión de metadatos de juego hacia todos los amigos conectados para mostrar actividad detallada.
+Nuestro objetivo es reconstruir una infraestructura que permita el juego en línea y la sincronización de datos, devolviendo la funcionalidad que quedó pausada y mejorando la eficiencia del protocolo original.
 
-### 2. Matchmaking & Lobby Service
-* **Room Orchestrator:** Servidor de emparejamiento que gestiona la creación y el descubrimiento de salas de juego (Lobbies) privadas y públicas.
-* **STUN/TURN Integration:** Facilitación de conexiones P2P entre jugadores para asegurar la mínima latencia en partidas multijugador.
-
-### 3. Cloud Data Persistence
-* **SaveData Cloud Storage:** Repositorio centralizado para los archivos de guardado interceptados, permitiendo la subida y descarga automática entre sesiones del usuario.
-* **Profile Management:** Almacenamiento seguro de credenciales, avatares personalizados y estadísticas de juego vinculados a la cuenta de NeXo.
-
-### 4. API & Protocol Emulation
-* **RESTful Endpoints:** Implementación de rutas Express.js que replican exactamente la estructura JSON esperada por el cliente de Raptor.
-* **Dynamic Content Delivery:** Servidor de recursos para la distribución de noticias, iconos y actualizaciones del sistema.
+**Puntos Clave:**
+* 🛠️ **Ingeniería Inversa:** Basado en el análisis y reconstrucción de RaptorNetwork.
+* 🎮 **ADN Yuzu:** Diseñado para ser 100% compatible con el cliente NeXoEmulator.
+* 🔄 **Resurrección:** Enfocado en revivir las funciones de red que la comunidad necesita.
 
 ---
 
-## 🛠️ Stack Tecnológico
+### 🇺🇸 Description (English)
+**NeXoNetwork-Server** is the networking core of the **NeXo** project, an emulator based on the **Yuzu** legacy. This server is born with the mission of **reverse-engineering** the **RaptorNetwork** project to rescue, stabilize, and evolve its connection capabilities.
 
-* **Runtime:** Node.js v20+ (LTS)
-* **Framework:** Express.js para la API REST.
-* **Real-time:** Socket.io / WebSockets para el sistema de presencia.
-* **Database:** MySQL 8.0 para la gestión de usuarios y relaciones sociales.
-* **Security:** Implementación de JWT (JSON Web Tokens) para sesiones seguras.
+Our goal is to rebuild an infrastructure that enables online play and data synchronization, bringing back the functionality that was paused and improving the efficiency of the original protocol.
 
----
-
-## ⚠️ Nota Legal
-Este software es un proyecto de preservación de código abierto y sin fines de lucro. NeXo Network no está afiliado a ninguna empresa de hardware o software. El servidor está diseñado exclusivamente para interactuar con clientes modificados con fines de investigación.
+**Key Highlights:**
+* 🛠️ **Reverse Engineering:** Based on the analysis and reconstruction of RaptorNetwork.
+* 🎮 **Yuzu DNA:** Designed for 100% compatibility with the NeXoEmulator client.
+* 🔄 **Resurrection:** Focused on reviving the network features the community demands.
 
 ---
-<p align="center">
-  <img src="https://img.shields.io/badge/BACKEND-NODEJS-00BDFF?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/INFRASTRUCTURE-NEXO_PROJECT-E60012?style=for-the-badge" />
-</p>
+
+### ⚠️ Nota / Disclaimer
+Este es un proyecto educativo y de preservación. No estamos afiliados con los desarrolladores originales.
+This is an educational and preservation project. We are not affiliated with the original developers.
+
+**Developed with 🛠️ by NeXo Team**
