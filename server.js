@@ -6,45 +6,38 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
+const PORT = 4000;
 
-// --- CONFIGURACIÓN DE CARPETAS ---
+// --- CARPETAS ---
 const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 // --- MIDDLEWARES GLOBALES ---
-// Permitimos todo temporalmente para descartar que el error sea por seguridad del navegador
-app.use(cors({ origin: '*' })); 
-
+app.use(cors({ origin: '*' })); // Permite que nexonetwork.space hable con la API
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(uploadDir));
 
-// --- 1. CONFIGURACIÓN API (SUBDOMINIO) ---
+// --- A. APP DE LA API (SUBDOMINIO) ---
 const accountsRouter = require('./routes/accounts');
 const apiApp = express();
-
-apiApp.use(cors({ origin: '*' }));
+apiApp.use(cors());
 apiApp.use(express.json());
-// Quitamos el prefijo /v1 de aquí si tus rutas en accounts.js ya lo tienen
-apiApp.use(accountsRouter); 
+apiApp.use(accountsRouter); // Tus rutas ya deberían tener el /v1 dentro
 
+// --- B. APP DE LA WEB (DOMINIO PRINCIPAL) ---
+const webApp = express();
+const frontendPath = path.join(__dirname, '../nexonetwork.space');
+webApp.use(express.static(frontendPath));
+
+webApp.get('/dashboard', (req, res) => res.sendFile(path.join(frontendPath, 'dashboard.html')));
+webApp.get('/profile', (req, res) => res.sendFile(path.join(frontendPath, 'profile.html')));
+
+// --- C. ASIGNACIÓN DE DOMINIOS ---
 app.use(vhost('accounts-api-lp1.nexonetwork.space', apiApp));
+app.use(vhost('nexonetwork.space', webApp));
+app.use(vhost('www.nexonetwork.space', webApp));
 
-// --- 2. CONFIGURACIÓN WEB ---
-const frontendPath = path.join(__dirname, '../nexonetwork.space'); 
-app.use(express.static(frontendPath));
-
-app.get('/dashboard', (req, res) => res.sendFile(path.join(frontendPath, 'dashboard.html')));
-app.get('/profile', (req, res) => res.sendFile(path.join(frontendPath, 'profile.html')));
-
-// --- INICIO DEL SERVIDOR ---
-const PORT = 4000;
-// IMPORTANTE: Cambiado a '0.0.0.0' para permitir acceso desde internet
+// --- LANZAMIENTO ---
 app.listen(PORT, '0.0.0.0', () => {
-    console.log('==================================================');
-    console.log('🚀 NeXO NETWORK ONLINE');
-    console.log(`📡 Escuchando en: http://0.0.0.0:${PORT}`);
-    console.log('==================================================');
+    console.log('🚀 NeXO Network escuchando en nexonetwork.space');
 });
