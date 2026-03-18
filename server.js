@@ -3,13 +3,23 @@ const express = require('express');
 const vhost = require('vhost');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
+
+// --- ASEGURAR CARPETA DE SUBIDAS ---
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // --- CONFIGURACIÓN GLOBAL ---
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Servir la carpeta de fotos públicamente
+app.use('/uploads', express.static(uploadDir));
 
 // --- 1. CONFIGURACIÓN DEL BACKEND (API) ---
 const accountsRouter = require('./routes/accounts');
@@ -18,39 +28,23 @@ apiApp.use(cors());
 apiApp.use(express.json());
 apiApp.use(accountsRouter);
 
-// Subdominio para la API
+// Vincular subdominio
 app.use(vhost('accounts-api-lp1.nexonetwork.space', apiApp));
 
 // --- 2. CONFIGURACIÓN DEL FRONTEND (WEB) ---
-// Apuntamos a la carpeta donde tienes tus archivos .html
 const frontendPath = path.join(__dirname, '../nexonetwork.space'); 
 app.use(express.static(frontendPath));
 
-// Si entran a la IP/Dominio sin subdominio, cargamos la web
-app.get('/', (req, res) => {
-    res.sendFile(path.join(frontendPath, 'index.html'));
-});
+app.get('/', (req, res) => res.sendFile(path.join(frontendPath, 'index.html')));
+app.get('/dashboard', (req, res) => res.sendFile(path.join(frontendPath, 'dashboard.html')));
+app.get('/profile', (req, res) => res.sendFile(path.join(frontendPath, 'profile.html')));
 
-// --- MANEJO DE ERRORES ---
-process.on('uncaughtException', (err) => {
-    console.error('⚠️ Error inesperado:', err.message);
-});
-
-// --- INICIO DEL SERVIDOR EN PUERTO 4000 ---
+// --- INICIO DEL SERVIDOR ---
 const PORT = 4000;
-const server = app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log('==================================================');
-    console.log('🚀 NeXO NETWORK - MODO DEFINITIVO');
-    console.log(`📡 Puerto Fijo: ${PORT}`);
-    console.log(`🏠 Web Local: http://localhost:${PORT}`);
-    console.log(`🔗 API Subdomain: accounts-api-lp1.nexonetwork.space`);
+    console.log('🚀 NeXO NETWORK - SISTEMA DE PERFILES ACTIVO');
+    console.log(`📡 Puerto: ${PORT}`);
+    console.log(`📂 Almacenamiento: ${uploadDir}`);
     console.log('==================================================');
-});
-
-// Verificación de puerto ocupado
-server.on('error', (e) => {
-    if (e.code === 'EADDRINUSE') {
-        console.error(`❌ El puerto ${PORT} está ocupado. Ejecuta: fuser -k ${PORT}/tcp`);
-    }
-    process.exit(1);
 });
