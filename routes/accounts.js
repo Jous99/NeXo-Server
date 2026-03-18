@@ -12,6 +12,18 @@ router.get('/', (req, res) => {
     });
 });
 
+// --- RUTA AGREGADA PARA EL CLIENTE ---
+// Captura la petición de registro/redirección del emulador o consola
+router.get('/api/v1/client/register/redirect', (req, res) => {
+    res.json({
+        status: "success",
+        version: "0.0.1",
+        action: "redirect",
+        target_url: "https://nexonetwork.space/register",
+        message: "Redirigiendo al portal de registro de NeXo Network"
+    });
+});
+
 // 1. RUTA DE REGISTRO: POST /v1/register
 router.post('/v1/register', async (req, res) => {
     try {
