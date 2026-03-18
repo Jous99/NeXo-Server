@@ -2,41 +2,49 @@ require('dotenv').config();
 const express = require('express');
 const vhost = require('vhost');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 
-// Middlewares básicos
+// --- CONFIGURACIÓN GLOBAL ---
 app.use(cors());
 app.use(express.json());
 
-// Importación de rutas
+// --- 1. CONFIGURACIÓN DEL BACKEND (API) ---
 const accountsRouter = require('./routes/accounts');
 
-// Validación de carga
-if (typeof accountsRouter !== 'function') {
-    console.error('❌ Error: El router de accounts no es una función.');
-    process.exit(1);
-}
+// Crear una aplicación Express separada para la API
+const apiApp = express();
+apiApp.use(cors());
+apiApp.use(express.json());
+apiApp.use(accountsRouter);
 
-// Configuración del Subdominio
-app.use(vhost('accounts-api-lp1.nexonetwork.space', accountsRouter));
+// Vincular el subdominio a la aplicación de la API
+app.use(vhost('accounts-api-lp1.nexonetwork.space', apiApp));
 
-// Ruta de prueba para la IP directa
+// --- 2. CONFIGURACIÓN DEL FRONTEND (WEB PRINCIPAL) ---
+// Esto hace que nexonetwork.space sirva tus archivos HTML
+const frontendPath = path.join(__dirname, '../nexonetwork.space'); 
+app.use(express.static(frontendPath));
+
+// Ruta para que la IP normal o el dominio carguen el index/dashboard
 app.get('/', (req, res) => {
-    res.send('NeXo API Is Running');
+    res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-// Inicio del servidor en puerto 4000
-const PORT = 4000;
-const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log('==================================================');
-    console.log('🚀 NeXo Network Backend ACTIVO');
-    console.log(`📡 Puerto: ${PORT}`);
-    console.log(`🔗 API: https://accounts-api-lp1.nexonetwork.space`);
-    console.log('==================================================');
-});
-
-// Evitar que el proceso se cierre ante errores leves
+// --- MANEJO DE ERRORES ---
 process.on('uncaughtException', (err) => {
-    console.error('⚠️ Se detectó un error pero el server sigue vivo:', err);
+    console.error('❌ Error Crítico:', err);
+});
+
+// --- INICIO DEL SERVIDOR EN PUERTO 80 ---
+// Usamos el 80 para que no tengas que poner :4000 en la URL
+const PORT = 80;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log('==================================================');
+    console.log('🚀 NeXO NETWORK ONLINE');
+    console.log(`🏠 Web: http://nexonetwork.space`);
+    console.log(`📡 API: https://accounts-api-lp1.nexonetwork.space`);
+    console.log(`📂 Carpeta Web: ${frontendPath}`);
+    console.log('==================================================');
 });
