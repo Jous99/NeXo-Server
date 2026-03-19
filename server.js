@@ -6,38 +6,36 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const PORT = 4000;
 
 // --- CARPETAS ---
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 // --- MIDDLEWARES GLOBALES ---
-app.use(cors({ origin: '*' })); // Permite que nexonetwork.space hable con la API
+app.use(cors({ origin: '*' })); // Permite conexión total entre subdominios
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(uploadDir));
 
-// --- A. APP DE LA API (SUBDOMINIO) ---
+// --- 1. APP API (Subdominio) ---
 const accountsRouter = require('./routes/accounts');
 const apiApp = express();
 apiApp.use(cors());
 apiApp.use(express.json());
-apiApp.use(accountsRouter); // Tus rutas ya deberían tener el /v1 dentro
+apiApp.use(accountsRouter); // Tus rutas ya deben incluir el /v1 internamente
 
-// --- B. APP DE LA WEB (DOMINIO PRINCIPAL) ---
-const webApp = express();
-const frontendPath = path.join(__dirname, '../nexonetwork.space');
-webApp.use(express.static(frontendPath));
-
-webApp.get('/dashboard', (req, res) => res.sendFile(path.join(frontendPath, 'dashboard.html')));
-webApp.get('/profile', (req, res) => res.sendFile(path.join(frontendPath, 'profile.html')));
-
-// --- C. ASIGNACIÓN DE DOMINIOS ---
 app.use(vhost('accounts-api-lp1.nexonetwork.space', apiApp));
-app.use(vhost('nexonetwork.space', webApp));
-app.use(vhost('www.nexonetwork.space', webApp));
+
+// --- 2. APP WEB (Dominio Principal) ---
+const frontendPath = path.join(__dirname, '../nexonetwork.space'); 
+app.use(express.static(frontendPath));
+
+// Rutas manuales para evitar errores 404
+app.get('/dashboard', (req, res) => res.sendFile(path.join(frontendPath, 'dashboard.html')));
+app.get('/profile', (req, res) => res.sendFile(path.join(frontendPath, 'profile.html')));
 
 // --- LANZAMIENTO ---
+const PORT = 4000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log('🚀 NeXO Network escuchando en nexonetwork.space');
+    console.log(`🚀 NeXO ONLINE en puerto ${PORT}`);
 });
