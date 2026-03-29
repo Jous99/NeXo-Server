@@ -1,7 +1,7 @@
 {
   "name": "nexo-server",
   "version": "1.0.0",
-  "description": "NeXoNetwork — Backend completo para el ecosistema NeXo",
+  "description": "NeXoNetwork — Backend + Web para el ecosistema NeXo",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

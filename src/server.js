@@ -2,13 +2,13 @@
 
 require('dotenv').config();
 
-const path      = require('path');
-const Fastify   = require('fastify');
-const fjwt      = require('@fastify/jwt');
-const fstatic   = require('@fastify/static');
-const sensible  = require('@fastify/sensible');
+const path     = require('path');
+const Fastify  = require('fastify');
+const fjwt     = require('@fastify/jwt');
+const fstatic  = require('@fastify/static');
+const sensible = require('@fastify/sensible');
 
-const errorHandler  = require('./plugins/errorHandler');
+const errorHandler     = require('./plugins/errorHandler');
 const { authenticate } = require('./middleware/auth');
 
 // ── Módulo: Accounts ─────────────────────────────────────────────────────────
@@ -18,11 +18,11 @@ const friendsRoutes = require('./modules/accounts/routes/friends');
 const adminRoutes   = require('./modules/accounts/routes/admin');
 const raptorRoutes  = require('./modules/accounts/routes/raptor');
 
-// ── Sistema / Panel admin ─────────────────────────────────────────────────────
+// ── Sistema (update desde Forgejo, logs, status) ──────────────────────────────
 const systemRoutes  = require('./routes/system');
 
-// ── Módulos de juego (añadir aquí cuando estén listos) ───────────────────────
-// const marioKartRoutes = require('./modules/games/mario-kart');
+// ── Módulos de juego — añadir aquí cuando estén listos ───────────────────────
+// const matchmakingRoutes = require('./modules/games/matchmaking');
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -34,43 +34,41 @@ async function buildApp() {
         trustProxy: true,
     });
 
-    // ── Plugins ──────────────────────────────────────────────────────────────
+    // ── Plugins ───────────────────────────────────────────────────────────────
     await fastify.register(sensible);
 
     await fastify.register(fjwt, {
         secret: process.env.JWT_SECRET || 'nexo_dev_secret_CHANGE_IN_PRODUCTION',
     });
 
-    // Servir la web estática desde src/web/public
+    // Servir archivos estáticos (web) desde src/web/public
     await fastify.register(fstatic, {
-        root:   path.join(__dirname, 'web', 'public'),
-        prefix: '/',
-        // No lanzar 404 si el archivo no existe — deja pasar a las rutas API
+        root:     path.join(__dirname, 'web', 'public'),
+        prefix:   '/assets/',
         wildcard: false,
     });
 
-    // Ruta raíz — sirve la landing page
-    fastify.get('/', async (req, reply) => {
-        return reply.sendFile('index.html');
-    });
-
-    // Rutas del portal (single-page app — todas devuelven index.html)
-    fastify.get('/portal', async (req, reply) => reply.sendFile('index.html'));
-    fastify.get('/portal/*', async (req, reply) => reply.sendFile('index.html'));
-
-    // ── Auth global ───────────────────────────────────────────────────────────
+    // Auth global
     fastify.decorate('authenticate', authenticate);
 
-    // ── Error handler ─────────────────────────────────────────────────────────
+    // Error handler
     fastify.setErrorHandler(errorHandler);
 
     // ── Health check ──────────────────────────────────────────────────────────
     fastify.get('/health', async () => ({
         ok:      true,
         service: 'nexo-server',
-        version: process.env.npm_package_version || '1.0.0',
+        version: require('../package.json').version,
         ts:      Date.now(),
     }));
+
+    // ── Web — la landing page y el portal se sirven desde aquí ───────────────
+    // El HTML está embebido directamente en el servidor para máxima simplicidad
+    // con aaPanel Node Project (un solo proceso, sin ficheros estáticos sueltos)
+    fastify.get('/', async (req, reply) => {
+        const html = require('./web/app');
+        return reply.type('text/html').send(html);
+    });
 
     // ── Módulo: Accounts ──────────────────────────────────────────────────────
     fastify.register(authRoutes,    { prefix: '/auth' });
@@ -79,13 +77,13 @@ async function buildApp() {
     fastify.register(adminRoutes,   { prefix: '/admin' });
 
     // ── Módulo: RaptorNetwork (protocolo emulador) ────────────────────────────
-    fastify.register(raptorRoutes);   // /api/v1/*
+    fastify.register(raptorRoutes);   // registra /api/v1/*
 
-    // ── Sistema / Panel admin ──────────────────────────────────────────────────
+    // ── Sistema (update desde Forgejo) ────────────────────────────────────────
     fastify.register(systemRoutes, { prefix: '/admin/system' });
 
-    // ── Módulos de juego (descomentar cuando estén listos) ────────────────────
-    // fastify.register(marioKartRoutes, { prefix: '/games/mario-kart' });
+    // ── Módulos de juego ──────────────────────────────────────────────────────
+    // fastify.register(matchmakingRoutes, { prefix: '/games' });
 
     return fastify;
 }
@@ -97,15 +95,10 @@ async function start() {
 
     try {
         await app.listen({ port, host });
-        console.log(`
-╔══════════════════════════════════════════╗
-║         NeXoNetwork Server               ║
-║  http://${host}:${port}                  ║
-║                                          ║
-║  Web:    http://localhost:${port}/       ║
-║  API:    http://localhost:${port}/auth/  ║
-║  Emulador: /api/v1/*                    ║
-╚══════════════════════════════════════════╝`);
+        console.log(`\n🎮 NeXoNetwork Server corriendo en http://${host}:${port}`);
+        console.log(`   Web:      http://localhost:${port}/`);
+        console.log(`   API:      http://localhost:${port}/auth/`);
+        console.log(`   Emulador: http://localhost:${port}/api/v1/\n`);
     } catch (err) {
         app.log.error(err);
         process.exit(1);

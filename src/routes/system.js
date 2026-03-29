@@ -1,11 +1,11 @@
 'use strict';
 
 const { exec } = require('child_process');
-const path = require('path');
-const db = require('../db');
+const path     = require('path');
+const db       = require('../db');
 
-const PROJECT_ROOT = path.resolve(__dirname, '../../..');
-const UPDATE_SCRIPT = path.join(PROJECT_ROOT, 'scripts', 'update.sh');
+const ROOT   = path.resolve(__dirname, '../..');
+const SCRIPT = path.join(ROOT, 'scripts', 'update.sh');
 
 async function requireAdmin(request, reply) {
     await request.jwtVerify();
@@ -19,95 +19,54 @@ async function systemRoutes(fastify) {
 
     fastify.addHook('preHandler', requireAdmin);
 
-    /**
-     * POST /admin/system/update
-     * Pulls latest code from Forgejo and restarts the server.
-     * Called from the web admin panel.
-     */
+    // POST /admin/system/update — pull desde Forgejo y reinicia
     fastify.post('/update', async (req, reply) => {
-        // Send response immediately — the restart will kill this process
-        reply.send({
-            ok: true,
-            message: 'Update started. The server will restart in a few seconds.',
-        });
-
-        // Run update script after responding
+        reply.send({ ok: true, message: 'Actualización iniciada. El servidor se reiniciará en unos segundos.' });
         setTimeout(() => {
-            exec(`bash "${UPDATE_SCRIPT}"`, {
-                cwd: PROJECT_ROOT,
-                timeout: 120000,
-            }, (err, stdout, stderr) => {
-                if (err) {
-                    fastify.log.error('Update failed:', err.message);
-                    fastify.log.error('stderr:', stderr);
-                } else {
-                    fastify.log.info('Update completed:', stdout);
-                }
+            exec(`bash "${SCRIPT}"`, { cwd: ROOT, timeout: 120000 }, (err, stdout, stderr) => {
+                if (err) fastify.log.error('Update error:', stderr);
+                else     fastify.log.info('Update ok:', stdout.slice(-200));
             });
-        }, 500);
+        }, 300);
     });
 
-    /**
-     * GET /admin/system/status
-     * Returns current server status: version, uptime, git commit.
-     */
+    // GET /admin/system/status — estado del servidor
     fastify.get('/status', async (req, reply) => {
-        const uptime = process.uptime();
-        const memory = process.memoryUsage();
+        const mem = process.memoryUsage();
 
-        // Get current git commit
-        const gitHash = await new Promise((resolve) => {
-            exec('git rev-parse --short HEAD', { cwd: PROJECT_ROOT }, (err, stdout) => {
-                resolve(err ? 'unknown' : stdout.trim());
-            });
-        });
+        const run = (cmd) => new Promise((res) =>
+            exec(cmd, { cwd: ROOT }, (e, out) => res(e ? null : out.trim()))
+        );
 
-        const gitBranch = await new Promise((resolve) => {
-            exec('git branch --show-current', { cwd: PROJECT_ROOT }, (err, stdout) => {
-                resolve(err ? 'unknown' : stdout.trim());
-            });
-        });
+        const [hash, branch, lastCommit] = await Promise.all([
+            run('git rev-parse --short HEAD'),
+            run('git branch --show-current'),
+            run('git log -1 --format="%s|||%ad" --date=short'),
+        ]);
 
-        const gitLog = await new Promise((resolve) => {
-            exec('git log -1 --format="%s|%ad" --date=iso', { cwd: PROJECT_ROOT }, (err, stdout) => {
-                if (err) return resolve({ message: 'unknown', date: null });
-                const parts = stdout.trim().split('|');
-                resolve({ message: parts[0], date: parts[1] });
-            });
-        });
+        const [msg, date] = (lastCommit || '|||').split('|||');
 
         return reply.send({
             ok: true,
             data: {
-                version:    process.env.npm_package_version || '1.0.0',
+                version:    require('../../package.json').version,
                 node:       process.version,
-                uptime_sec: Math.round(uptime),
-                memory_mb:  Math.round(memory.rss / 1024 / 1024),
-                git: {
-                    hash:    gitHash,
-                    branch:  gitBranch,
-                    last_commit: gitLog,
-                },
-                env: process.env.NODE_ENV || 'development',
+                uptime_sec: Math.round(process.uptime()),
+                memory_mb:  Math.round(mem.rss / 1024 / 1024),
+                env:        process.env.NODE_ENV || 'development',
+                git: { hash, branch, commit_msg: msg, commit_date: date },
             },
         });
     });
 
-    /**
-     * GET /admin/system/logs
-     * Returns last N lines of the update log.
-     */
+    // GET /admin/system/logs — últimas líneas del log de update
     fastify.get('/logs', async (req, reply) => {
-        const lines = parseInt(req.query.lines || '50');
-        const logFile = path.join(PROJECT_ROOT, 'logs', 'update.log');
-
-        const content = await new Promise((resolve) => {
-            exec(`tail -n ${lines} "${logFile}"`, (err, stdout) => {
-                resolve(err ? 'No logs yet.' : stdout);
-            });
-        });
-
-        return reply.send({ ok: true, data: { logs: content } });
+        const n    = Math.min(parseInt(req.query.lines || '60'), 200);
+        const file = path.join(ROOT, 'logs', 'update.log');
+        const logs = await new Promise((res) =>
+            exec(`tail -n ${n} "${file}"`, (e, out) => res(e ? 'Sin logs todavía.' : out))
+        );
+        return reply.send({ ok: true, data: { logs } });
     });
 }
 

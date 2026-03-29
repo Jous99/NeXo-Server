@@ -1,0 +1,42 @@
+# Dependencias
+node_modules/
+jspm_packages/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Variables de entorno (¡CRÍTICO! Nunca subas tus credenciales)
+.env
+.env.test
+.env.local
+.env.production
+
+# Compilación y salida (Build/Dist)
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+# Caché de herramientas
+.npm
+.eslintcache
+.stylelintcache
+.node_repl_history
+.cache/
+
+# Archivos de Sistema
+.DS_Store
+Thumbs.db
+
+# Cobertura de tests (Jest/Mocha)
+coverage/
+.nyc_output/
+
+# Otros
+*.seed
+*.pid
