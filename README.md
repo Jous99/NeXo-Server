@@ -1,34 +1,97 @@
-# NeXoNetwork-Server
-> **Reviviendo la infraestructura de red para el ecosistema NeXo (Yuzu-based Emulator)**
+# NeXoNetwork — Accounts Core
+
+> Core de cuentas para NeXoNetwork, el reemplazo de Nintendo Switch Online.
 
 ---
 
-### 🇪🇸 Descripción (Español)
-**NeXoNetwork-Server** es el corazón de red del proyecto **NeXo**, un emulador basado en el legado de **Yuzu**. Este servidor nace con la misión de aplicar **ingeniería inversa** al proyecto **RaptorNetwork** para rescatar, estabilizar y evolucionar sus capacidades de conexión.
+## Stack
 
-Nuestro objetivo es reconstruir una infraestructura que permita el juego en línea y la sincronización de datos, devolviendo la funcionalidad que quedó pausada y mejorando la eficiencia del protocolo original.
-
-**Puntos Clave:**
-* 🛠️ **Ingeniería Inversa:** Basado en el análisis y reconstrucción de RaptorNetwork.
-* 🎮 **ADN Yuzu:** Diseñado para ser 100% compatible con el cliente NeXoEmulator.
-* 🔄 **Resurrección:** Enfocado en revivir las funciones de red que la comunidad necesita.
-
----
-
-### 🇺🇸 Description (English)
-**NeXoNetwork-Server** is the networking core of the **NeXo** project, an emulator based on the **Yuzu** legacy. This server is born with the mission of **reverse-engineering** the **RaptorNetwork** project to rescue, stabilize, and evolve its connection capabilities.
-
-Our goal is to rebuild an infrastructure that enables online play and data synchronization, bringing back the functionality that was paused and improving the efficiency of the original protocol.
-
-**Key Highlights:**
-* 🛠️ **Reverse Engineering:** Based on the analysis and reconstruction of RaptorNetwork.
-* 🎮 **Yuzu DNA:** Designed for 100% compatibility with the NeXoEmulator client.
-* 🔄 **Resurrection:** Focused on reviving the network features the community demands.
+| Capa        | Tecnología                    |
+|-------------|-------------------------------|
+| Runtime     | Node.js 20+                   |
+| Framework   | Fastify 5                     |
+| Base de datos | MySQL 8 / MariaDB 11        |
+| Auth        | JWT (access) + Refresh Token  |
+| Passwords   | bcryptjs (12 rounds)          |
 
 ---
 
-### ⚠️ Nota / Disclaimer
-Este es un proyecto educativo y de preservación. No estamos afiliados con los desarrolladores originales.
-This is an educational and preservation project. We are not affiliated with the original developers.
+## Estructura
 
-**Developed with 🛠️ by NeXo Team**
+```
+src/
+├── server.js               # Entry point
+├── db.js                   # MySQL pool
+├── utils.js                # NexoID generator, crypto helpers
+├── middleware/
+│   └── auth.js             # JWT verify hook
+├── plugins/
+│   └── errorHandler.js     # Global error handler
+├── routes/
+│   ├── auth.js             # /auth/*
+│   ├── profile.js          # /profile/*
+│   └── friends.js          # /friends/*
+└── services/
+    └── accounts.js         # Business logic
+```
+
+---
+
+## Setup
+
+```bash
+cp .env.example .env
+# edita .env con tus credenciales
+
+npm install
+mysql -u root -p < schema.sql
+npm run dev
+```
+
+---
+
+## API Reference
+
+### Auth
+
+| Method | Endpoint            | Body                              | Auth | Descripción              |
+|--------|---------------------|-----------------------------------|------|--------------------------|
+| POST   | `/auth/register`    | `username, email, password`       | —    | Registrar cuenta         |
+| POST   | `/auth/login`       | `login, password`                 | —    | Login                    |
+| POST   | `/auth/refresh`     | `refresh_token`                   | —    | Renovar access token     |
+| POST   | `/auth/logout`      | `refresh_token?`                  | JWT  | Cerrar sesión            |
+| POST   | `/auth/logout-all`  | —                                 | JWT  | Cerrar todas las sesiones|
+
+### Profile
+
+| Method | Endpoint                       | Auth | Descripción                 |
+|--------|--------------------------------|------|-----------------------------|
+| GET    | `/profile/me`                  | JWT  | Mi perfil completo          |
+| GET    | `/profile/:nexo_id`            | JWT  | Perfil público de otro user |
+| PATCH  | `/profile/me`                  | JWT  | Actualizar perfil           |
+| POST   | `/profile/me/change-password`  | JWT  | Cambiar contraseña          |
+| PUT    | `/profile/me/presence`         | JWT  | Actualizar estado online    |
+
+### Friends
+
+| Method | Endpoint                     | Auth | Descripción              |
+|--------|------------------------------|------|--------------------------|
+| GET    | `/friends`                   | JWT  | Lista de amigos          |
+| POST   | `/friends/request`           | JWT  | Enviar solicitud         |
+| PUT    | `/friends/:nexo_id/respond`  | JWT  | Aceptar / rechazar       |
+| DELETE | `/friends/:nexo_id`          | JWT  | Eliminar amigo           |
+| POST   | `/friends/:nexo_id/block`    | JWT  | Bloquear usuario         |
+
+---
+
+## NexoID
+
+Formato: `NXID-XXXX-XXXX-XXXX`  
+Generado con bytes criptográficamente aleatorios, sin caracteres ambiguos (0, O, I, 1).
+
+## Tokens
+
+- **Access Token**: JWT firmado, expira en `15m` (configurable).
+- **Refresh Token**: 32 bytes aleatorios (hex 64 chars). Se guarda como SHA-256 en DB.  
+  El cliente lo envía para renovar el access token sin re-autenticarse.
+- Al cambiar contraseña se revocan **todas** las sesiones automáticamente.
