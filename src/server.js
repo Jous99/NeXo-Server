@@ -12,6 +12,8 @@ const { authenticate } = require('./middleware/auth');
 const authRoutes    = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
 const friendsRoutes = require('./routes/friends');
+const adminRoutes   = require('./routes/admin');
+const raptorRoutes  = require('./routes/raptor');
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -44,6 +46,8 @@ async function buildApp() {
     fastify.register(authRoutes,    { prefix: '/auth' });
     fastify.register(profileRoutes, { prefix: '/profile' });
     fastify.register(friendsRoutes, { prefix: '/friends' });
+    fastify.register(adminRoutes,   { prefix: '/admin' });
+    fastify.register(raptorRoutes); // /api/v1/* — RaptorNetwork client compatibility
 
     return fastify;
 }

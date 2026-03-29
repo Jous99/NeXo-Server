@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     region        VARCHAR(32)  DEFAULT NULL,
     is_banned     BOOLEAN      DEFAULT FALSE,
     ban_reason    TEXT         DEFAULT NULL,
+    is_admin      BOOLEAN      DEFAULT FALSE,
     created_at    DATETIME     DEFAULT CURRENT_TIMESTAMP,
     updated_at    DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
