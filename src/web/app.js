@@ -624,9 +624,9 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── CONFIG ─────────────────────────────────────────────────────────────────
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
 const AK = 'nexo_api';
-// Por defecto apunta al mismo servidor que sirve esta página
+// Usa el mismo origen que sirve la página — funciona sin tocar nada en producción
 let API = localStorage.getItem(AK) || window.location.origin;
 let AT  = localStorage.getItem('nexo_at') || '';
 let RT  = localStorage.getItem('nexo_rt') || '';
@@ -648,14 +648,21 @@ function saveApi() {
 async function apiFetch(path, opts = {}) {
   const h = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
   if (AT) h['Authorization'] = 'Bearer ' + AT;
-  const r = await fetch(API + path, { ...opts, headers: h });
-  const d = await r.json().catch(() => ({ ok: false, error: 'Error de red' }));
-  return { ok: r.ok, status: r.status, data: d };
+  try {
+    const r = await fetch(API + path, { ...opts, headers: h });
+    let d;
+    try { d = await r.json(); } catch { d = { ok: false, error: 'Respuesta inválida del servidor' }; }
+    return { ok: r.ok, status: r.status, data: d };
+  } catch (err) {
+    // Error de red real (CORS, servidor caído, sin conexión)
+    const msg = err.message || 'Sin conexión con el servidor';
+    return { ok: false, status: 0, data: { ok: false, error: 'Error de red: ' + msg } };
+  }
 }
 function toast(msg, type = '') {
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = 'toast show ' + type;
-  setTimeout(() => t.classList.remove('show'), 3000);
+  setTimeout(() => t.classList.remove('show'), 3500);
 }
 function initials(n) { return (n || 'NX').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2); }
 function setMsg(id, msg, type) { const e = document.getElementById(id); e.textContent = msg; e.className = 'amsg ' + type; }
@@ -675,32 +682,78 @@ function closeApp() {
   document.body.style.overflow = '';
 }
 
-// ─── AUTH ─────────────────────────────────────────────────────────────────────
+// ─── AUTH TABS ────────────────────────────────────────────────────────────────
 function swTab(tab) {
   document.querySelectorAll('.atab').forEach((b, i) => b.classList.toggle('active', (i === 0) === (tab === 'login')));
   document.getElementById('f-login').classList.toggle('hidden', tab !== 'login');
   document.getElementById('f-reg').classList.toggle('hidden', tab === 'login');
 }
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
 async function doLogin(e) {
   e.preventDefault();
-  const btn = document.getElementById('lbtn'); btn.textContent = 'Entrando...'; btn.disabled = true;
-  const { ok, data } = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify({ login: document.getElementById('li').value, password: document.getElementById('lp').value }) });
+  const btn = document.getElementById('lbtn');
+  btn.textContent = 'Entrando...'; btn.disabled = true;
+  setMsg('lmsg', '', '');
+
+  const { ok, data } = await apiFetch('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      login:    document.getElementById('li').value.trim(),
+      password: document.getElementById('lp').value,
+    }),
+  });
+
   btn.textContent = 'Entrar'; btn.disabled = false;
-  if (!ok) return setMsg('lmsg', data.error || 'Error', 'error');
+
+  if (!ok) {
+    setMsg('lmsg', data.error || 'Error al iniciar sesión', 'error');
+    return;
+  }
+
   const d = data.data;
-  AT = d.access_token; RT = d.refresh_token; CU = { nexo_id: d.nexo_id, nickname: d.nickname };
-  localStorage.setItem('nexo_at', AT); localStorage.setItem('nexo_rt', RT); localStorage.setItem('nexo_cu', JSON.stringify(CU));
+  AT = d.access_token;
+  RT = d.refresh_token;
+  CU = { nexo_id: d.nexo_id, nickname: d.nickname };
+  localStorage.setItem('nexo_at', AT);
+  localStorage.setItem('nexo_rt', RT);
+  localStorage.setItem('nexo_cu', JSON.stringify(CU));
   enterDash();
 }
+
+// ─── REGISTER ────────────────────────────────────────────────────────────────
 async function doReg(e) {
   e.preventDefault();
-  const { ok, data } = await apiFetch('/auth/register', { method: 'POST', body: JSON.stringify({ username: document.getElementById('ru').value, email: document.getElementById('re').value, password: document.getElementById('rp').value, nickname: document.getElementById('rn').value || undefined }) });
-  if (!ok) return setMsg('rmsg', data.error || 'Error', 'error');
+  setMsg('rmsg', '', '');
+
+  const username = document.getElementById('ru').value.trim();
+  const email    = document.getElementById('re').value.trim();
+  const password = document.getElementById('rp').value;
+  const nickname = document.getElementById('rn').value.trim() || undefined;
+
+  const { ok, data } = await apiFetch('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ username, email, password, nickname }),
+  });
+
+  if (!ok) {
+    setMsg('rmsg', data.error || 'Error al registrarse', 'error');
+    return;
+  }
+
   setMsg('rmsg', '¡Cuenta creada! Inicia sesión.', 'success');
   setTimeout(() => swTab('login'), 1500);
 }
-async function doLogout() { await apiFetch('/auth/logout', { method: 'POST', body: JSON.stringify({ refresh_token: RT }) }); clearSess(); }
-async function logoutAll() { await apiFetch('/auth/logout-all', { method: 'POST' }); toast('Sesiones cerradas', 'success'); clearSess(); }
+
+async function doLogout() {
+  await apiFetch('/auth/logout', { method: 'POST', body: JSON.stringify({ refresh_token: RT }) });
+  clearSess();
+}
+async function logoutAll() {
+  await apiFetch('/auth/logout-all', { method: 'POST' });
+  toast('Sesiones cerradas', 'success');
+  clearSess();
+}
 function clearSess() {
   AT = ''; RT = ''; CU = null;
   ['nexo_at', 'nexo_rt', 'nexo_cu'].forEach(k => localStorage.removeItem(k));
@@ -712,10 +765,11 @@ function clearSess() {
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
 function enterDash() {
   document.getElementById('app-auth').style.display = 'none';
-  document.getElementById('app-nav').style.display = 'flex';
-  document.getElementById('app-cnt').style.display = 'block';
+  document.getElementById('app-nav').style.display  = 'flex';
+  document.getElementById('app-cnt').style.display  = 'block';
   if (CU) document.getElementById('nav-av').textContent = initials(CU.nickname);
-  showP('status'); loadProf();
+  showP('status');
+  loadProf();
 }
 function showP(p) {
   document.querySelectorAll('.apg').forEach(x => x.classList.remove('active'));
@@ -741,33 +795,41 @@ async function loadStatus() {
   let up = 0; const t0 = Date.now();
   for (const s of SVCS) {
     let ok = false, lat = 0;
-    try { const t = Date.now(); await fetch(API + s.ep, { method: 'GET', signal: AbortSignal.timeout(4000) }); lat = Date.now() - t; ok = true; up++; } catch (_) {}
+    try {
+      const t = Date.now();
+      const r = await fetch(API + s.ep, { method: 'GET', signal: AbortSignal.timeout(4000) });
+      lat = Date.now() - t; ok = r.status < 500; if (ok) up++;
+    } catch (_) {}
     const pct = ok ? Math.floor(15 + Math.random() * 55) : 0;
     const bc = pct > 65 ? 'hi' : pct > 35 ? 'mi' : 'lo';
-    g.innerHTML += \`<div class="svc"><div class="svh"><div class="svn">\${s.name}</div><div class="spill \${ok ? 'on' : 'off'}"><span class="sdot \${ok ? 'on' : 'off'}"></span>\${ok ? 'Online' : 'Offline'}</div></div><div style="font-size:12px;color:var(--tm);">Latencia: <b>\${ok ? lat + 'ms' : '—'}</b></div><div class="bw2"><div class="bar2 \${bc}" style="width:\${pct}%"></div></div><div style="font-size:10px;color:var(--tm);">Carga: \${pct}%</div></div>\`;
+    g.innerHTML += `<div class="svc"><div class="svh"><div class="svn">${s.name}</div><div class="spill ${ok?'on':'off'}"><span class="sdot ${ok?'on':'off'}"></span>${ok?'Online':'Offline'}</div></div><div style="font-size:12px;color:var(--tm);">Latencia: <b>${ok?lat+'ms':'—'}</b></div><div class="bw2"><div class="bar2 ${bc}" style="width:${pct}%"></div></div><div style="font-size:10px;color:var(--tm);">Carga: ${pct}%</div></div>`;
   }
   const gl = Date.now() - t0;
-  document.getElementById('s-on').textContent = '—';
+  document.getElementById('s-on').textContent  = '—';
   document.getElementById('s-tot').textContent = '—';
-  document.getElementById('s-up').textContent = up + '/' + SVCS.length;
+  document.getElementById('s-up').textContent  = up + '/' + SVCS.length;
   document.getElementById('s-lat').textContent = Math.round(gl / SVCS.length);
   document.getElementById('lcheck').textContent = 'Verificado: ' + new Date().toLocaleTimeString('es-ES');
   const { ok, data } = await apiFetch('/admin/stats');
-  if (ok) { document.getElementById('s-on').textContent = data.data.online_users; document.getElementById('s-tot').textContent = data.data.total_users; }
+  if (ok) {
+    document.getElementById('s-on').textContent  = data.data.online_users;
+    document.getElementById('s-tot').textContent = data.data.total_users;
+  }
 }
 
 // ─── PROFILE ──────────────────────────────────────────────────────────────────
 async function loadProf() {
-  const { ok, data } = await apiFetch('/profile/me'); if (!ok) return;
+  const { ok, data } = await apiFetch('/profile/me');
+  if (!ok) return;
   const p = data.data;
-  document.getElementById('pav').textContent = initials(p.nickname);
+  document.getElementById('pav').textContent    = initials(p.nickname);
   document.getElementById('nav-av').textContent = initials(p.nickname);
-  document.getElementById('pname').textContent = p.nickname;
+  document.getElementById('pname').textContent  = p.nickname;
   document.getElementById('pnexoid').textContent = p.nexo_id;
-  document.getElementById('p-nick').value = p.nickname || '';
-  document.getElementById('p-lang').value = p.lang || '';
-  document.getElementById('p-av').value = p.avatar_url || '';
-  if (p.status) document.getElementById('p-st').value = p.status;
+  document.getElementById('p-nick').value = p.nickname    || '';
+  document.getElementById('p-lang').value = p.lang        || '';
+  document.getElementById('p-av').value   = p.avatar_url  || '';
+  if (p.status)     document.getElementById('p-st').value = p.status;
   if (p.game_title) document.getElementById('p-gm').value = p.game_title;
   if (p.is_admin) {
     document.getElementById('admbtn').style.display = 'block';
@@ -775,78 +837,152 @@ async function loadProf() {
   }
 }
 async function saveProf() {
-  const { ok, data } = await apiFetch('/profile/me', { method: 'PATCH', body: JSON.stringify({ nickname: document.getElementById('p-nick').value || undefined, lang: document.getElementById('p-lang').value || undefined, avatar_url: document.getElementById('p-av').value || undefined }) });
+  const { ok, data } = await apiFetch('/profile/me', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      nickname:   document.getElementById('p-nick').value || undefined,
+      lang:       document.getElementById('p-lang').value || undefined,
+      avatar_url: document.getElementById('p-av').value   || undefined,
+    }),
+  });
   ok ? (toast('Perfil actualizado', 'success'), loadProf()) : toast(data.error || 'Error', 'error');
 }
 async function changePass() {
-  const c = document.getElementById('p-cur').value, n = document.getElementById('p-new').value;
+  const c = document.getElementById('p-cur').value;
+  const n = document.getElementById('p-new').value;
   if (!c || !n) return toast('Rellena ambos campos', 'error');
-  const { ok, data } = await apiFetch('/profile/me/change-password', { method: 'POST', body: JSON.stringify({ currentPassword: c, newPassword: n }) });
+  const { ok, data } = await apiFetch('/profile/me/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword: c, newPassword: n }),
+  });
   ok ? (toast('Contraseña cambiada', 'success'), setTimeout(clearSess, 1500)) : toast(data.error || 'Error', 'error');
 }
 async function savePresence() {
-  const { ok, data } = await apiFetch('/profile/me/presence', { method: 'PUT', body: JSON.stringify({ status: document.getElementById('p-st').value, game_title: document.getElementById('p-gm').value || undefined }) });
+  const { ok, data } = await apiFetch('/profile/me/presence', {
+    method: 'PUT',
+    body: JSON.stringify({
+      status:     document.getElementById('p-st').value,
+      game_title: document.getElementById('p-gm').value || undefined,
+    }),
+  });
   ok ? toast('Estado actualizado', 'success') : toast(data.error || 'Error', 'error');
 }
 
 // ─── FRIENDS ──────────────────────────────────────────────────────────────────
 async function loadFriends() {
-  const { ok, data } = await apiFetch('/friends'); if (!ok) return;
+  const { ok, data } = await apiFetch('/friends');
+  if (!ok) return;
   const list = data.data || [];
-  const acc = list.filter(f => f.friendship_status === 'accepted');
-  const pen = list.filter(f => f.friendship_status === 'pending');
-  const ps = document.getElementById('psec'), pg = document.getElementById('pgrid'), fg = document.getElementById('fgrid');
-  if (pen.length) { ps.style.display = 'block'; pg.innerHTML = pen.map(f => \`<div class="fcard"><div class="avmd" style="background:var(--red)">\${initials(f.nickname)}</div><div style="flex:1;min-width:0;"><div class="fn">\${f.nickname}</div><div class="fst">\${f.nexo_id}</div><div style="display:flex;gap:4px;margin-top:4px;"><button class="bism" onclick="respF('\${f.nexo_id}',true)">Aceptar</button><button class="bism" onclick="respF('\${f.nexo_id}',false)">✕</button></div></div></div>\`).join(''); }
+  const acc  = list.filter(f => f.friendship_status === 'accepted');
+  const pen  = list.filter(f => f.friendship_status === 'pending');
+  const ps = document.getElementById('psec');
+  const pg = document.getElementById('pgrid');
+  const fg = document.getElementById('fgrid');
+
+  if (pen.length) {
+    ps.style.display = 'block';
+    pg.innerHTML = pen.map(f =>
+      `<div class="fcard"><div class="avmd" style="background:var(--red)">${initials(f.nickname)}</div><div style="flex:1;min-width:0;"><div class="fn">${f.nickname}</div><div class="fst">${f.nexo_id}</div><div style="display:flex;gap:4px;margin-top:4px;"><button class="bism" onclick="respF('${f.nexo_id}',true)">Aceptar</button><button class="bism" onclick="respF('${f.nexo_id}',false)">✕</button></div></div></div>`
+    ).join('');
+  }
+
   const cols = ['var(--red)', 'var(--blu)', '#8b5cf6', '#22c55e', '#f59e0b'];
   fg.innerHTML = acc.length ? acc.map(f => {
-    const sl = f.online_status === 'in_game' ? \`Jugando: \${f.game_title || '...'}\` : f.online_status === 'online' ? 'En línea' : 'Desconectado';
+    const sl = f.online_status === 'in_game'
+      ? `Jugando: ${f.game_title || '...'}`
+      : f.online_status === 'online' ? 'En línea' : 'Desconectado';
     const sc = f.online_status === 'in_game' ? 'ig' : '';
-    return \`<div class="fcard"><div class="avmd" style="background:\${cols[f.nickname.charCodeAt(0) % cols.length]}">\${initials(f.nickname)}</div><div style="flex:1;min-width:0;"><div class="fn">\${f.nickname}</div><div class="fst \${sc}">\${sl}</div><div style="font-size:10px;color:var(--tm);margin-top:1px;">\${f.nexo_id}</div></div><button class="bism" onclick="rmFriend('\${f.nexo_id}')">✕</button></div>\`;
-  }).join('') : \`<div class="emp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><p>Sin amigos aún</p></div>\`;
+    const c  = cols[f.nickname.charCodeAt(0) % cols.length];
+    return `<div class="fcard"><div class="avmd" style="background:${c}">${initials(f.nickname)}</div><div style="flex:1;min-width:0;"><div class="fn">${f.nickname}</div><div class="fst ${sc}">${sl}</div><div style="font-size:10px;color:var(--tm);margin-top:1px;">${f.nexo_id}</div></div><button class="bism" onclick="rmFriend('${f.nexo_id}')">✕</button></div>`;
+  }).join('')
+  : `<div class="emp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><p>Sin amigos aún</p></div>`;
 }
-async function addFriend() { const id = document.getElementById('fadd').value.trim(); if (!id) return; const { ok, data } = await apiFetch('/friends/request', { method: 'POST', body: JSON.stringify({ nexo_id: id }) }); ok ? (toast('Solicitud enviada', 'success'), document.getElementById('fadd').value = '', loadFriends()) : toast(data.error || 'Error', 'error'); }
-async function respF(id, accept) { const { ok } = await apiFetch(\`/friends/\${id}/respond\`, { method: 'PUT', body: JSON.stringify({ accept }) }); if (ok) { toast(accept ? 'Amigo aceptado' : 'Rechazado', 'success'); loadFriends(); } }
-async function rmFriend(id) { const { ok } = await apiFetch(\`/friends/\${id}\`, { method: 'DELETE' }); if (ok) { toast('Amigo eliminado', 'success'); loadFriends(); } }
+async function addFriend() {
+  const id = document.getElementById('fadd').value.trim();
+  if (!id) return;
+  const { ok, data } = await apiFetch('/friends/request', { method: 'POST', body: JSON.stringify({ nexo_id: id }) });
+  ok ? (toast('Solicitud enviada', 'success'), document.getElementById('fadd').value = '', loadFriends()) : toast(data.error || 'Error', 'error');
+}
+async function respF(id, accept) {
+  const { ok } = await apiFetch(`/friends/${id}/respond`, { method: 'PUT', body: JSON.stringify({ accept }) });
+  if (ok) { toast(accept ? 'Amigo aceptado' : 'Rechazado', 'success'); loadFriends(); }
+}
+async function rmFriend(id) {
+  const { ok } = await apiFetch(`/friends/${id}`, { method: 'DELETE' });
+  if (ok) { toast('Amigo eliminado', 'success'); loadFriends(); }
+}
 
 // ─── ADMIN ────────────────────────────────────────────────────────────────────
 async function loadAdmin() {
   const { ok, data } = await apiFetch('/admin/users');
   const tb = document.getElementById('atbody');
-  if (!ok) { tb.innerHTML = \`<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--tm);">Acceso de administrador requerido</td></tr>\`; return; }
-  allUsers = data.data || []; renderU(allUsers);
+  if (!ok) {
+    tb.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--tm);">Acceso de administrador requerido</td></tr>`;
+    return;
+  }
+  allUsers = data.data || [];
+  renderU(allUsers);
 }
 function renderU(u) {
   const tb = document.getElementById('atbody');
-  if (!u.length) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--tm);">Sin usuarios</td></tr>'; return; }
-  tb.innerHTML = u.map(x => \`<tr><td style="font-weight:800;">\${x.nickname || x.username}</td><td style="font-size:11px;color:var(--tm);">\${x.nexo_id}</td><td style="font-size:11px;">\${x.email}</td><td><span class="pill \${x.is_banned ? 'bn' : 'ac'}">\${x.is_banned ? 'Baneado' : 'Activo'}</span>\${x.is_admin ? ' <span class="pill adm">Admin</span>' : ''}</td><td style="font-size:11px;color:var(--tm);">\${new Date(x.created_at).toLocaleDateString('es-ES')}</td><td style="display:flex;gap:4px;">\${x.is_banned ? \`<button class="bism" onclick="unban('\${x.nexo_id}')">Desbanear</button>\` : \`<button class="bism" onclick="openBan('\${x.nexo_id}')">Banear</button>\`}</td></tr>\`).join('');
+  if (!u.length) {
+    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--tm);">Sin usuarios</td></tr>';
+    return;
+  }
+  tb.innerHTML = u.map(x =>
+    `<tr>
+      <td style="font-weight:800;">${x.nickname || x.username}</td>
+      <td style="font-size:11px;color:var(--tm);">${x.nexo_id}</td>
+      <td style="font-size:11px;">${x.email}</td>
+      <td><span class="pill ${x.is_banned ? 'bn' : 'ac'}">${x.is_banned ? 'Baneado' : 'Activo'}</span>${x.is_admin ? ' <span class="pill adm">Admin</span>' : ''}</td>
+      <td style="font-size:11px;color:var(--tm);">${new Date(x.created_at).toLocaleDateString('es-ES')}</td>
+      <td style="display:flex;gap:4px;">
+        ${x.is_banned
+          ? `<button class="bism" onclick="unban('${x.nexo_id}')">Desbanear</button>`
+          : `<button class="bism" onclick="openBan('${x.nexo_id}')">Banear</button>`}
+      </td>
+    </tr>`
+  ).join('');
 }
-function filterU() { const q = document.getElementById('asrch').value.toLowerCase(); renderU(allUsers.filter(u => [u.username, u.email, u.nexo_id, u.nickname].some(v => (v || '').toLowerCase().includes(q)))); }
+function filterU() {
+  const q = document.getElementById('asrch').value.toLowerCase();
+  renderU(allUsers.filter(u => [u.username, u.email, u.nexo_id, u.nickname].some(v => (v || '').toLowerCase().includes(q))));
+}
 function openBan(id) { banTarget = id; document.getElementById('breason').value = ''; document.getElementById('bmod').classList.add('open'); }
-function closeMod() { document.getElementById('bmod').classList.remove('open'); banTarget = null; }
-async function confirmBan() { const { ok } = await apiFetch(\`/admin/users/\${banTarget}/ban\`, { method: 'POST', body: JSON.stringify({ reason: document.getElementById('breason').value }) }); if (ok) { toast('Usuario baneado', 'success'); closeMod(); loadAdmin(); } else toast('Error', 'error'); }
-async function unban(id) { const { ok } = await apiFetch(\`/admin/users/\${id}/unban\`, { method: 'POST' }); if (ok) { toast('Usuario desbaneado', 'success'); loadAdmin(); } }
+function closeMod()  { document.getElementById('bmod').classList.remove('open'); banTarget = null; }
+async function confirmBan() {
+  const { ok } = await apiFetch(`/admin/users/${banTarget}/ban`, { method: 'POST', body: JSON.stringify({ reason: document.getElementById('breason').value }) });
+  if (ok) { toast('Usuario baneado', 'success'); closeMod(); loadAdmin(); }
+  else toast('Error', 'error');
+}
+async function unban(id) {
+  const { ok } = await apiFetch(`/admin/users/${id}/unban`, { method: 'POST' });
+  if (ok) { toast('Usuario desbaneado', 'success'); loadAdmin(); }
+}
 
 // ─── SISTEMA ──────────────────────────────────────────────────────────────────
 async function loadSysStatus() {
-  const { ok, data } = await apiFetch('/admin/system/status'); if (!ok) return;
+  const { ok, data } = await apiFetch('/admin/system/status');
+  if (!ok) return;
   const d = data.data;
   document.getElementById('sys-ver').textContent    = d.version;
   document.getElementById('sys-node').textContent   = d.node;
   document.getElementById('sys-uptime').textContent = fmtUptime(d.uptime_sec);
   document.getElementById('sys-mem').textContent    = d.memory_mb + ' MB';
   const envEl = document.getElementById('sys-env');
-  envEl.innerHTML = \`<span class="sys-badge \${d.env === 'production' ? 'ok' : 'dev'}">\${d.env}</span>\`;
+  envEl.innerHTML = `<span class="sys-badge ${d.env === 'production' ? 'ok' : 'dev'}">${d.env}</span>`;
   if (d.git) {
-    document.getElementById('sys-hash').textContent   = d.git.hash || '—';
+    document.getElementById('sys-hash').textContent   = d.git.hash   || '—';
     document.getElementById('sys-branch').textContent = d.git.branch || '—';
-    document.getElementById('sys-cmsg').textContent   = d.git.commit_msg || '—';
+    document.getElementById('sys-cmsg').textContent   = d.git.commit_msg  || '—';
     document.getElementById('sys-cdate').textContent  = d.git.commit_date || '—';
   }
 }
 async function loadLogs() {
   const { ok, data } = await apiFetch('/admin/system/logs?lines=80');
-  document.getElementById('log-box').textContent = ok ? (data.data.logs || 'Sin logs.') : 'Error al cargar logs.';
-  const lb = document.getElementById('log-box'); lb.scrollTop = lb.scrollHeight;
+  const lb = document.getElementById('log-box');
+  lb.textContent = ok ? (data.data.logs || 'Sin logs.') : 'Error al cargar logs.';
+  lb.scrollTop = lb.scrollHeight;
 }
 async function doUpdate() {
   const btn = document.getElementById('update-btn');

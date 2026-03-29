@@ -75,3 +75,15 @@ CREATE TABLE IF NOT EXISTS presence (
 
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+--  TITLES  (lista de juegos compatibles — config-lp1)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS titles (
+    id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    title_id      CHAR(16)    NOT NULL UNIQUE,   -- ID de título Nintendo (hex, ej: 0100F2C0115B6000)
+    name          VARCHAR(255) NOT NULL,
+    compatibility ENUM('perfect','playable','ingame','boots','nothing') DEFAULT 'playable',
+    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_title_id (title_id)
+) ENGINE=InnoDB;

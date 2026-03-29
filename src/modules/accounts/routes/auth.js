@@ -2,7 +2,6 @@
 
 const accounts = require('../services/accounts');
 
-// JSON Schema definitions
 const registerSchema = {
     body: {
         type: 'object',
@@ -24,7 +23,7 @@ const loginSchema = {
         type: 'object',
         required: ['login', 'password'],
         properties: {
-            login:       { type: 'string' },   // username | email | nexo_id
+            login:       { type: 'string' },
             password:    { type: 'string' },
             device_info: { type: 'string', maxLength: 255 },
         },
@@ -43,10 +42,18 @@ const refreshSchema = {
     },
 };
 
-/**
- * @param {import('fastify').FastifyInstance} fastify
- */
+const logoutSchema = {
+    body: {
+        type: 'object',
+        properties: {
+            refresh_token: { type: 'string' },
+        },
+        additionalProperties: true,
+    },
+};
+
 async function authRoutes(fastify) {
+
     // POST /auth/register
     fastify.post('/register', { schema: registerSchema }, async (req, reply) => {
         const result = await accounts.register(req.body);
@@ -56,11 +63,8 @@ async function authRoutes(fastify) {
     // POST /auth/login
     fastify.post('/login', { schema: loginSchema }, async (req, reply) => {
         const { login, password, device_info } = req.body;
-        const ip = req.ip;
+        const result = await accounts.login({ login, password, deviceInfo: device_info, ip: req.ip });
 
-        const result = await accounts.login({ login, password, deviceInfo: device_info, ip });
-
-        // Sign short-lived access token
         const access_token = fastify.jwt.sign(
             { nexo_id: result.nexo_id, nickname: result.nickname },
             { expiresIn: process.env.JWT_ACCESS_EXPIRES || '15m' }
@@ -81,25 +85,27 @@ async function authRoutes(fastify) {
     fastify.post('/refresh', { schema: refreshSchema }, async (req, reply) => {
         const { refresh_token } = req.body;
         const { nexo_id } = await accounts.refreshSession(refresh_token);
-
-        // Issue new access token
         const access_token = fastify.jwt.sign(
             { nexo_id },
             { expiresIn: process.env.JWT_ACCESS_EXPIRES || '15m' }
         );
-
         return reply.send({ ok: true, data: { access_token } });
     });
 
-    // POST /auth/logout  (requires valid access token)
-    fastify.post('/logout', { preHandler: [fastify.authenticate] }, async (req, reply) => {
-        const { refresh_token } = req.body;
-        if (refresh_token) await accounts.logout(refresh_token);
+    // POST /auth/logout
+    fastify.post('/logout', {
+        schema: logoutSchema,
+        preHandler: [fastify.authenticate],
+    }, async (req, reply) => {
+        const rt = req.body?.refresh_token;
+        if (rt) await accounts.logout(rt);
         return reply.send({ ok: true });
     });
 
     // POST /auth/logout-all
-    fastify.post('/logout-all', { preHandler: [fastify.authenticate] }, async (req, reply) => {
+    fastify.post('/logout-all', {
+        preHandler: [fastify.authenticate],
+    }, async (req, reply) => {
         await accounts.logoutAll(req.user.nexo_id);
         return reply.send({ ok: true });
     });

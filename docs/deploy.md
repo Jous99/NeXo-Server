@@ -210,3 +210,58 @@ mysql -u nexo_user -p nexo_network -e "SELECT 1;"
 lsof -i :3000
 # Cambiar PORT en .env si es necesario
 ```
+
+---
+
+## Configuración de subdominios en aaPanel
+
+El emulador RaptorCitrus/NeXo contacta a **subdominios separados** según el servicio.
+Todos apuntan al mismo proceso Node (puerto 3000). aaPanel hace de reverse proxy.
+
+### Subdominios que debes crear en aaPanel → Website
+
+Para cada uno: crear website → añadir dominio → activar proxy a `127.0.0.1:3000` → SSL con Let's Encrypt.
+
+| Subdominio | Servicio | Usado por |
+|-----------|---------|-----------|
+| `nexonetwork.space` | Web + portal | Navegador |
+| `accounts-api-lp1.nexonetwork.space` | Auth, login | Emulador |
+| `profile-lp1.nexonetwork.space` | Perfiles | Emulador |
+| `friends-lp1.nexonetwork.space` | Amigos, presencia | Emulador |
+| `config-lp1.nexonetwork.space` | Lista de títulos | Emulador |
+| `bcat-lp1.nexonetwork.space` | BCAT (contenido) | Emulador |
+| `notification-lp1.nexonetwork.space` | Notificaciones | Emulador |
+| `connector-lp1.nexonetwork.space` | Connector P2P | Emulador |
+| `status-lp1.nexonetwork.space` | Estado servidores | Emulador |
+| `citrus-api-lp1.nexonetwork.space` | API general | Emulador |
+
+### Configuración nginx para CADA subdominio (aaPanel lo genera automático)
+
+```nginx
+server {
+    listen 80;
+    server_name accounts-api-lp1.nexonetwork.space;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;           # ← CRÍTICO: pasa el Host original
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+> ⚠️ **`proxy_set_header Host $host;` es crítico.** Sin esto, Fastify recibe siempre `localhost` como Host y no puede distinguir el subdominio.
+
+En aaPanel, al crear el proxy reverso, busca la opción "Custom Header" y añade `Host: $host`.
+
+### DNS
+
+En tu panel DNS (Cloudflare, etc.), crea registros A para cada subdominio apuntando a la IP de tu VPS:
+
+```
+nexonetwork.space               A  → IP_DEL_VPS
+*.nexonetwork.space             A  → IP_DEL_VPS   ← wildcard, cubre todos los subdominios
+```
+
+Un wildcard `*` cubre todos los subdominios de una vez.
