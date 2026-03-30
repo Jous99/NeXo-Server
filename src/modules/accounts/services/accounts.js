@@ -164,7 +164,7 @@ async function logoutAll(nexoId) {
 async function getProfile(nexoId) {
     const [rows] = await db.query(
         `SELECT u.nexo_id, u.username, u.nickname, u.avatar_url, u.lang, u.region,
-                u.created_at, p.status, p.game_title, p.last_seen
+                u.created_at, u.is_admin, p.status, p.game_title, p.last_seen
          FROM users u
          LEFT JOIN presence p ON p.user_id = u.id
          WHERE u.nexo_id = ?`,

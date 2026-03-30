@@ -802,7 +802,7 @@ async function loadStatus() {
     } catch (_) {}
     const pct = ok ? Math.floor(15 + Math.random() * 55) : 0;
     const bc = pct > 65 ? 'hi' : pct > 35 ? 'mi' : 'lo';
-    g.innerHTML += `<div class="svc"><div class="svh"><div class="svn">${s.name}</div><div class="spill ${ok?'on':'off'}"><span class="sdot ${ok?'on':'off'}"></span>${ok?'Online':'Offline'}</div></div><div style="font-size:12px;color:var(--tm);">Latencia: <b>${ok?lat+'ms':'—'}</b></div><div class="bw2"><div class="bar2 ${bc}" style="width:${pct}%"></div></div><div style="font-size:10px;color:var(--tm);">Carga: ${pct}%</div></div>`;
+    g.innerHTML += \`<div class="svc"><div class="svh"><div class="svn">\${s.name}</div><div class="spill \${ok?'on':'off'}"><span class="sdot \${ok?'on':'off'}"></span>\${ok?'Online':'Offline'}</div></div><div style="font-size:12px;color:var(--tm);">Latencia: <b>\${ok?lat+'ms':'—'}</b></div><div class="bw2"><div class="bar2 \${bc}" style="width:\${pct}%"></div></div><div style="font-size:10px;color:var(--tm);">Carga: \${pct}%</div></div>\`;
   }
   const gl = Date.now() - t0;
   document.getElementById('s-on').textContent  = '—';
@@ -882,20 +882,20 @@ async function loadFriends() {
   if (pen.length) {
     ps.style.display = 'block';
     pg.innerHTML = pen.map(f =>
-      `<div class="fcard"><div class="avmd" style="background:var(--red)">${initials(f.nickname)}</div><div style="flex:1;min-width:0;"><div class="fn">${f.nickname}</div><div class="fst">${f.nexo_id}</div><div style="display:flex;gap:4px;margin-top:4px;"><button class="bism" onclick="respF('${f.nexo_id}',true)">Aceptar</button><button class="bism" onclick="respF('${f.nexo_id}',false)">✕</button></div></div></div>`
+      \`<div class="fcard"><div class="avmd" style="background:var(--red)">\${initials(f.nickname)}</div><div style="flex:1;min-width:0;"><div class="fn">\${f.nickname}</div><div class="fst">\${f.nexo_id}</div><div style="display:flex;gap:4px;margin-top:4px;"><button class="bism" onclick="respF('\${f.nexo_id}',true)">Aceptar</button><button class="bism" onclick="respF('\${f.nexo_id}',false)">✕</button></div></div></div>\`
     ).join('');
   }
 
   const cols = ['var(--red)', 'var(--blu)', '#8b5cf6', '#22c55e', '#f59e0b'];
   fg.innerHTML = acc.length ? acc.map(f => {
     const sl = f.online_status === 'in_game'
-      ? `Jugando: ${f.game_title || '...'}`
+      ? \`Jugando: \${f.game_title || '...'}\`
       : f.online_status === 'online' ? 'En línea' : 'Desconectado';
     const sc = f.online_status === 'in_game' ? 'ig' : '';
     const c  = cols[f.nickname.charCodeAt(0) % cols.length];
-    return `<div class="fcard"><div class="avmd" style="background:${c}">${initials(f.nickname)}</div><div style="flex:1;min-width:0;"><div class="fn">${f.nickname}</div><div class="fst ${sc}">${sl}</div><div style="font-size:10px;color:var(--tm);margin-top:1px;">${f.nexo_id}</div></div><button class="bism" onclick="rmFriend('${f.nexo_id}')">✕</button></div>`;
+    return \`<div class="fcard"><div class="avmd" style="background:\${c}">\${initials(f.nickname)}</div><div style="flex:1;min-width:0;"><div class="fn">\${f.nickname}</div><div class="fst \${sc}">\${sl}</div><div style="font-size:10px;color:var(--tm);margin-top:1px;">\${f.nexo_id}</div></div><button class="bism" onclick="rmFriend('\${f.nexo_id}')">✕</button></div>\`;
   }).join('')
-  : `<div class="emp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><p>Sin amigos aún</p></div>`;
+  : \`<div class="emp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><p>Sin amigos aún</p></div>\`;
 }
 async function addFriend() {
   const id = document.getElementById('fadd').value.trim();
@@ -904,11 +904,11 @@ async function addFriend() {
   ok ? (toast('Solicitud enviada', 'success'), document.getElementById('fadd').value = '', loadFriends()) : toast(data.error || 'Error', 'error');
 }
 async function respF(id, accept) {
-  const { ok } = await apiFetch(`/friends/${id}/respond`, { method: 'PUT', body: JSON.stringify({ accept }) });
+  const { ok } = await apiFetch(\`/friends/\${id}/respond\`, { method: 'PUT', body: JSON.stringify({ accept }) });
   if (ok) { toast(accept ? 'Amigo aceptado' : 'Rechazado', 'success'); loadFriends(); }
 }
 async function rmFriend(id) {
-  const { ok } = await apiFetch(`/friends/${id}`, { method: 'DELETE' });
+  const { ok } = await apiFetch(\`/friends/\${id}\`, { method: 'DELETE' });
   if (ok) { toast('Amigo eliminado', 'success'); loadFriends(); }
 }
 
@@ -917,7 +917,7 @@ async function loadAdmin() {
   const { ok, data } = await apiFetch('/admin/users');
   const tb = document.getElementById('atbody');
   if (!ok) {
-    tb.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--tm);">Acceso de administrador requerido</td></tr>`;
+    tb.innerHTML = \`<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--tm);">Acceso de administrador requerido</td></tr>\`;
     return;
   }
   allUsers = data.data || [];
@@ -930,18 +930,18 @@ function renderU(u) {
     return;
   }
   tb.innerHTML = u.map(x =>
-    `<tr>
-      <td style="font-weight:800;">${x.nickname || x.username}</td>
-      <td style="font-size:11px;color:var(--tm);">${x.nexo_id}</td>
-      <td style="font-size:11px;">${x.email}</td>
-      <td><span class="pill ${x.is_banned ? 'bn' : 'ac'}">${x.is_banned ? 'Baneado' : 'Activo'}</span>${x.is_admin ? ' <span class="pill adm">Admin</span>' : ''}</td>
-      <td style="font-size:11px;color:var(--tm);">${new Date(x.created_at).toLocaleDateString('es-ES')}</td>
+    \`<tr>
+      <td style="font-weight:800;">\${x.nickname || x.username}</td>
+      <td style="font-size:11px;color:var(--tm);">\${x.nexo_id}</td>
+      <td style="font-size:11px;">\${x.email}</td>
+      <td><span class="pill \${x.is_banned ? 'bn' : 'ac'}">\${x.is_banned ? 'Baneado' : 'Activo'}</span>\${x.is_admin ? ' <span class="pill adm">Admin</span>' : ''}</td>
+      <td style="font-size:11px;color:var(--tm);">\${new Date(x.created_at).toLocaleDateString('es-ES')}</td>
       <td style="display:flex;gap:4px;">
-        ${x.is_banned
-          ? `<button class="bism" onclick="unban('${x.nexo_id}')">Desbanear</button>`
-          : `<button class="bism" onclick="openBan('${x.nexo_id}')">Banear</button>`}
+        \${x.is_banned
+          ? \`<button class="bism" onclick="unban('\${x.nexo_id}')">Desbanear</button>\`
+          : \`<button class="bism" onclick="openBan('\${x.nexo_id}')">Banear</button>\`}
       </td>
-    </tr>`
+    </tr>\`
   ).join('');
 }
 function filterU() {
@@ -951,12 +951,12 @@ function filterU() {
 function openBan(id) { banTarget = id; document.getElementById('breason').value = ''; document.getElementById('bmod').classList.add('open'); }
 function closeMod()  { document.getElementById('bmod').classList.remove('open'); banTarget = null; }
 async function confirmBan() {
-  const { ok } = await apiFetch(`/admin/users/${banTarget}/ban`, { method: 'POST', body: JSON.stringify({ reason: document.getElementById('breason').value }) });
+  const { ok } = await apiFetch(\`/admin/users/\${banTarget}/ban\`, { method: 'POST', body: JSON.stringify({ reason: document.getElementById('breason').value }) });
   if (ok) { toast('Usuario baneado', 'success'); closeMod(); loadAdmin(); }
   else toast('Error', 'error');
 }
 async function unban(id) {
-  const { ok } = await apiFetch(`/admin/users/${id}/unban`, { method: 'POST' });
+  const { ok } = await apiFetch(\`/admin/users/\${id}/unban\`, { method: 'POST' });
   if (ok) { toast('Usuario desbaneado', 'success'); loadAdmin(); }
 }
 
@@ -970,7 +970,7 @@ async function loadSysStatus() {
   document.getElementById('sys-uptime').textContent = fmtUptime(d.uptime_sec);
   document.getElementById('sys-mem').textContent    = d.memory_mb + ' MB';
   const envEl = document.getElementById('sys-env');
-  envEl.innerHTML = `<span class="sys-badge ${d.env === 'production' ? 'ok' : 'dev'}">${d.env}</span>`;
+  envEl.innerHTML = \`<span class="sys-badge \${d.env === 'production' ? 'ok' : 'dev'}">\${d.env}</span>\`;
   if (d.git) {
     document.getElementById('sys-hash').textContent   = d.git.hash   || '—';
     document.getElementById('sys-branch').textContent = d.git.branch || '—';
