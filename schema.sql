@@ -9,7 +9,7 @@ USE nexo_network;
 -- ─────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
     id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    nexo_id       CHAR(16)     NOT NULL UNIQUE,          -- e.g. "NXID-XXXX-XXXX-XXXX"
+    nexo_id       CHAR(19)     NOT NULL UNIQUE,          -- e.g. "NXID-XXXX-XXXX-XXXX"
     username      VARCHAR(32)  NOT NULL UNIQUE,
     email         VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
