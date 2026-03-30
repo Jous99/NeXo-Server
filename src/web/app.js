@@ -639,7 +639,7 @@ window.addEventListener('scroll', () =>
 );
 
 function saveApi() {
-  API = document.getElementById('api-url').value.trim().replace(/\/$/, '');
+  API = document.getElementById('api-url').value.trim().replace(/\\/$/, '');
   localStorage.setItem(AK, API);
   toast('URL guardada', 'success');
 }
