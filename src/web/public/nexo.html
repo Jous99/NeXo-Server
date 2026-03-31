@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexoEmu — Nintendo Switch Online Emulator</title>
+  <style>
+    :root {
+      --bg:        #0a0e1a;
+      --bg2:       #0f1525;
+      --bg3:       #141c30;
+      --accent:    #00a8e8;
+      --accent2:   #e4003a;
+      --accent3:   #00d4ff;
+      --text:      #e8eaf0;
+      --text-muted:#8892a4;
+      --card:      #131b2e;
+      --border:    #1e2d4a;
+      --glow:      0 0 24px rgba(0,168,232,0.25);
+      --glow2:     0 0 40px rgba(0,168,232,0.15);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ───────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2.5rem;
+      height: 64px;
+      background: rgba(10,14,26,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-logo .n { color: var(--accent); }
+    .nav-logo .x { color: var(--accent2); }
+
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(0,168,232,0.4);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    .nav-cta {
+      background: linear-gradient(90deg, var(--accent), #0077b6);
+      color: #fff !important;
+      padding: 0.45rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600 !important;
+      box-shadow: 0 0 14px rgba(0,168,232,0.3);
+    }
+
+    .nav-cta:hover { filter: brightness(1.15); }
+
+    /* ── HERO ──────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,168,232,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(228,0,58,0.08) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    }
+
+    /* grid lines decoration */
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,168,232,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,168,232,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    .hero-content { position: relative; z-index: 1; max-width: 820px; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,168,232,0.1);
+      border: 1px solid rgba(0,168,232,0.3);
+      color: var(--accent);
+      padding: 0.3rem 1rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(1.4); }
+    }
+
+    h1 {
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin-bottom: 1.2rem;
+    }
+
+    h1 .brand-nexo { color: var(--accent); }
+    h1 .brand-emu  { color: var(--text); }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .hero-sub strong { color: var(--text); }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(90deg, var(--accent), #0077b6);
+      color: #fff;
+      padding: 0.85rem 2rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 24px rgba(0,168,232,0.35);
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 32px rgba(0,168,232,0.5);
+      filter: brightness(1.1);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--text);
+      padding: 0.85rem 2rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .hero-mockup {
+      margin-top: 4rem;
+      position: relative;
+      display: inline-block;
+    }
+
+    .mockup-window {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 20px 80px rgba(0,0,0,0.6), var(--glow2);
+      max-width: 680px;
+      width: 100%;
+    }
+
+    .mockup-bar {
+      background: var(--bg3);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #e4003a; }
+    .dot-y { background: #f5a623; }
+    .dot-g { background: #00d084; }
+
+    .mockup-bar span {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .mockup-body {
+      padding: 2rem;
+      text-align: left;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      line-height: 1.9;
+      color: #8892a4;
+    }
+
+    .c-green  { color: #00d084; }
+    .c-blue   { color: var(--accent); }
+    .c-red    { color: var(--accent2); }
+    .c-yellow { color: #f5a623; }
+    .c-white  { color: var(--text); }
+
+    /* ── ABOUT ─────────────────────────────────────── */
+    section { padding: 5rem 2rem; }
+
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    h2 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      max-width: 600px;
+      font-size: 1.05rem;
+    }
+
+    /* about cards */
+    .about-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .about-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .about-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+
+    .about-card:hover::before { transform: scaleX(1); }
+
+    .about-card:hover {
+      border-color: rgba(0,168,232,0.3);
+      transform: translateY(-4px);
+      box-shadow: var(--glow);
+    }
+
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .about-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .about-card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* ── FEATURES ──────────────────────────────────── */
+    #features { background: var(--bg2); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .feature-item {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 1.5rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: all 0.25s;
+    }
+
+    .feature-item:hover {
+      border-color: rgba(0,168,232,0.3);
+      box-shadow: var(--glow);
+    }
+
+    .feature-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: rgba(0,168,232,0.12);
+      border: 1px solid rgba(0,168,232,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .feature-text h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    .feature-text p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── HOW IT WORKS ──────────────────────────────── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+      counter-reset: step;
+    }
+
+    .step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem 1.5rem;
+      position: relative;
+      text-align: center;
+    }
+
+    .step-num {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #0077b6);
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.2rem;
+      box-shadow: 0 0 20px rgba(0,168,232,0.4);
+    }
+
+    .step h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .step p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .step .step-tag {
+      display: inline-block;
+      background: rgba(0,168,232,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(0,168,232,0.25);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.15rem 0.65rem;
+      border-radius: 100px;
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── GALLERY ───────────────────────────────────── */
+    #gallery { background: var(--bg2); }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-top: 3rem;
+    }
+
+    .gallery-item {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--card);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .gallery-item:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--glow);
+      border-color: rgba(0,168,232,0.3);
+    }
+
+    .gallery-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--bg3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gallery-thumb::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 30% 50%, rgba(0,168,232,0.08), transparent 60%),
+        radial-gradient(circle at 70% 50%, rgba(228,0,58,0.06), transparent 60%);
+    }
+
+    .gallery-thumb .icon { font-size: 2.5rem; position: relative; }
+
+    .gallery-caption {
+      padding: 0.85rem 1rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .gallery-caption strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    /* ── DOWNLOAD ──────────────────────────────────── */
+    #download {
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .download-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 80% at 50% 50%, rgba(0,168,232,0.08) 0%, transparent 70%);
+    }
+
+    .download-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .download-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3rem;
+      margin-top: 3rem;
+      box-shadow: 0 0 60px rgba(0,168,232,0.08);
+    }
+
+    .version-badge {
+      display: inline-block;
+      background: rgba(0,212,84,0.1);
+      color: #00d084;
+      border: 1px solid rgba(0,212,84,0.25);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.8rem;
+      border-radius: 100px;
+      margin-bottom: 1.5rem;
+    }
+
+    .download-platforms {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .platform-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.9rem 1.6rem;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .platform-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,168,232,0.2);
+    }
+
+    .platform-icon { font-size: 1.3rem; }
+
+    .download-note {
+      margin-top: 1.2rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ── FOOTER ────────────────────────────────────── */
+    footer {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 3rem 2rem 2rem;
+      text-align: center;
+    }
+
+    .footer-inner { max-width: 900px; margin: 0 auto; }
+
+    .footer-logo {
+      font-size: 1.5rem;
+      font-weight: 900;
+      margin-bottom: 0.75rem;
+    }
+
+    .footer-logo .n { color: var(--accent); }
+    .footer-logo .x { color: var(--accent2); }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      list-style: none;
+      margin: 1.2rem 0;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--accent); }
+
+    .footer-copy {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-disclaimer {
+      font-size: 0.72rem;
+      color: #4a5568;
+      margin-top: 0.5rem;
+    }
+
+    /* ── RESPONSIVE ────────────────────────────────── */
+    @media (max-width: 640px) {
+      nav { padding: 0 1.25rem; }
+      .nav-links { display: none; }
+      section { padding: 3.5rem 1.25rem; }
+    }
+
+    /* ── SCROLL ANIMATIONS ─────────────────────────── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ─────────────────────────────────────────── -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon">N</div>
+    <span><span class="n">Nexo</span><span class="x">Emu</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#about">¿Qué es?</a></li>
+    <li><a href="#features">Características</a></li>
+    <li><a href="#how">Cómo funciona</a></li>
+    <li><a href="#gallery">Galería</a></li>
+    <li><a href="#download" class="nav-cta">Descargar</a></li>
+  </ul>
+</nav>
+
+<!-- ── HERO ───────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content fade-up">
+    <div class="hero-badge">
+      <div class="badge-dot"></div>
+      Raptor Network Online — Activo
+    </div>
+
+    <h1>
+      <span class="brand-nexo">Nexo</span><span class="brand-emu">Emu</span>
+    </h1>
+
+    <p class="hero-sub">
+      El emulador de Nintendo Switch diseñado para el <strong>juego online real</strong>.<br>
+      Basado en <strong>Eden</strong> + <strong>Raptor Network</strong> — juega con amigos, autentica tu cuenta y conecta a servidores online.
+    </p>
+
+    <div class="hero-buttons">
+      <a href="#download" class="btn-primary">
+        ⬇ Descargar NexoEmu
+      </a>
+      <a href="#about" class="btn-secondary">
+        ¿Qué es esto? →
+      </a>
+    </div>
+
+    <div class="hero-mockup">
+      <div class="mockup-window">
+        <div class="mockup-bar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <span>NexoEmu — Raptor Network Console</span>
+        </div>
+        <div class="mockup-body">
+          <div><span class="c-blue">[ NexoEmu ]</span> <span class="c-white">Iniciando sistema online...</span></div>
+          <div><span class="c-green">✔</span> <span class="c-white">Hardware ID generado:</span> <span class="c-yellow">N7X2-KP9M-3RT8</span></div>
+          <div><span class="c-green">✔</span> <span class="c-white">Conectando a</span> <span class="c-blue">accounts-api-lp1.raptor.network</span></div>
+          <div><span class="c-green">✔</span> <span class="c-white">Token validado — Sesión iniciada</span></div>
+          <div><span class="c-green">✔</span> <span class="c-white">Amigos en línea:</span> <span class="c-yellow">3</span></div>
+          <div><span class="c-green">✔</span> <span class="c-white">Redirigiendo DNS Nintendo →</span> <span class="c-blue">Raptor Network</span></div>
+          <div>&nbsp;</div>
+          <div><span class="c-green">►</span> <span class="c-white">Sistema online listo.</span> <span class="c-blue">¡Buena partida!</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ABOUT ───────────────────────────────────────────── -->
+<section id="about">
+  <div class="section-inner">
+    <div class="fade-up">
+      <p class="section-label">¿Qué es NexoEmu?</p>
+      <h2>Un emulador construido para jugar <em style="color:var(--accent)">online de verdad</em></h2>
+      <p class="section-desc">
+        NexoEmu combina lo mejor de dos proyectos: el motor moderno de <strong>Eden</strong> (2026, fork activo de yuzu) con la infraestructura online de <strong>Raptor Network</strong> (RaptorCitrus). El resultado es un emulador capaz de autenticar cuentas reales y conectar a servidores online.
+      </p>
+    </div>
+
+    <div class="about-grid">
+      <div class="about-card fade-up">
+        <div class="card-icon">🎮</div>
+        <h3>Basado en Eden</h3>
+        <p>Eden es el fork de yuzu más actualizado de 2026, con mejoras de compatibilidad, rendimiento en Vulkan y soporte para los últimos juegos de Nintendo Switch.</p>
+      </div>
+      <div class="about-card fade-up">
+        <div class="card-icon">🌐</div>
+        <h3>Raptor Network</h3>
+        <p>La capa online de RaptorCitrus portada a Eden. Autentica tu cuenta con un token Bearer, reescribe las URLs de Nintendo hacia los servidores Raptor y habilita el juego en línea real.</p>
+      </div>
+      <div class="about-card fade-up">
+        <div class="card-icon">🔗</div>
+        <h3>Integración NSD</h3>
+        <p>El servicio NSD (Nintendo Service Discovery) está hookeado para redirigir automáticamente todas las peticiones de red al backend de Raptor Network sin configuración extra.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── FEATURES ────────────────────────────────────────── -->
+<section id="features">
+  <div class="section-inner">
+    <div class="fade-up">
+      <p class="section-label">Características</p>
+      <h2>Todo lo que necesitas para jugar online</h2>
+      <p class="section-desc">NexoEmu no es solo un emulador. Es una plataforma completa de juego online para Nintendo Switch.</p>
+    </div>
+
+    <div class="features-grid fade-up">
+      <div class="feature-item">
+        <div class="feature-icon">🔐</div>
+        <div class="feature-text">
+          <h4>Autenticación con tokens</h4>
+          <p>Inicia sesión con tu token de Raptor Network. Soporte completo de Bearer tokens para acceso seguro a los servicios online.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">👥</div>
+        <div class="feature-text">
+          <h4>Lista de amigos</h4>
+          <p>Ve quiénes están en línea, qué juego están jugando, envía solicitudes de amistad y gestiona tu lista completa de amigos.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🔔</div>
+        <div class="feature-text">
+          <h4>Notificaciones en tiempo real</h4>
+          <p>Recibe notificaciones al instante vía WebSocket cuando un amigo se conecta, te invita a jugar o te envía una solicitud.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🖥️</div>
+        <div class="feature-text">
+          <h4>Hardware ID único</h4>
+          <p>Genera y persiste un identificador de hardware único por dispositivo usando OpenSSL, compatible con Windows, Linux y macOS.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-text">
+          <h4>Motor Eden (2026)</h4>
+          <p>Basado en el fork más moderno de yuzu con mejor rendimiento en Vulkan, mayor compatibilidad y actualizaciones regulares.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🔄</div>
+        <div class="feature-text">
+          <h4>Redirección de DNS</h4>
+          <p>Todas las peticiones a servidores de Nintendo son interceptadas y redirigidas automáticamente a Raptor Network de forma transparente.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🛡️</div>
+        <div class="feature-text">
+          <h4>Perfil de usuario</h4>
+          <p>Personaliza tu nombre de usuario y avatar online. Los cambios se sincronizan con los servidores de Raptor Network.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">📡</div>
+        <div class="feature-text">
+          <h4>Monitor de estado online</h4>
+          <p>Indicador visual en tiempo real del estado de la conexión: conectado, sin sesión, mantenimiento, ban temporal o permanente.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ─────────────────────────────────────── -->
+<section id="how">
+  <div class="section-inner">
+    <div class="fade-up">
+      <p class="section-label">¿Cómo funciona?</p>
+      <h2>Conéctate a Raptor Network en 4 pasos</h2>
+      <p class="section-desc">Estar online con NexoEmu es más sencillo de lo que parece.</p>
+    </div>
+    <div class="steps fade-up">
+      <div class="step">
+        <div class="step-num">1</div>
+        <span class="step-tag">Requisito</span>
+        <h4>Descarga NexoEmu</h4>
+        <p>Descarga la última versión de NexoEmu para tu sistema operativo e instálala.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <span class="step-tag">Cuenta</span>
+        <h4>Obtén tu token</h4>
+        <p>Regístrate en <strong style="color:var(--accent)">nexonetwork.space</strong> y copia tu token de acceso desde el panel de usuario.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <span class="step-tag">Configuración</span>
+        <h4>Pega el token</h4>
+        <p>En NexoEmu ve a <em>Configuración → Raptor Network</em>, pega tu token y presiona Conectar.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <span class="step-tag">¡Listo!</span>
+        <h4>¡A jugar online!</h4>
+        <p>El monitor de estado mostrará <strong style="color:#00d084">Conectado</strong>. Lanza tu juego y disfruta del online.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── GALLERY ──────────────────────────────────────────── -->
+<section id="gallery">
+  <div class="section-inner">
+    <div class="fade-up">
+      <p class="section-label">Galería</p>
+      <h2>NexoEmu en acción</h2>
+      <p class="section-desc">Capturas de pantalla del emulador mostrando las funciones online en funcionamiento.</p>
+    </div>
+
+    <div class="gallery-grid fade-up">
+      <div class="gallery-item">
+        <div class="gallery-thumb">
+          <div class="icon">🎮</div>
+          <span>Interfaz principal</span>
+        </div>
+        <div class="gallery-caption">
+          <strong>Pantalla principal de NexoEmu</strong>
+          Interfaz rediseñada con acceso rápido al estado online
+        </div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-thumb">
+          <div class="icon">👥</div>
+          <span>Lista de amigos</span>
+        </div>
+        <div class="gallery-caption">
+          <strong>Amigos en línea</strong>
+          Ve quién está jugando y a qué juego en tiempo real
+        </div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-thumb">
+          <div class="icon">⚙️</div>
+          <span>Configuración Raptor</span>
+        </div>
+        <div class="gallery-caption">
+          <strong>Panel de Raptor Network</strong>
+          Configuración sencilla de cuenta y token de acceso
+        </div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-thumb">
+          <div class="icon">📡</div>
+          <span>Monitor online</span>
+        </div>
+        <div class="gallery-caption">
+          <strong>Estado de conexión</strong>
+          Monitor en tiempo real del estado de Raptor Network
+        </div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-thumb">
+          <div class="icon">🔔</div>
+          <span>Notificaciones</span>
+        </div>
+        <div class="gallery-caption">
+          <strong>Sistema de notificaciones</strong>
+          Alertas en tiempo real de actividad de amigos
+        </div>
+      </div>
+      <div class="gallery-item">
+        <div class="gallery-thumb">
+          <div class="icon">🏆</div>
+          <span>Juego online</span>
+        </div>
+        <div class="gallery-caption">
+          <strong>Online en juego</strong>
+          Partidas multijugador reales a través de Raptor Network
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DOWNLOAD ─────────────────────────────────────────── -->
+<section id="download">
+  <div class="download-bg"></div>
+  <div class="download-inner">
+    <div class="fade-up">
+      <p class="section-label">Descarga</p>
+      <h2>Empieza a jugar online hoy</h2>
+      <p class="section-desc" style="margin: 0 auto;">
+        NexoEmu es completamente gratuito y de código abierto. Disponible para Windows, Linux y macOS.
+      </p>
+    </div>
+
+    <div class="download-box fade-up">
+      <div class="version-badge">● Versión 1.0.0 — Estable</div>
+      <h3 style="font-size:1.4rem; margin-bottom:0.5rem;">Descarga NexoEmu</h3>
+      <p style="color:var(--text-muted); font-size:0.9rem;">Elige tu sistema operativo</p>
+
+      <div class="download-platforms">
+        <a href="#" class="platform-btn">
+          <span class="platform-icon">🪟</span>
+          Windows (x64)
+        </a>
+        <a href="#" class="platform-btn">
+          <span class="platform-icon">🐧</span>
+          Linux (AppImage)
+        </a>
+        <a href="#" class="platform-btn">
+          <span class="platform-icon">🍎</span>
+          macOS
+        </a>
+        <a href="#" class="platform-btn">
+          <span class="platform-icon">💻</span>
+          Código fuente
+        </a>
+      </div>
+
+      <p class="download-note">
+        ⚠️ Necesitas tus propias <strong>ROMs</strong> y archivos de sistema de Nintendo Switch para usar el emulador.<br>
+        Asegúrate de cumplir con las leyes de tu país antes de descargar ROMs.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <span class="n">Nexo</span><span class="x">Emu</span>
+    </div>
+    <p style="color:var(--text-muted); font-size:0.9rem;">
+      El emulador Nintendo Switch con online real, impulsado por Raptor Network.
+    </p>
+    <ul class="footer-links">
+      <li><a href="#about">¿Qué es?</a></li>
+      <li><a href="#features">Características</a></li>
+      <li><a href="#how">Cómo funciona</a></li>
+      <li><a href="#gallery">Galería</a></li>
+      <li><a href="#download">Descargar</a></li>
+      <li><a href="https://nexonetwork.space">Nexo Network</a></li>
+    </ul>
+    <div class="footer-copy">
+      © 2026 NexoEmu Project. Código abierto bajo licencia GPL-3.0.
+    </div>
+    <p class="footer-disclaimer">
+      NexoEmu no está afiliado con Nintendo Co., Ltd. Nintendo Switch es una marca registrada de Nintendo.
+      Este software es para uso con copias de seguridad legales de juegos que poseas.
+    </p>
+  </div>
+</footer>
+
+<script>
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Fade-up on scroll
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // Nav highlight active section
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 100) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current
+        ? 'var(--accent)' : '';
+    });
+  });
+</script>
+
+</body>
+</html>

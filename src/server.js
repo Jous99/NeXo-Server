@@ -2,6 +2,8 @@
 
 require('dotenv').config();
 
+const fs       = require('fs');
+const path     = require('path');
 const Fastify  = require('fastify');
 const fjwt     = require('@fastify/jwt');
 const fcors    = require('@fastify/cors');
@@ -30,7 +32,8 @@ const bcastRoutes        = require('./modules/raptor/bcat-api');
 const systemRoutes = require('./routes/system');
 
 // ── Web (HTML embebido) ───────────────────────────────────────────────────────
-const webHtml = require('./web/app');
+const webHtml    = require('./web/app');
+const emuHtml    = fs.readFileSync(path.join(__dirname, 'web/nexo-emu.html'), 'utf8');
 
 // ─── Mapa de subdominios → manejador ─────────────────────────────────────────
 // Tu dominio base configurado en .env (ej: "nexonetwork.space")
@@ -67,6 +70,11 @@ async function buildApp() {
         version: require('../package.json').version,
         ts: Date.now(),
     }));
+
+    // ── Página del emulador ───────────────────────────────────────────────────
+    fastify.get('/emulator', async (req, reply) => {
+        return reply.type('text/html').send(emuHtml);
+    });
 
     // ══════════════════════════════════════════════════════════════════════════
     //  ROUTER POR SUBDOMINIO
