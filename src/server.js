@@ -31,6 +31,9 @@ const bcastRoutes        = require('./modules/raptor/bcat-api');
 // ── Sistema ───────────────────────────────────────────────────────────────────
 const systemRoutes = require('./routes/system');
 
+// ── Juegos ────────────────────────────────────────────────────────────────────
+const smm2Routes = require('./modules/games/smm2/routes');
+
 // ── Web (HTML embebido) ───────────────────────────────────────────────────────
 const webHtml    = require('./web/app');
 const emuHtml    = fs.readFileSync(path.join(__dirname, 'web/nexo-emu.html'), 'utf8');
@@ -111,6 +114,7 @@ async function buildApp() {
             'accounts-api-lp1', 'profile-lp1', 'friends-lp1',
             'config-lp1', 'bcat-lp1', 'notification-lp1',
             'connector-lp1', 'status-lp1', 'citrus-api-lp1',
+            'smm2-lp1',
         ].includes(sub);
 
         if (!isApiSubdomain && req.method === 'GET') {
@@ -146,6 +150,9 @@ async function buildApp() {
 
     // bcat-lp1.nexonetwork.space — BCAT (background content)
     fastify.register(bcastRoutes, { prefix: '/' });
+
+    // smm2-lp1.nexonetwork.space — Super Mario Maker 2
+    fastify.register(smm2Routes, { prefix: '/' });
 
     // ══════════════════════════════════════════════════════════════════════════
     //  RUTAS WEB — Portal de usuario (dominio raíz)
