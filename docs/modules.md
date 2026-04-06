@@ -76,5 +76,5 @@ fastify.register(miJuego, { prefix: '/games/mi-juego' });
 | Juego | Estado | Endpoints principales |
 |-------|--------|----------------------|
 | Matchmaking genérico | 🚧 Desarrollo | `/games/rooms/*` |
-| Mario Kart | 📋 Planificado | `/games/mario-kart-8-deluxe/*` |
-| Mario Maker 2 | 📋 Planificado | `/games/mario-maker-2/*` |
+| Mario Kart | 📋 Planificado | `/games/mk8d/*` |
+| Mario Maker 2 | 🚧 En pruebas MUY basicas | `/games/smm2/*` |
