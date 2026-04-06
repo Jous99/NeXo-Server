@@ -10,4 +10,4 @@ Ver [`docs/modules.md`](../../../../docs/modules.md) para la guía completa.
 
 - `matchmaking/` — Sistema genérico de salas y emparejamiento
 - `mario-kart/` — Servidor para Mario Kart
-- `splatoon/` — Servidor para Splatoon
+- `smm2/` — Servidor para Super Mario Maker 2
