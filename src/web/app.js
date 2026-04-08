@@ -266,6 +266,19 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
 .bfull:hover{background:var(--rd);}
 .blnk{background:none;border:none;font-family:var(--font);font-size:12px;color:var(--tm);cursor:pointer;padding:3px;margin-top:2px;}
 
+/* STATUS PÚBLICO */
+.pub-svc{background:white;border-radius:var(--rlg);padding:1rem 1.2rem;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:10px;}
+.pub-icon{font-size:20px;flex-shrink:0;}
+.pub-info{flex:1;min-width:0;}
+.pub-name{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pub-desc{font-size:11px;color:var(--tm);font-weight:500;}
+.pub-stat{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.pub-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.pub-dot.on{background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.5);}
+.pub-dot.off{background:var(--red);animation:pulse 2s infinite;}
+.pub-svc.game-svc{border-left:3px solid var(--red);}
+.pub-lat{font-size:10px;font-weight:800;color:var(--tm);}
+
 /* TOAST */
 .toast{position:fixed;bottom:1.75rem;right:1.75rem;padding:11px 17px;background:var(--gd);color:white;border-radius:var(--rmd);font-size:13px;font-weight:800;z-index:9999;transform:translateY(60px);opacity:0;transition:all .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 24px rgba(0,0,0,.2);}
 .toast.show{transform:translateY(0);opacity:1;}
@@ -301,7 +314,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
 <!-- ─── HERO ─── -->
 <section class="hero">
   <div class="hbg"></div><div class="jdl"></div><div class="jdr"></div>
-  <div class="hbadge"><span class="bdot"></span>Servidores activos — v1.0.0</div>
+  <div class="hbadge" id="hero-badge"><span class="bdot"></span>Comprobando servidores...</div>
   <h1><span style="color:var(--red);">Online gaming</span><br><span>sin límites.</span><br><span style="color:var(--blu);">Open source.</span></h1>
   <p>Reemplazo open source de Nintendo Switch Online. Compatible con NeXoEmulator y el protocolo RaptorNetwork. Cuentas, amigos, presencia — todo bajo tu control.</p>
   <div class="hbtns">
@@ -376,6 +389,17 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
 </section>
 
 <div class="jcd"></div>
+
+<!-- STATUS PÚBLICO -->
+<section id="status-pub" style="background:var(--gb);padding:3.5rem 2rem;">
+  <div class="cnt">
+    <div class="slbl">Estado en tiempo real</div>
+    <div class="stit" style="margin-bottom:.5rem;">Estado de los servidores</div>
+    <p style="font-size:14px;color:var(--tm);margin-bottom:1.75rem;font-weight:500;">Comprobando disponibilidad de todos los servicios y módulos de juego...</p>
+    <div id="pub-svgrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:11px;margin-bottom:1rem;"></div>
+    <p style="font-size:11px;color:var(--tm);text-align:right;" id="pub-lcheck">Comprobando...</p>
+  </div>
+</section>
 
 <!-- COMPAT -->
 <section id="compat">
@@ -481,7 +505,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
       <div class="sgrid">
         <div class="sc"><div class="scl">Online ahora</div><div class="scv" id="s-on">—</div><div class="scs">jugadores</div></div>
         <div class="sc b"><div class="scl">Total cuentas</div><div class="scv" id="s-tot">—</div><div class="scs">registradas</div></div>
-        <div class="sc g"><div class="scl">Servicios activos</div><div class="scv" id="s-up">—</div><div class="scs">de 4</div></div>
+        <div class="sc g"><div class="scl">Servicios activos</div><div class="scv" id="s-up">—</div><div class="scs" id="s-total">de 9</div></div>
         <div class="sc a"><div class="scl">Latencia media</div><div class="scv" id="s-lat">—</div><div class="scs">ms</div></div>
       </div>
       <div class="ph" style="font-size:16px;margin-bottom:.9rem;">Servicios</div>
@@ -638,6 +662,66 @@ window.addEventListener('scroll', () =>
   document.getElementById('lnav').classList.toggle('scrolled', scrollY > 20)
 );
 
+// ─── STATUS PÚBLICO (landing page, sin login) ─────────────────────────────────
+async function loadPublicStatus() {
+  const g = document.getElementById('pub-svgrid');
+  if (!g) return;
+
+  // Placeholder con animación de carga
+  g.innerHTML = SVCS.map(() =>
+    \`<div class="pub-svc" style="opacity:.4;"><div class="pub-icon">⏳</div><div class="pub-info"><div class="pub-name" style="background:var(--gm);height:12px;border-radius:4px;width:80%;"></div><div class="pub-desc" style="background:var(--gb);height:9px;border-radius:4px;width:60%;margin-top:5px;"></div></div></div>\`
+  ).join('');
+
+  const results = await Promise.all(SVCS.map(async s => {
+    let ok = false, lat = 0;
+    try {
+      const t = Date.now();
+      const r = await fetch(API + s.ep, { method: 'GET', signal: AbortSignal.timeout(5000) });
+      lat = Date.now() - t;
+      ok = r.status < 500;
+    } catch (_) {}
+    return { ...s, ok, lat };
+  }));
+
+  g.innerHTML = results.map(s => {
+    const dotClass = s.ok ? 'on' : 'off';
+    const gameClass = s.game ? ' game-svc' : '';
+    const latTxt = s.ok ? \`<span class="pub-lat">\${s.lat}ms</span>\` : '';
+    return \`<div class="pub-svc\${gameClass}">
+      <div class="pub-icon">\${s.icon || '🔴'}</div>
+      <div class="pub-info">
+        <div class="pub-name">\${s.name}</div>
+        <div class="pub-desc">\${s.desc}</div>
+      </div>
+      <div class="pub-stat">
+        \${latTxt}
+        <div class="pub-dot \${dotClass}"></div>
+      </div>
+    </div>\`;
+  }).join('');
+
+  const up = results.filter(r => r.ok).length;
+  document.getElementById('pub-lcheck').textContent =
+    \`\${up}/\${SVCS.length} servicios activos · Verificado: \${new Date().toLocaleTimeString('es-ES')}\`;
+
+  // Actualizar badge del hero
+  const badge = document.getElementById('hero-badge');
+  if (badge) {
+    const allUp = up === SVCS.length;
+    const smm2 = results.find(r => r.game && r.ok);
+    if (allUp) {
+      badge.innerHTML = \`<span class="bdot"></span>Todos los servidores online — \${up}/\${SVCS.length}\`;
+    } else if (smm2) {
+      badge.innerHTML = \`<span class="bdot"></span>\${up}/\${SVCS.length} servicios activos · SMM2 ✓\`;
+    } else {
+      badge.innerHTML = \`<span class="bdot" style="background:var(--red);"></span>\${up}/\${SVCS.length} servicios activos\`;
+    }
+  }
+}
+
+// Cargar estado público al arrancar (sin esperar login)
+loadPublicStatus();
+
 function saveApi() {
   API = document.getElementById('api-url').value.trim().replace(/\\/$/, '');
   localStorage.setItem(AK, API);
@@ -785,36 +869,84 @@ function showP(p) {
 
 // ─── STATUS ───────────────────────────────────────────────────────────────────
 const SVCS = [
-  { name: 'Accounts Service', ep: '/health' },
-  { name: 'Auth / Sessions',  ep: '/auth/login' },
-  { name: 'Friends Service',  ep: '/friends' },
-  { name: 'Presence',         ep: '/profile/me' },
+  { name: 'Core / Health',      ep: '/health',                icon: '🔴', desc: 'Servidor principal' },
+  { name: 'Accounts Service',   ep: '/api/v1/server/info',    icon: '👤', desc: 'Cuentas y autenticación' },
+  { name: 'Auth / Sessions',    ep: '/auth/login',            icon: '🔑', desc: 'JWT, refresh tokens' },
+  { name: 'Friends Service',    ep: '/friends',               icon: '👥', desc: 'Lista de amigos' },
+  { name: 'Presence',           ep: '/profile/me',            icon: '🟢', desc: 'Estado en juego' },
+  { name: 'Notifications',      ep: '/api/v1/notification',   icon: '🔔', desc: 'WebSocket notificaciones' },
+  { name: 'Config / Rewrites',  ep: '/api/v1/rewrites',       icon: '⚙️', desc: 'Configuración del emulador' },
+  { name: 'BCAT',               ep: '/api/v1/bcat',           icon: '📦', desc: 'Entrega de contenido' },
+  { name: 'Mario Maker 2 ⭐',   ep: '/api/v1/smm2/rankings', icon: '🍄', desc: 'Módulo juego SMM2', game: true },
 ];
 async function loadStatus() {
   const g = document.getElementById('svgrid'); g.innerHTML = '';
   let up = 0; const t0 = Date.now();
-  for (const s of SVCS) {
+
+  // Separar servicios base de módulos de juego
+  const coreSvcs  = SVCS.filter(s => !s.game);
+  const gameSvcs  = SVCS.filter(s => s.game);
+
+  const checkSvc = async (s) => {
     let ok = false, lat = 0;
     try {
       const t = Date.now();
-      const r = await fetch(API + s.ep, { method: 'GET', signal: AbortSignal.timeout(4000) });
-      lat = Date.now() - t; ok = r.status < 500; if (ok) up++;
+      const r = await fetch(API + s.ep, { method: 'GET', signal: AbortSignal.timeout(5000) });
+      lat = Date.now() - t;
+      ok = r.status < 500;
     } catch (_) {}
-    const pct = ok ? Math.floor(15 + Math.random() * 55) : 0;
-    const bc = pct > 65 ? 'hi' : pct > 35 ? 'mi' : 'lo';
-    g.innerHTML += \`<div class="svc"><div class="svh"><div class="svn">\${s.name}</div><div class="spill \${ok?'on':'off'}"><span class="sdot \${ok?'on':'off'}"></span>\${ok?'Online':'Offline'}</div></div><div style="font-size:12px;color:var(--tm);">Latencia: <b>\${ok?lat+'ms':'—'}</b></div><div class="bw2"><div class="bar2 \${bc}" style="width:\${pct}%"></div></div><div style="font-size:10px;color:var(--tm);">Carga: \${pct}%</div></div>\`;
+    return { ...s, ok, lat };
+  };
+
+  // Comprobar todos en paralelo
+  const results = await Promise.all(SVCS.map(checkSvc));
+  up = results.filter(r => r.ok).length;
+
+  // Renderizar servicios base
+  if (coreSvcs.length) {
+    g.innerHTML += \`<div style="grid-column:1/-1;font-size:12px;font-weight:800;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:-4px;">Servicios base</div>\`;
+    results.filter(r => !r.game).forEach(s => {
+      g.innerHTML += renderSvc(s);
+    });
   }
+
+  // Renderizar módulos de juego
+  if (gameSvcs.length) {
+    g.innerHTML += \`<div style="grid-column:1/-1;font-size:12px;font-weight:800;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-top:8px;margin-bottom:-4px;">Módulos de juego</div>\`;
+    results.filter(r => r.game).forEach(s => {
+      g.innerHTML += renderSvc(s, true);
+    });
+  }
+
   const gl = Date.now() - t0;
-  document.getElementById('s-on').textContent  = '—';
-  document.getElementById('s-tot').textContent = '—';
   document.getElementById('s-up').textContent  = up + '/' + SVCS.length;
   document.getElementById('s-lat').textContent = Math.round(gl / SVCS.length);
   document.getElementById('lcheck').textContent = 'Verificado: ' + new Date().toLocaleTimeString('es-ES');
+  // Actualizar el texto "de N" dinámicamente
+  const sTotal = document.getElementById('s-total');
+  if (sTotal) sTotal.textContent = 'de ' + SVCS.length;
+
   const { ok, data } = await apiFetch('/admin/stats');
   if (ok) {
     document.getElementById('s-on').textContent  = data.data.online_users;
     document.getElementById('s-tot').textContent = data.data.total_users;
   }
+}
+
+function renderSvc(s, isGame = false) {
+  const latTxt = s.ok ? s.lat + 'ms' : '—';
+  const pill   = s.ok ? 'on' : 'off';
+  const label  = s.ok ? 'Online' : 'Offline';
+  const dot    = s.ok ? 'on'    : 'off';
+  const border = isGame && s.ok ? 'border-top:3px solid var(--red);' : '';
+  return \`<div class="svc" style="\${border}">
+    <div class="svh">
+      <div class="svn">\${s.icon ? s.icon + ' ' : ''}\${s.name}</div>
+      <div class="spill \${pill}"><span class="sdot \${dot}"></span>\${label}</div>
+    </div>
+    <div style="font-size:11px;color:var(--tm);margin-bottom:5px;">\${s.desc}</div>
+    <div style="font-size:12px;color:var(--tm);">Latencia: <b>\${latTxt}</b></div>
+  </div>\`;
 }
 
 // ─── PROFILE ──────────────────────────────────────────────────────────────────
