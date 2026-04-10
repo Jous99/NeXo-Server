@@ -157,3 +157,9 @@ CREATE TABLE IF NOT EXISTS smm2_comments (
     INDEX idx_comment_course (course_id),
     INDEX idx_comment_user   (user_id)
 ) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+--  Juegos con online activo (insertar si no existen)
+-- ─────────────────────────────────────────────────────────────────────────────
+INSERT IGNORE INTO titles (title_id, name, compatibility)
+VALUES ('0100000000100000', 'Super Mario Maker 2', 'perfect');

@@ -158,6 +158,167 @@ async function accountsApiRoutes(fastify) {
     fastify.post('/api/v1/telemetry', async (req, reply) => {
         return reply.send({ result: 'Success' });
     });
+
+    // ══════════════════════════════════════════════════════════════════════════
+    //  ENDPOINTS CRÍTICOS — Llamados por core/online_initiator.cpp
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // GET /api/v1/client/account_id
+    // online_initiator.cpp → LoadAccountId()
+    // El emulador espera el nexo_id como hex en el body (texto plano).
+    // Ejemplo de respuesta: "1a2b3c4d"
+    fastify.get('/api/v1/client/account_id', async (req, reply) => {
+        if (!isAccountsSubdomain(req)) return reply.code(404).send({ error: 'not found' });
+
+        const bearer = (req.headers['authorization'] || '').replace('Bearer ', '');
+        if (!bearer) {
+            return reply.code(401).header('R-ClearClientToken', '1').send('');
+        }
+
+        let payload;
+        try {
+            payload = fastify.jwt.verify(bearer);
+        } catch {
+            return reply.code(401).header('R-ClearClientToken', '1').send('');
+        }
+
+        // Devolver el ID interno como hex (el emulador lo parsea con stoull(..., 16))
+        // Usamos el hash numérico del nexo_id para obtener un u64 estable
+        const nexo_id = payload.nexo_id || '';
+        const db = require('../../db');
+        const [rows] = await db.query('SELECT id FROM users WHERE nexo_id = ?', [nexo_id]);
+        if (!rows.length) {
+            return reply.code(401).header('R-ClearClientToken', '1').send('');
+        }
+        const numericId = rows[0].id;
+        return reply.type('text/plain').send(numericId.toString(16));
+    });
+
+    // POST /api/v1/client/login
+    // online_initiator.cpp → LoadIdTokenInternal()
+    // El emulador manda:
+    //   R-TitleId: <hex title id>   → token de juego
+    //   R-Target:  <app_name>       → token de app (config, notification, etc.)
+    // Responde con el JWT en el body (texto plano).
+    fastify.post('/api/v1/client/login', async (req, reply) => {
+        if (!isAccountsSubdomain(req)) return reply.code(404).send({ error: 'not found' });
+
+        const bearer = (req.headers['authorization'] || '').replace('Bearer ', '');
+        if (!bearer) {
+            return reply.code(401).header('R-ClearClientToken', '1').send('');
+        }
+
+        let payload;
+        try {
+            payload = fastify.jwt.verify(bearer);
+        } catch {
+            return reply.code(401).header('R-ClearClientToken', '1').send('');
+        }
+
+        const titleId = req.headers['r-titleid'] || null;
+        const target  = req.headers['r-target']  || null;
+
+        // Verificar que el usuario no está baneado
+        const db = require('../../db');
+        const [rows] = await db.query('SELECT id, is_banned FROM users WHERE nexo_id = ?', [payload.nexo_id]);
+        if (!rows.length || rows[0].is_banned) {
+            return reply.code(403).send('');
+        }
+
+        // Si mandan un R-TitleId, verificar que ese juego tiene online activo
+        if (titleId) {
+            const titleIdDec = parseInt(titleId, 16);
+            const [titleRows] = await db.query(
+                'SELECT compatibility FROM titles WHERE title_id = ? OR title_id = ?',
+                [titleId.toLowerCase(), titleId.toUpperCase()]
+            ).catch(() => [[]]);
+
+            // Si el juego no está en la tabla, devolvemos 400 (sin online)
+            if (!titleRows.length) {
+                return reply.code(400).send('');
+            }
+        }
+
+        // Generar un token específico para el juego/app
+        const tokenPayload = { nexo_id: payload.nexo_id };
+        if (titleId) tokenPayload.title_id = titleId;
+        if (target)  tokenPayload.target   = target;
+
+        const gameToken = fastify.jwt.sign(tokenPayload, { expiresIn: '1h' });
+        return reply.type('text/plain').send(gameToken);
+    });
+
+    // POST /api/v1/session/start/:title_id
+    // online_initiator.cpp → StartOnlineSession()
+    // Registra que el usuario empezó a jugar este juego
+    fastify.post('/api/v1/session/start/:title_id', async (req, reply) => {
+        if (!isAccountsSubdomain(req)) return reply.code(404).send({ error: 'not found' });
+
+        const bearer = (req.headers['authorization'] || '').replace('Bearer ', '');
+        if (!bearer) return reply.code(401).send('');
+
+        let payload;
+        try { payload = fastify.jwt.verify(bearer); } catch { return reply.code(401).send(''); }
+
+        const { title_id } = req.params;
+        const db = require('../../db');
+
+        // Actualizar presencia: mostrar el juego que está jugando
+        await db.query(
+            `UPDATE presence p
+             JOIN users u ON u.id = p.user_id
+             SET p.status = 'in_game', p.game_id = ?, p.last_seen = NOW()
+             WHERE u.nexo_id = ?`,
+            [title_id, payload.nexo_id]
+        ).catch(() => {});
+
+        return reply.send({ result: 'Success' });
+    });
+
+    // POST /api/v1/session/end
+    // online_initiator.cpp → EndOnlineSession()
+    fastify.post('/api/v1/session/end', async (req, reply) => {
+        if (!isAccountsSubdomain(req)) return reply.code(404).send({ error: 'not found' });
+
+        const bearer = (req.headers['authorization'] || '').replace('Bearer ', '');
+        if (!bearer) return reply.code(401).send('');
+
+        let payload;
+        try { payload = fastify.jwt.verify(bearer); } catch { return reply.code(401).send(''); }
+
+        const db = require('../../db');
+        await db.query(
+            `UPDATE presence p
+             JOIN users u ON u.id = p.user_id
+             SET p.status = 'online', p.game_id = NULL, p.last_seen = NOW()
+             WHERE u.nexo_id = ?`,
+            [payload.nexo_id]
+        ).catch(() => {});
+
+        return reply.send({ result: 'Success' });
+    });
+
+    // GET /api/v1/client/subscription
+    // online_initiator.cpp → LoadSubscriptionInfo()
+    // El emulador espera un JSON con campos de suscripción.
+    // Por ahora todos los usuarios tienen acceso completo.
+    fastify.get('/api/v1/client/subscription', async (req, reply) => {
+        if (!isAccountsSubdomain(req)) return reply.code(404).send({ error: 'not found' });
+
+        const bearer = (req.headers['authorization'] || '').replace('Bearer ', '');
+        if (!bearer) return reply.code(401).send({ error: 'Unauthorized' });
+
+        try { fastify.jwt.verify(bearer); } catch { return reply.code(401).send({ error: 'Unauthorized' }); }
+
+        return reply.send({
+            display_subscription:           false,
+            display_action:                 '',
+            url_action:                     '',
+            enable_set_username:            true,
+            enable_set_profile:             true,
+            show_subscription_upgrade_notice: false,
+        });
+    });
 }
 
 module.exports = accountsApiRoutes;
