@@ -95,13 +95,22 @@ async function buildApp() {
         request.subdomain = sub || 'www';
     });
 
-    // ── Web pública (dominio raíz o www) ──────────────────────────────────────
+    // ── Web pública (dominio raíz o www) + NIFM captive portal ───────────────
     fastify.get('/', async (req, reply) => {
-        // Si es el dominio raíz o www, sirve la landing/portal
         const sub = req.subdomain;
+
+        // NIFM captive portal test (connector-lp1.nexonetwork.space)
+        // Nintendo Switch hace GET / para verificar conectividad.
+        // Sin 200 OK → error 2038-2306 y el juego no conecta.
+        if (sub === 'connector-lp1') {
+            return reply.code(200).type('text/plain').send('ok');
+        }
+
+        // Dominio raíz o www → sirve la landing/portal web
         if (!sub || sub === 'www' || sub === BASE_DOMAIN) {
             return reply.type('text/html').send(webHtml);
         }
+
         // Otros subdominios no tienen ruta raíz
         return reply.code(404).send({ error: 'Not found' });
     });

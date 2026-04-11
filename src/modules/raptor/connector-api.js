@@ -12,11 +12,8 @@
 async function connectorRoutes(fastify) {
 
     // ── NIFM Captive Portal Test ──────────────────────────────────────────────
-    // Nintendo Switch NIFM hace esta llamada para comprobar conectividad.
-    // Debe responder 200 OK. Sin esto → error 2038-2306.
-    fastify.get('/', async (req, reply) => {
-        return reply.code(200).type('text/plain').send('ok');
-    });
+    // GET / y HEAD / se manejan en server.js para evitar rutas duplicadas.
+    // El router principal detecta el subdominio connector-lp1 y responde 200 OK.
 
     // Algunos firmwares usan /generate_204 (como Android)
     fastify.get('/generate_204', async (req, reply) => {
