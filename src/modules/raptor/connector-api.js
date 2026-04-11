@@ -20,10 +20,9 @@ async function connectorRoutes(fastify) {
         return reply.code(204).send();
     });
 
-    // ctest usa también HEAD a veces
-    fastify.head('/', async (req, reply) => {
-        return reply.code(200).send();
-    });
+    // NOTA: HEAD / no se registra aquí porque Fastify v4+ lo crea
+    // automáticamente desde el GET / registrado en server.js.
+    // Registrarlo aquí causaría FST_ERR_DUPLICATED_ROUTE.
 
     // GET /api/v1/connector/config — obtener configuración de conexión
     fastify.get('/api/v1/connector/config', {
