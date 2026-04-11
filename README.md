@@ -76,4 +76,4 @@ Ver guía completa de despliegue con aaPanel en [`docs/deploy.md`](./docs/deploy
 
 ---
 
-GPL-2.0 · Proyecto educativo · No afiliado con Nintendo
+GPL-2.0 · Proyecto educativo · No afiliado con Nintendo | Powered by Claude
