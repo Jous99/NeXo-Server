@@ -3,22 +3,26 @@
 /**
  * smm2-lp1.nexonetwork.space
  *
- * Servidor básico para Super Mario Maker 2.
+ * Servidor para Super Mario Maker 2.
  * Gestiona el intercambio de cursos, miniaturas, estadísticas y comentarios.
  *
+ * Columnas en schema.sql (columnas reales de la BD):
+ *   smm2_courses : uploader_id, title, thumbnail  (NO user_id / name / thumbnail_data)
+ *   smm2_comments: body                           (NO text)
+ *   game_style   : ENUM('SMB','SMB3','SMW','NSMBU','SM3DW')   (NO 'SMB1')
+ *
  * Endpoints:
- *   POST   /api/v1/smm2/courses          — subir un curso
- *   GET    /api/v1/smm2/courses          — buscar/listar cursos
- *   GET    /api/v1/smm2/courses/:id      — obtener datos de un curso
+ *   POST   /api/v1/smm2/courses               — subir un curso
+ *   GET    /api/v1/smm2/courses               — buscar/listar cursos
+ *   GET    /api/v1/smm2/courses/:id           — obtener datos de un curso
  *   GET    /api/v1/smm2/courses/:id/thumbnail — miniatura del curso
- *   DELETE /api/v1/smm2/courses/:id      — borrar un curso propio
- *   POST   /api/v1/smm2/courses/:id/play — registrar que jugaste un curso
- *   POST   /api/v1/smm2/courses/:id/clear — registrar que completaste un curso
- *   POST   /api/v1/smm2/courses/:id/like — dar like a un curso
- *   GET    /api/v1/smm2/courses/:id/comments — ver comentarios
- *   POST   /api/v1/smm2/courses/:id/comments — publicar un comentario
- *   GET    /api/v1/smm2/profile/:nexo_id — perfil SMM2 de un jugador
- *   GET    /api/v1/smm2/rankings         — ranking global de cursos
+ *   DELETE /api/v1/smm2/courses/:id           — borrar un curso propio
+ *   POST   /api/v1/smm2/courses/:id/clear     — registrar que completaste un curso
+ *   POST   /api/v1/smm2/courses/:id/like      — dar like a un curso
+ *   GET    /api/v1/smm2/courses/:id/comments  — ver comentarios
+ *   POST   /api/v1/smm2/courses/:id/comments  — publicar un comentario
+ *   GET    /api/v1/smm2/profile/:nexo_id      — perfil SMM2 de un jugador
+ *   GET    /api/v1/smm2/rankings              — ranking global de cursos
  */
 
 const db = require('../../../db');
@@ -43,11 +47,12 @@ function generateCourseId() {
 const uploadSchema = {
     body: {
         type: 'object',
-        required: ['name', 'course_data'],
+        required: ['title', 'course_data'],
         properties: {
-            name:          { type: 'string',  minLength: 1,  maxLength: 60 },
+            title:         { type: 'string',  minLength: 1,  maxLength: 60 },
             description:   { type: 'string',  maxLength: 200 },
-            game_style:    { type: 'string',  enum: ['SMB1', 'SMB3', 'SMW', 'NSMBU', 'SM3DW'], default: 'SMB1' },
+            // game_style debe coincidir con el ENUM del schema
+            game_style:    { type: 'string',  enum: ['SMB', 'SMB3', 'SMW', 'NSMBU', 'SM3DW'], default: 'SMB' },
             course_theme:  { type: 'string',  maxLength: 32 },
             difficulty:    { type: 'string',  enum: ['easy', 'normal', 'expert', 'super_expert'], default: 'normal' },
             course_data:   { type: 'string',  description: 'Base64-encoded course binary (course2.bcd)' },
@@ -60,9 +65,10 @@ const uploadSchema = {
 const commentSchema = {
     body: {
         type: 'object',
-        required: ['text'],
+        required: ['body'],
         properties: {
-            text: { type: 'string', minLength: 1, maxLength: 250 },
+            // La columna en schema.sql se llama 'body', no 'text'
+            body: { type: 'string', minLength: 1, maxLength: 200 },
         },
         additionalProperties: false,
     },
@@ -79,17 +85,17 @@ async function smm2Routes(fastify) {
     }, async (req, reply) => {
         if (!isSmm2Subdomain(req)) return reply.code(404).send({ error: 'not found' });
 
-        const { name, description, game_style, course_theme, difficulty, course_data, thumbnail } = req.body;
+        const { title, description, game_style, course_theme, difficulty, course_data, thumbnail } = req.body;
         const nexo_id = req.user.nexo_id;
 
         // Obtener user.id desde nexo_id
         const [users] = await db.query('SELECT id FROM users WHERE nexo_id = ?', [nexo_id]);
         if (!users.length) return reply.code(404).send({ result: 'Failed', error: 'User not found' });
-        const user_id = users[0].id;
+        const uploader_id = users[0].id;
 
         // Comprobar límite de cursos por usuario (máx. 100)
         const [[{ count }]] = await db.query(
-            'SELECT COUNT(*) as count FROM smm2_courses WHERE user_id = ?', [user_id]
+            'SELECT COUNT(*) as count FROM smm2_courses WHERE uploader_id = ?', [uploader_id]
         );
         if (count >= 100) {
             return reply.code(400).send({ result: 'Failed', error: 'Course limit reached (100 max)' });
@@ -105,15 +111,17 @@ async function smm2Routes(fastify) {
             attempts++;
         } while (attempts < 10);
 
-        // Guardar el curso
+        // Guardar el curso.
+        // La columna del uploader se llama 'uploader_id', el título 'title',
+        // y la miniatura 'thumbnail' (MEDIUMBLOB). FROM_BASE64 convierte el string base64 a binario.
         await db.query(
             `INSERT INTO smm2_courses
-             (course_id, user_id, name, description, game_style, course_theme, difficulty, course_data, thumbnail_data)
+             (course_id, uploader_id, title, description, game_style, course_theme, difficulty, course_data, thumbnail)
              VALUES (?, ?, ?, ?, ?, ?, ?, FROM_BASE64(?), FROM_BASE64(?))`,
             [
-                course_id, user_id, name,
+                course_id, uploader_id, title,
                 description  || '',
-                game_style   || 'SMB1',
+                game_style   || 'SMB',
                 course_theme || 'Overworld',
                 difficulty   || 'normal',
                 course_data,
@@ -147,7 +155,8 @@ async function smm2Routes(fastify) {
         const params = [];
 
         if (search) {
-            where.push('(c.name LIKE ? OR c.description LIKE ?)');
+            // Buscar tanto en title como en description
+            where.push('(c.title LIKE ? OR c.description LIKE ?)');
             params.push(`%${search}%`, `%${search}%`);
         }
         if (game_style) { where.push('c.game_style = ?'); params.push(game_style); }
@@ -159,13 +168,14 @@ async function smm2Routes(fastify) {
             clear_rate: '(c.clear_count / GREATEST(c.play_count, 1)) DESC',
         };
 
+        // JOIN con uploader_id (no user_id). Seleccionamos 'title' (no 'name').
         const sql = `
-            SELECT c.course_id, c.name, c.description, c.game_style, c.course_theme,
+            SELECT c.course_id, c.title, c.description, c.game_style, c.course_theme,
                    c.difficulty, c.play_count, c.clear_count, c.like_count,
                    c.created_at,
                    u.nexo_id AS author_nexo_id, u.nickname AS author_nickname
             FROM smm2_courses c
-            JOIN users u ON u.id = c.user_id
+            JOIN users u ON u.id = c.uploader_id
             WHERE ${where.join(' AND ')}
             ORDER BY ${orderMap[sort]}
             LIMIT ? OFFSET ?
@@ -192,12 +202,12 @@ async function smm2Routes(fastify) {
         if (!isSmm2Subdomain(req)) return reply.code(404).send({ error: 'not found' });
 
         const [rows] = await db.query(
-            `SELECT c.course_id, c.name, c.description, c.game_style, c.course_theme,
+            `SELECT c.course_id, c.title, c.description, c.game_style, c.course_theme,
                     c.difficulty, c.play_count, c.clear_count, c.like_count, c.created_at,
                     TO_BASE64(c.course_data) AS course_data,
                     u.nexo_id AS author_nexo_id, u.nickname AS author_nickname
              FROM smm2_courses c
-             JOIN users u ON u.id = c.user_id
+             JOIN users u ON u.id = c.uploader_id
              WHERE c.course_id = ? AND c.is_deleted = FALSE`,
             [req.params.course_id]
         );
@@ -214,21 +224,22 @@ async function smm2Routes(fastify) {
     });
 
     // ── Miniatura del curso ───────────────────────────────────────────────────
+    // La columna se llama 'thumbnail' en el schema (no 'thumbnail_data')
     fastify.get('/api/v1/smm2/courses/:course_id/thumbnail', async (req, reply) => {
         if (!isSmm2Subdomain(req)) return reply.code(404).send({ error: 'not found' });
 
         const [rows] = await db.query(
-            'SELECT thumbnail_data FROM smm2_courses WHERE course_id = ? AND is_deleted = FALSE',
+            'SELECT thumbnail FROM smm2_courses WHERE course_id = ? AND is_deleted = FALSE',
             [req.params.course_id]
         );
 
-        if (!rows.length || !rows[0].thumbnail_data) {
+        if (!rows.length || !rows[0].thumbnail) {
             return reply.code(404).send({ result: 'Failed', error: 'Thumbnail not found' });
         }
 
         return reply
             .header('Content-Type', 'image/png')
-            .send(rows[0].thumbnail_data);
+            .send(rows[0].thumbnail);
     });
 
     // ── Borrar un curso propio ────────────────────────────────────────────────
@@ -240,8 +251,9 @@ async function smm2Routes(fastify) {
         const [users] = await db.query('SELECT id FROM users WHERE nexo_id = ?', [req.user.nexo_id]);
         if (!users.length) return reply.code(404).send({ result: 'Failed', error: 'User not found' });
 
+        // Comparamos con uploader_id (no user_id)
         const [res] = await db.query(
-            'UPDATE smm2_courses SET is_deleted = TRUE WHERE course_id = ? AND user_id = ?',
+            'UPDATE smm2_courses SET is_deleted = TRUE WHERE course_id = ? AND uploader_id = ?',
             [req.params.course_id, users[0].id]
         );
 
@@ -265,6 +277,7 @@ async function smm2Routes(fastify) {
         if (!course.length) return reply.code(404).send({ result: 'Failed', error: 'Course not found' });
 
         const [users] = await db.query('SELECT id FROM users WHERE nexo_id = ?', [req.user.nexo_id]);
+        if (!users.length) return reply.code(404).send({ result: 'Failed', error: 'User not found' });
 
         // Evitar contar el mismo clear dos veces del mismo usuario
         const [already] = await db.query(
@@ -299,6 +312,7 @@ async function smm2Routes(fastify) {
         if (!course.length) return reply.code(404).send({ result: 'Failed', error: 'Course not found' });
 
         const [users] = await db.query('SELECT id FROM users WHERE nexo_id = ?', [req.user.nexo_id]);
+        if (!users.length) return reply.code(404).send({ result: 'Failed', error: 'User not found' });
 
         const [already] = await db.query(
             'SELECT id FROM smm2_likes WHERE course_id = ? AND user_id = ?',
@@ -307,12 +321,24 @@ async function smm2Routes(fastify) {
 
         if (already.length) {
             // Toggle: quitar like
-            await db.query('DELETE FROM smm2_likes WHERE course_id = ? AND user_id = ?', [course[0].id, users[0].id]);
-            await db.query('UPDATE smm2_courses SET like_count = GREATEST(0, like_count - 1) WHERE id = ?', [course[0].id]);
+            await db.query(
+                'DELETE FROM smm2_likes WHERE course_id = ? AND user_id = ?',
+                [course[0].id, users[0].id]
+            );
+            await db.query(
+                'UPDATE smm2_courses SET like_count = GREATEST(0, like_count - 1) WHERE id = ?',
+                [course[0].id]
+            );
             return reply.send({ result: 'Success', liked: false });
         } else {
-            await db.query('INSERT INTO smm2_likes (course_id, user_id) VALUES (?, ?)', [course[0].id, users[0].id]);
-            await db.query('UPDATE smm2_courses SET like_count = like_count + 1 WHERE id = ?', [course[0].id]);
+            await db.query(
+                'INSERT INTO smm2_likes (course_id, user_id) VALUES (?, ?)',
+                [course[0].id, users[0].id]
+            );
+            await db.query(
+                'UPDATE smm2_courses SET like_count = like_count + 1 WHERE id = ?',
+                [course[0].id]
+            );
             return reply.send({ result: 'Success', liked: true });
         }
     });
@@ -327,8 +353,9 @@ async function smm2Routes(fastify) {
         const limit  = Math.min(50, parseInt(req.query.limit || '20'));
         const offset = (page - 1) * limit;
 
+        // La columna es 'body' en smm2_comments (no 'text')
         const [rows] = await db.query(
-            `SELECT cm.id, cm.text, cm.created_at,
+            `SELECT cm.id, cm.body, cm.created_at,
                     u.nexo_id AS author_nexo_id, u.nickname AS author_nickname
              FROM smm2_comments cm
              JOIN smm2_courses  c  ON c.id = cm.course_id
@@ -355,10 +382,12 @@ async function smm2Routes(fastify) {
         if (!course.length) return reply.code(404).send({ result: 'Failed', error: 'Course not found' });
 
         const [users] = await db.query('SELECT id FROM users WHERE nexo_id = ?', [req.user.nexo_id]);
+        if (!users.length) return reply.code(404).send({ result: 'Failed', error: 'User not found' });
 
+        // Insertar usando la columna 'body' (no 'text')
         await db.query(
-            'INSERT INTO smm2_comments (course_id, user_id, text) VALUES (?, ?, ?)',
-            [course[0].id, users[0].id, req.body.text]
+            'INSERT INTO smm2_comments (course_id, user_id, body) VALUES (?, ?, ?)',
+            [course[0].id, users[0].id, req.body.body]
         );
 
         return reply.code(201).send({ result: 'Success' });
@@ -376,6 +405,7 @@ async function smm2Routes(fastify) {
         );
         if (!user.length) return reply.code(404).send({ result: 'Failed', error: 'User not found' });
 
+        // Estadísticas de cursos subidos (uploader_id en lugar de user_id)
         const [[stats]] = await db.query(
             `SELECT
                 COUNT(*)                                          AS courses_uploaded,
@@ -383,7 +413,7 @@ async function smm2Routes(fastify) {
                 COALESCE(SUM(clear_count), 0)                    AS total_clears,
                 COALESCE(SUM(like_count),  0)                    AS total_likes
              FROM smm2_courses
-             WHERE user_id = ? AND is_deleted = FALSE`,
+             WHERE uploader_id = ? AND is_deleted = FALSE`,
             [user[0].id]
         );
 
@@ -423,12 +453,13 @@ async function smm2Routes(fastify) {
             clear_rate: '(c.clear_count / GREATEST(c.play_count, 1)) DESC',
         };
 
+        // JOIN con uploader_id. Seleccionamos 'title' (no 'name').
         const [courses] = await db.query(
-            `SELECT c.course_id, c.name, c.game_style, c.difficulty,
+            `SELECT c.course_id, c.title, c.game_style, c.difficulty,
                     c.play_count, c.clear_count, c.like_count, c.created_at,
                     u.nexo_id AS author_nexo_id, u.nickname AS author_nickname
              FROM smm2_courses c
-             JOIN users u ON u.id = c.user_id
+             JOIN users u ON u.id = c.uploader_id
              WHERE c.is_deleted = FALSE AND c.play_count > 0
              ORDER BY ${orderMap[type]}
              LIMIT ?`,

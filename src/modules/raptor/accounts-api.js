@@ -225,12 +225,15 @@ async function accountsApiRoutes(fastify) {
             return reply.code(403).send('');
         }
 
-        // Si mandan un R-TitleId, verificar que ese juego tiene online activo
+        // Si mandan un R-TitleId, verificar que ese juego tiene online activo.
+        // El emulador envía el title_id en formato {:X} (hex sin relleno, p.ej. "100000000100000")
+        // pero en la DB está guardado con 16 dígitos ("0100000000100000").
+        // padStart(16, '0') normaliza ambos formatos.
         if (titleId) {
-            const titleIdDec = parseInt(titleId, 16);
+            const titleIdPadded = titleId.toLowerCase().padStart(16, '0');
             const [titleRows] = await db.query(
-                'SELECT compatibility FROM titles WHERE title_id = ? OR title_id = ?',
-                [titleId.toLowerCase(), titleId.toUpperCase()]
+                'SELECT compatibility FROM titles WHERE LOWER(title_id) = ?',
+                [titleIdPadded]
             ).catch(() => [[]]);
 
             // Si el juego no está en la tabla, devolvemos 400 (sin online)
@@ -273,6 +276,43 @@ async function accountsApiRoutes(fastify) {
         ).catch(() => {});
 
         return reply.send({ result: 'Success' });
+    });
+
+    // ══════════════════════════════════════════════════════════════════════════
+    //  STUBS dauth / aauth
+    //  Nintendo Switch llama a estos endpoints ANTES de conectar al online.
+    //  SMM2 llama a dauth para obtener un device_auth_token y luego a aauth
+    //  para un application_auth_token. Sin estos, el juego no puede iniciar
+    //  la sesión online y devuelve error.
+    //
+    //  El emulador redirige:
+    //    dauth-lp1.ndas.srv.nintendo.net → accounts-api-lp1.nexonetwork.space
+    //    aauth-lp1.ndas.srv.nintendo.net → accounts-api-lp1.nexonetwork.space
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // POST /v6/device_auth_token  — dauth stub
+    fastify.post('/v6/device_auth_token', async (req, reply) => {
+        // El juego espera un JSON con device_auth_token (string) y expire_in (número)
+        const fakeToken = fastify.jwt.sign({ type: 'device_auth' }, { expiresIn: '1h' });
+        return reply.send({
+            device_auth_token: fakeToken,
+            expire_in: 3600,
+        });
+    });
+
+    // POST /v3/application_auth_token  — aauth stub
+    fastify.post('/v3/application_auth_token', async (req, reply) => {
+        const fakeToken = fastify.jwt.sign({ type: 'app_auth' }, { expiresIn: '1h' });
+        return reply.send({
+            application_auth_token: fakeToken,
+            expire_in: 3600,
+        });
+    });
+
+    // POST /api/v1/auth/device_token  — alias por si el emulador usa esta ruta
+    fastify.post('/api/v1/auth/device_token', async (req, reply) => {
+        const fakeToken = fastify.jwt.sign({ type: 'device_auth' }, { expiresIn: '1h' });
+        return reply.send({ result: 'Success', device_auth_token: fakeToken, expire_in: 3600 });
     });
 
     // POST /api/v1/session/end

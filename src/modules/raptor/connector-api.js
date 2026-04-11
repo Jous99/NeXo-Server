@@ -3,13 +3,30 @@
 /**
  * connector-lp1.nexonetwork.space
  *
- * Visto en: src/core/online_initiator.cpp → ConnectorUrl()
- * Gestiona el relay/NAT traversal para conexiones P2P entre jugadores.
- * Por ahora devuelve respuestas stub — implementar con un servidor STUN/TURN
- * cuando se desarrolle el matchmaking.
+ * También actúa como destino del captive-portal test de NIFM.
+ * El emulador redirige ctest.cdn.nintendo.net → connector-lp1.
+ * NIFM hace GET / o GET /generate_204 para verificar que hay internet.
+ * Si no responde 200, NIFM devuelve error 2038-2306 y el juego no conecta.
  */
 
 async function connectorRoutes(fastify) {
+
+    // ── NIFM Captive Portal Test ──────────────────────────────────────────────
+    // Nintendo Switch NIFM hace esta llamada para comprobar conectividad.
+    // Debe responder 200 OK. Sin esto → error 2038-2306.
+    fastify.get('/', async (req, reply) => {
+        return reply.code(200).type('text/plain').send('ok');
+    });
+
+    // Algunos firmwares usan /generate_204 (como Android)
+    fastify.get('/generate_204', async (req, reply) => {
+        return reply.code(204).send();
+    });
+
+    // ctest usa también HEAD a veces
+    fastify.head('/', async (req, reply) => {
+        return reply.code(200).send();
+    });
 
     // GET /api/v1/connector/config — obtener configuración de conexión
     fastify.get('/api/v1/connector/config', {
