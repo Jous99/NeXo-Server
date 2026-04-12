@@ -340,23 +340,53 @@ async function accountsApiRoutes(fastify) {
 
     // GET /api/v1/client/subscription
     // online_initiator.cpp → LoadSubscriptionInfo()
-    // El emulador espera un JSON con campos de suscripción.
-    // Por ahora todos los usuarios tienen acceso completo.
+    //
+    // IMPORTANTE: El struct C++ OnlineSubscriptionInfo tiene display_subscription como
+    // std::string. Si mandamos un booleano false, nlohmann::json lanza type_error y la
+    // info nunca se carga. Todos los campos de texto DEBEN ser strings, no booleans.
+    //
+    // Planes de suscripción:
+    //   "Free"  — plan gratuito (por defecto para todos los usuarios)
+    //   "Pro"   — reservado para planes de pago futuros
     fastify.get('/api/v1/client/subscription', async (req, reply) => {
         if (!isAccountsSubdomain(req)) return reply.code(404).send({ error: 'not found' });
 
         const bearer = (req.headers['authorization'] || '').replace('Bearer ', '');
         if (!bearer) return reply.code(401).send({ error: 'Unauthorized' });
 
-        try { fastify.jwt.verify(bearer); } catch { return reply.code(401).send({ error: 'Unauthorized' }); }
+        let payload;
+        try {
+            payload = fastify.jwt.verify(bearer);
+        } catch {
+            return reply.code(401).send({ error: 'Unauthorized' });
+        }
 
+        // Obtener el plan del usuario desde la base de datos.
+        // Si no tiene plan asignado → Free por defecto.
+        const db = require('../../db');
+        let plan = 'Free';
+        try {
+            const [rows] = await db.query(
+                'SELECT subscription_plan FROM users WHERE nexo_id = ?',
+                [payload.nexo_id]
+            );
+            if (rows.length && rows[0].subscription_plan) {
+                plan = rows[0].subscription_plan;
+            }
+        } catch {
+            // Si la columna no existe aún en la DB, usamos Free como fallback.
+            plan = 'Free';
+        }
+
+        // Todos los campos de texto deben ser strings (no booleans) porque el
+        // emulador usa nlohmann::json::get<std::string>() en from_json().
         return reply.send({
-            display_subscription:           false,
-            display_action:                 '',
-            url_action:                     '',
-            enable_set_username:            true,
-            enable_set_profile:             true,
-            show_subscription_upgrade_notice: false,
+            display_subscription:             plan,        // "Free", "Pro", etc.
+            display_action:                   '',          // texto del botón de acción (vacío = sin botón)
+            url_action:                       '',          // URL del botón de acción
+            enable_set_username:              true,        // bool - puede cambiar su nombre
+            enable_set_profile:               true,        // bool - puede editar su perfil
+            show_subscription_upgrade_notice: false,       // bool - no mostrar aviso de upgrade
         });
     });
 }

@@ -702,6 +702,7 @@
     <li><a href="#how">Cómo funciona</a></li>
     <li><a href="#gallery">Galería</a></li>
     <li><a href="#download" class="nav-cta">Descargar</a></li>
+    <li><a href="#profile" id="nav-profile-link" class="nav-cta" style="background:rgba(0,168,232,0.15);border:1px solid var(--accent);">Mi Perfil</a></li>
   </ul>
 </nav>
 
@@ -1016,6 +1017,135 @@
   </div>
 </section>
 
+<!-- ── PERFIL / CUENTA ───────────────────────────────────── -->
+<section id="profile" style="padding:5rem 2rem;">
+  <div class="section-inner" style="max-width:520px;">
+    <div class="fade-up" style="text-align:center; margin-bottom:2.5rem;">
+      <p class="section-label">Cuenta</p>
+      <h2>Mi Perfil</h2>
+      <p class="section-desc">Gestiona tu cuenta de NeXo Network y consulta tu suscripción.</p>
+    </div>
+
+    <!-- ── Panel: no logueado ─────────────────────────── -->
+    <div id="panel-login" class="fade-up" style="
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+    ">
+      <h3 style="margin-bottom:1.5rem; font-size:1.1rem;">Iniciar sesión</h3>
+      <div id="login-error" style="
+        display:none;
+        background:rgba(228,0,58,0.12);
+        border:1px solid var(--accent2);
+        border-radius:8px;
+        padding:0.6rem 1rem;
+        font-size:0.85rem;
+        color:#ff6b6b;
+        margin-bottom:1rem;
+      "></div>
+      <input id="login-user" type="text" placeholder="Usuario o email" style="
+        width:100%; padding:0.7rem 1rem;
+        background:var(--bg2); border:1px solid var(--border);
+        border-radius:8px; color:var(--text); font-size:0.9rem;
+        margin-bottom:0.8rem; outline:none;
+      "/>
+      <input id="login-pass" type="password" placeholder="Contraseña" style="
+        width:100%; padding:0.7rem 1rem;
+        background:var(--bg2); border:1px solid var(--border);
+        border-radius:8px; color:var(--text); font-size:0.9rem;
+        margin-bottom:1.2rem; outline:none;
+      "/>
+      <button id="btn-login" onclick="doLogin()" style="
+        width:100%; padding:0.75rem;
+        background:linear-gradient(135deg,var(--accent),var(--accent2));
+        border:none; border-radius:8px;
+        color:#fff; font-weight:700; font-size:0.95rem;
+        cursor:pointer; transition:opacity .2s;
+      ">Entrar</button>
+      <p style="text-align:center; margin-top:1rem; font-size:0.82rem; color:var(--text-muted);">
+        ¿No tienes cuenta? Descarga NexoEmu y regístrate desde el emulador.
+      </p>
+    </div>
+
+    <!-- ── Panel: logueado (perfil + badge) ──────────── -->
+    <div id="panel-profile" class="fade-up" style="display:none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+    ">
+      <!-- Avatar + nombre -->
+      <div style="display:flex; align-items:center; gap:1.2rem; margin-bottom:1.8rem;">
+        <div id="profile-avatar" style="
+          width:64px; height:64px; border-radius:50%;
+          background:linear-gradient(135deg,var(--accent),var(--accent2));
+          display:flex; align-items:center; justify-content:center;
+          font-size:1.6rem; font-weight:900; color:#fff;
+          flex-shrink:0;
+        ">?</div>
+        <div>
+          <div id="profile-name" style="font-size:1.1rem; font-weight:700; margin-bottom:0.25rem;">Cargando...</div>
+          <div id="profile-id" style="font-size:0.8rem; color:var(--text-muted);">#—</div>
+        </div>
+      </div>
+
+      <!-- Badge de suscripción -->
+      <div style="margin-bottom:1.5rem;">
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Plan activo</p>
+        <div id="sub-badge" style="
+          display:inline-flex; align-items:center; gap:0.5rem;
+          padding:0.45rem 1rem;
+          border-radius:100px;
+          font-size:0.85rem; font-weight:700;
+          background:rgba(0,168,232,0.15);
+          border:1px solid var(--accent);
+          color:var(--accent);
+        ">
+          <span id="sub-icon">⭐</span>
+          <span id="sub-label">Cargando...</span>
+        </div>
+      </div>
+
+      <!-- Token de acceso -->
+      <div style="margin-bottom:1.5rem;">
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Tu token de acceso</p>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <input id="token-display" type="password" readonly style="
+            flex:1; padding:0.6rem 0.8rem;
+            background:var(--bg2); border:1px solid var(--border);
+            border-radius:8px; color:var(--text-muted); font-size:0.78rem;
+            font-family:monospace; outline:none;
+          "/>
+          <button onclick="toggleToken()" title="Ver/ocultar" style="
+            padding:0.55rem 0.8rem; background:var(--bg3);
+            border:1px solid var(--border); border-radius:8px;
+            color:var(--text); cursor:pointer; font-size:0.85rem;
+          ">👁</button>
+          <button onclick="copyToken()" title="Copiar" style="
+            padding:0.55rem 0.8rem; background:var(--bg3);
+            border:1px solid var(--border); border-radius:8px;
+            color:var(--text); cursor:pointer; font-size:0.85rem;
+          ">📋</button>
+        </div>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">
+          Pega este token en NexoEmu → Configuración → Raptor Network
+        </p>
+      </div>
+
+      <!-- Cerrar sesión -->
+      <button onclick="doLogout()" style="
+        width:100%; padding:0.65rem;
+        background:transparent; border:1px solid rgba(228,0,58,0.4);
+        border-radius:8px; color:#ff6b6b; font-size:0.85rem;
+        cursor:pointer; transition:all .2s;
+      ">Cerrar sesión</button>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
 <!-- ── FOOTER ────────────────────────────────────────────── -->
 <footer>
   <div class="footer-inner">
@@ -1078,6 +1208,146 @@
     navLinks.forEach(a => {
       a.style.color = a.getAttribute('href') === '#' + current
         ? 'var(--accent)' : '';
+    });
+  });
+
+  // ── PERFIL / SUSCRIPCIÓN ────────────────────────────────────────────────────
+  // El token del usuario se guarda en sessionStorage para que no persista entre
+  // sesiones del navegador (más seguro que localStorage para tokens).
+  const API = '';  // mismo origen — el servidor responde en /auth/..., /profile/...
+
+  function getStoredToken() {
+    return sessionStorage.getItem('nexo_token') || '';
+  }
+
+  // Información del plan para mostrar en el badge
+  const PLAN_STYLES = {
+    'Free': { icon: '⭐', label: 'Free',  color: 'var(--accent)',  bg: 'rgba(0,168,232,0.12)',  border: 'var(--accent)' },
+    'Pro':  { icon: '💎', label: 'Pro',   color: '#ffd700',        bg: 'rgba(255,215,0,0.12)',   border: '#ffd700' },
+    'Dev':  { icon: '🛠️', label: 'Dev',   color: '#00e676',        bg: 'rgba(0,230,118,0.12)',   border: '#00e676' },
+  };
+
+  function applyPlanBadge(plan) {
+    const style = PLAN_STYLES[plan] || PLAN_STYLES['Free'];
+    const badge  = document.getElementById('sub-badge');
+    badge.style.background = style.bg;
+    badge.style.border      = `1px solid ${style.border}`;
+    badge.style.color       = style.color;
+    document.getElementById('sub-icon').textContent  = style.icon;
+    document.getElementById('sub-label').textContent = style.label;
+  }
+
+  async function loadProfilePanel() {
+    const token = getStoredToken();
+    if (!token) {
+      document.getElementById('panel-login').style.display   = 'block';
+      document.getElementById('panel-profile').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('panel-login').style.display   = 'none';
+    document.getElementById('panel-profile').style.display = 'block';
+
+    // Mostrar el token en el campo
+    document.getElementById('token-display').value = token;
+
+    try {
+      // Obtener datos de la suscripción del emulador
+      const res = await fetch('/api/v1/client/subscription', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (res.status === 401) { doLogout(); return; }
+
+      const data = await res.json();
+      const plan = data.display_subscription || 'Free';
+      applyPlanBadge(plan);
+
+      // También intentar cargar el nombre del perfil
+      const profileRes = await fetch('/profile/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }).catch(() => null);
+
+      if (profileRes && profileRes.ok) {
+        const profile = await profileRes.json();
+        const name = profile.nickname || profile.display_name || profile.username || 'Usuario';
+        document.getElementById('profile-name').textContent = name;
+        document.getElementById('profile-id').textContent   = '#' + (profile.nexo_id || '—').slice(0,8);
+        document.getElementById('profile-avatar').textContent = name.charAt(0).toUpperCase();
+      }
+
+    } catch {
+      applyPlanBadge('Free');
+    }
+  }
+
+  async function doLogin() {
+    const user = document.getElementById('login-user').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    const err  = document.getElementById('login-error');
+    const btn  = document.getElementById('btn-login');
+
+    if (!user || !pass) {
+      err.textContent = 'Por favor rellena usuario y contraseña.';
+      err.style.display = 'block';
+      return;
+    }
+
+    btn.textContent = 'Entrando...';
+    btn.disabled    = true;
+    err.style.display = 'none';
+
+    try {
+      const res = await fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: user, password: pass }),
+      });
+      const data = await res.json();
+      if (res.ok && data.token) {
+        sessionStorage.setItem('nexo_token', data.token);
+        loadProfilePanel();
+      } else {
+        err.textContent = data.error || 'Usuario o contraseña incorrectos.';
+        err.style.display = 'block';
+      }
+    } catch {
+      err.textContent = 'No se pudo conectar al servidor.';
+      err.style.display = 'block';
+    } finally {
+      btn.textContent = 'Entrar';
+      btn.disabled    = false;
+    }
+  }
+
+  function doLogout() {
+    sessionStorage.removeItem('nexo_token');
+    document.getElementById('login-user').value = '';
+    document.getElementById('login-pass').value = '';
+    loadProfilePanel();
+  }
+
+  function toggleToken() {
+    const inp = document.getElementById('token-display');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  function copyToken() {
+    const token = getStoredToken();
+    if (!token) return;
+    navigator.clipboard.writeText(token).then(() => {
+      const btn = event.target;
+      btn.textContent = '✅';
+      setTimeout(() => btn.textContent = '📋', 1500);
+    });
+  }
+
+  // Al cargar la página, verificar si ya hay sesión activa
+  loadProfilePanel();
+
+  // Enter en los campos de login
+  ['login-user', 'login-pass'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
     });
   });
 </script>

@@ -4,10 +4,11 @@ require('dotenv').config();
 
 const fs       = require('fs');
 const path     = require('path');
-const Fastify  = require('fastify');
-const fjwt     = require('@fastify/jwt');
-const fcors    = require('@fastify/cors');
-const sensible = require('@fastify/sensible');
+const Fastify    = require('fastify');
+const fjwt       = require('@fastify/jwt');
+const fcors      = require('@fastify/cors');
+const sensible   = require('@fastify/sensible');
+const fwebsocket = require('@fastify/websocket');
 
 const errorHandler     = require('./plugins/errorHandler');
 const { authenticate } = require('./middleware/auth');
@@ -60,6 +61,8 @@ async function buildApp() {
     });
 
     await fastify.register(sensible);
+    // WebSocket — necesario para notification-api.js (el emulador conecta via wss://)
+    await fastify.register(fwebsocket);
     await fastify.register(fjwt, {
         secret: process.env.JWT_SECRET || 'nexo_dev_secret_CHANGE_IN_PRODUCTION',
     });
