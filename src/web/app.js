@@ -306,7 +306,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
     <a class="nla" href="#feat">Características</a>
     <a class="nla" href="#api2">API</a>
     <a class="nla" href="#compat">Compatibilidad</a>
-    <a class="nla" href="https://github.com/Jous99/NeXo-Emu" target="_blank">Emulador</a>
+    <a class="nla" href="/emulator" target="_blank">Emulador</a>
   </div>
   <button class="ncta" onclick="openApp()">Portal →</button>
 </nav>

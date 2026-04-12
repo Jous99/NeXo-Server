@@ -315,6 +315,108 @@ async function accountsApiRoutes(fastify) {
         return reply.send({ result: 'Success', device_auth_token: fakeToken, expire_in: 3600 });
     });
 
+    // ══════════════════════════════════════════════════════════════════════════
+    //  STUBS accounts.nintendo.com
+    //  SMM2 y otros juegos llaman a accounts.nintendo.com para intercambiar
+    //  el device_auth_token por un user access_token antes de conectarse a NPLN.
+    //  Sin este stub, la autenticación de usuario falla ANTES de llegar a NPLN.
+    //
+    //  El emulador redirige:
+    //    accounts.nintendo.com → accounts-api-lp1.nexonetwork.space
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // POST /connect/1.0.0/api/token  — Nintendo account token exchange
+    // El juego manda: grant_type, device_auth_token, client_id, etc.
+    // Respondemos con un access_token falso que el juego acepta.
+    fastify.post('/connect/1.0.0/api/token', async (req, reply) => {
+        const fakeToken = fastify.jwt.sign({ type: 'nintendo_user', scope: 'openid user' }, { expiresIn: '1h' });
+        return reply.send({
+            access_token:  fakeToken,
+            token_type:    'Bearer',
+            expires_in:    3600,
+            scope:         'openid user',
+            id_token:      fakeToken,
+        });
+    });
+
+    // GET /2.0.0/users/:userId  — Perfil de usuario Nintendo
+    // El juego pide el perfil después de obtener el access_token.
+    fastify.get('/2.0.0/users/:userId', async (req, reply) => {
+        return reply.send({
+            id:          req.params.userId,
+            nickname:    'NexoUser',
+            country:     'US',
+            birthday:    '1990-01-01',
+        });
+    });
+
+    // POST /2.0.0/users/:userId/link  — vínculo de cuenta (algunas versiones)
+    fastify.post('/2.0.0/users/:userId/link', async (req, reply) => {
+        return reply.send({ result: 'Success' });
+    });
+
+    // GET /1.0.0/users/:userId/qrcode_param  — parámetro para QR de login
+    fastify.get('/1.0.0/users/:userId/qrcode_param', async (req, reply) => {
+        return reply.send({ url: '' });
+    });
+
+    // ══════════════════════════════════════════════════════════════════════════
+    //  STUB BAAS (Bad At Authentication Service)
+    //  El juego llama a *.baas.nintendo.com DESPUÉS de dauth/aauth para obtener
+    //  el token de usuario que necesita para conectarse a NPLN.
+    //  Sin este stub, la cadena de auth se rompe antes de llegar a NPLN.
+    //
+    //  El emulador redirige:
+    //    *.baas.nintendo.com → accounts-api-lp1.nexonetwork.space
+    //    (gracias al wildcard añadido en config-api.js y al fix en RewriteUrl)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // POST /v1/Login  — Login BAAS principal
+    // El juego manda: application_auth_token, device_auth_token, client_id, etc.
+    // Respondemos con tokens falsos que hacen que la chain de auth continue.
+    fastify.post('/v1/Login', async (req, reply) => {
+        const userId = `nexo_${Date.now().toString(16)}`;
+        const idToken = fastify.jwt.sign(
+            { type: 'baas_user', user_id: userId, 'nintendo_account_id': userId },
+            { expiresIn: '1h' }
+        );
+        return reply.send({
+            user: {
+                id:                    userId,
+                etag:                  '"1"',
+                links:                 { nintendoAccount: { membership: { active: true } } },
+                memberships:           [],
+                analyticsOptedIn:      false,
+                isChildRestricted:     false,
+                country:               'US',
+            },
+            idToken,
+            accessToken:           idToken,
+            expiresIn:             3600,
+            fileServerToken:       fastify.jwt.sign({ type: 'file_server' }, { expiresIn: '1h' }),
+        });
+    });
+
+    // PUT /v1/devices/link  — Vinculación de dispositivo con BAAS
+    fastify.put('/v1/devices/link', async (req, reply) => {
+        return reply.code(200).send({});
+    });
+
+    // PATCH /v1/users/:userId  — Actualización de perfil BAAS
+    fastify.patch('/v1/users/:userId', async (req, reply) => {
+        return reply.send({ id: req.params.userId });
+    });
+
+    // GET /v1/users/:userId  — Obtener perfil BAAS
+    fastify.get('/v1/users/:userId', async (req, reply) => {
+        return reply.send({
+            id:      req.params.userId,
+            etag:    '"1"',
+            country: 'US',
+            links:   { nintendoAccount: { membership: { active: true } } },
+        });
+    });
+
     // POST /api/v1/session/end
     // online_initiator.cpp → EndOnlineSession()
     fastify.post('/api/v1/session/end', async (req, reply) => {

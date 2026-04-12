@@ -65,6 +65,16 @@ function buildRewrites() {
             source:      'aauth-lp1.ndas.srv.nintendo.net',
             destination: `accounts-api-lp1.${BASE}`,
         },
+        // ── BAAS (autenticación de usuario para NPLN) ─────────────────────────
+        // Después de dauth/aauth, el juego llama a un subdominio BAAS único por
+        // título para obtener el token de usuario de NPLN.
+        // Usamos wildcard "*.baas.nintendo.com" para capturar cualquier subdominio.
+        // El emulador soporta este patrón desde el fix de RewriteUrl en
+        // online_initiator.cpp (búsqueda por sufijo).
+        {
+            source:      '*.baas.nintendo.com',
+            destination: `accounts-api-lp1.${BASE}`,
+        },
         // ── Conectores de red ─────────────────────────────────────────────────
         {
             source:      'ctest.cdn.nintendo.net',
