@@ -1252,27 +1252,28 @@
     document.getElementById('token-display').value = token;
 
     try {
-      // Obtener datos de la suscripción del emulador
-      const res = await fetch('/api/v1/client/subscription', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (res.status === 401) { doLogout(); return; }
-
-      const data = await res.json();
-      const plan = data.display_subscription || 'Free';
-      applyPlanBadge(plan);
-
-      // También intentar cargar el nombre del perfil
+      // Cargar perfil completo (incluye subscription_plan)
       const profileRes = await fetch('/profile/me', {
         headers: { 'Authorization': 'Bearer ' + token }
-      }).catch(() => null);
+      });
 
-      if (profileRes && profileRes.ok) {
-        const profile = await profileRes.json();
-        const name = profile.nickname || profile.display_name || profile.username || 'Usuario';
-        document.getElementById('profile-name').textContent = name;
-        document.getElementById('profile-id').textContent   = '#' + (profile.nexo_id || '—').slice(0,8);
-        document.getElementById('profile-avatar').textContent = name.charAt(0).toUpperCase();
+      if (profileRes.status === 401) { doLogout(); return; }
+
+      if (profileRes.ok) {
+        const resp    = await profileRes.json();
+        const profile = resp.data || {};
+
+        // Plan de suscripción
+        const plan = profile.subscription_plan || 'Free';
+        applyPlanBadge(plan);
+
+        // Nombre y avatar
+        const name = profile.nickname || profile.username || 'Usuario';
+        document.getElementById('profile-name').textContent    = name;
+        document.getElementById('profile-id').textContent      = '#' + (profile.nexo_id || '—').slice(0,8);
+        document.getElementById('profile-avatar').textContent  = name.charAt(0).toUpperCase();
+      } else {
+        applyPlanBadge('Free');
       }
 
     } catch {
@@ -1300,11 +1301,11 @@
       const res = await fetch('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: user, password: pass }),
+        body: JSON.stringify({ login: user, password: pass }),
       });
       const data = await res.json();
-      if (res.ok && data.token) {
-        sessionStorage.setItem('nexo_token', data.token);
+      if (res.ok && data.data?.access_token) {
+        sessionStorage.setItem('nexo_token', data.data.access_token);
         loadProfilePanel();
       } else {
         err.textContent = data.error || 'Usuario o contraseña incorrectos.';
