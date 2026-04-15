@@ -686,6 +686,332 @@
       max-width: 1100px;
       margin: 0 auto;
     }
+
+    /* ── PLANS ─────────────────────────────────────── */
+    #plans { background: var(--bg2); }
+
+    .plans-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin: 2rem 0 3rem;
+    }
+
+    .plans-toggle span {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .toggle-switch {
+      width: 52px; height: 28px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .toggle-switch.active { background: var(--accent); border-color: var(--accent); }
+
+    .toggle-knob {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s;
+    }
+
+    .toggle-switch.active .toggle-knob { transform: translateX(24px); }
+
+    .save-badge {
+      background: rgba(0,214,132,0.15);
+      color: #00d084;
+      border: 1px solid rgba(0,214,132,0.3);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.6rem;
+      border-radius: 100px;
+    }
+
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .plan-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem 1.75rem;
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .plan-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--glow);
+      border-color: rgba(0,168,232,0.35);
+    }
+
+    .plan-card.featured {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), var(--glow);
+      transform: translateY(-8px);
+    }
+
+    .plan-card.featured:hover {
+      transform: translateY(-14px);
+      box-shadow: 0 0 0 1px var(--accent), 0 0 40px rgba(0,168,232,0.35);
+    }
+
+    .plan-popular {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, var(--accent), #0077b6);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 0.25rem 1.1rem;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .plan-icon {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .plan-name {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 0.3rem;
+    }
+
+    .plan-tagline {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+
+    .plan-price {
+      margin-bottom: 1.75rem;
+    }
+
+    .plan-price .amount {
+      font-size: 2.6rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .plan-price .currency {
+      font-size: 1.3rem;
+      font-weight: 700;
+      vertical-align: top;
+      padding-top: 0.4rem;
+      display: inline-block;
+      color: var(--text-muted);
+    }
+
+    .plan-price .period {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .plan-price .price-yearly { display: none; }
+
+    .yearly-mode .plan-price .price-monthly { display: none; }
+    .yearly-mode .plan-price .price-yearly  { display: block; }
+
+    .plan-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.25rem 0;
+    }
+
+    .plan-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .plan-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.7rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    .plan-features li .feat-check {
+      flex-shrink: 0;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem;
+      margin-top: 1px;
+    }
+
+    .feat-check.yes { background: rgba(0,214,132,0.15); color: #00d084; }
+    .feat-check.no  { background: rgba(255,255,255,0.05); color: #4a5568; }
+
+    .plan-features li .feat-label { color: var(--text); }
+    .plan-features li.feat-disabled .feat-label { color: var(--text-muted); }
+
+    .plan-cta {
+      display: block;
+      text-align: center;
+      padding: 0.8rem 1.5rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      width: 100%;
+    }
+
+    .plan-cta.cta-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .plan-cta.cta-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .plan-cta.cta-primary {
+      background: linear-gradient(90deg, var(--accent), #0077b6);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(0,168,232,0.35);
+    }
+
+    .plan-cta.cta-primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(0,168,232,0.5);
+    }
+
+    .plan-cta.cta-gold {
+      background: linear-gradient(90deg, #f5a623, #e6930a);
+      color: #000;
+      box-shadow: 0 4px 20px rgba(245,166,35,0.3);
+    }
+
+    .plan-cta.cta-gold:hover {
+      filter: brightness(1.08);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(245,166,35,0.45);
+    }
+
+    .plan-note {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.6rem;
+    }
+
+    /* comparison table */
+    .plans-compare {
+      margin-top: 4rem;
+      overflow-x: auto;
+    }
+
+    .plans-compare h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    .compare-table th, .compare-table td {
+      padding: 0.85rem 1.25rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .compare-table th {
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      background: var(--bg3);
+    }
+
+    .compare-table th:first-child, .compare-table td:first-child {
+      text-align: left;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .compare-table .col-free  { color: var(--accent); }
+    .compare-table .col-pro   { color: #ffd700; }
+    .compare-table .col-dev   { color: #00e676; }
+
+    .compare-table .check-yes { color: #00d084; font-size: 1rem; }
+    .compare-table .check-no  { color: #3a4a5a; font-size: 1rem; }
+
+    .plans-faq {
+      margin-top: 4rem;
+    }
+
+    .plans-faq h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .faq-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .faq-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .faq-item h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .faq-item p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
@@ -701,6 +1027,7 @@
     <li><a href="#features">Características</a></li>
     <li><a href="#how">Cómo funciona</a></li>
     <li><a href="#gallery">Galería</a></li>
+    <li><a href="#plans">Planes</a></li>
     <li><a href="#download" class="nav-cta">Descargar</a></li>
     <li><a href="#profile" id="nav-profile-link" class="nav-cta" style="background:rgba(0,168,232,0.15);border:1px solid var(--accent);">Mi Perfil</a></li>
   </ul>
@@ -745,10 +1072,10 @@
         <div class="mockup-body">
           <div><span class="c-blue">[ NexoEmu ]</span> <span class="c-white">Iniciando sistema online...</span></div>
           <div><span class="c-green">✔</span> <span class="c-white">Hardware ID generado:</span> <span class="c-yellow">N7X2-KP9M-3RT8</span></div>
-          <div><span class="c-green">✔</span> <span class="c-white">Conectando a</span> <span class="c-blue">accounts-api-lp1.raptor.network</span></div>
+          <div><span class="c-green">✔</span> <span class="c-white">Conectando a</span> <span class="c-blue">accounts-api-lp1.nexonetwork.space</span></div>
           <div><span class="c-green">✔</span> <span class="c-white">Token validado — Sesión iniciada</span></div>
           <div><span class="c-green">✔</span> <span class="c-white">Amigos en línea:</span> <span class="c-yellow">3</span></div>
-          <div><span class="c-green">✔</span> <span class="c-white">Redirigiendo DNS Nintendo →</span> <span class="c-blue">Raptor Network</span></div>
+          <div><span class="c-green">✔</span> <span class="c-white">Redirigiendo DNS Nintendo →</span> <span class="c-blue">nexonetwork.space</span></div>
           <div>&nbsp;</div>
           <div><span class="c-green">►</span> <span class="c-white">Sistema online listo.</span> <span class="c-blue">¡Buena partida!</span></div>
         </div>
@@ -1144,6 +1471,317 @@
   </div>
 </section>
 
+<!-- ── PLANES ───────────────────────────────────────────── -->
+<section id="plans">
+  <div class="section-inner">
+    <div class="fade-up" style="text-align:center;">
+      <p class="section-label">Planes & Precios</p>
+      <h2>Elige tu plan de <em style="color:var(--accent)">NeXo Network</em></h2>
+      <p class="section-desc" style="margin:0 auto;">
+        Empieza gratis y actualiza cuando quieras. Todos los planes incluyen acceso al emulador y a los servidores online.
+      </p>
+    </div>
+
+    <!-- Toggle mensual / anual -->
+    <div class="plans-toggle fade-up">
+      <span>Mensual</span>
+      <div class="toggle-switch" id="billing-toggle" onclick="toggleBilling()">
+        <div class="toggle-knob"></div>
+      </div>
+      <span>Anual <span class="save-badge">Ahorra 20%</span></span>
+    </div>
+
+    <!-- Tarjetas de planes -->
+    <div class="plans-grid fade-up" id="plans-grid">
+
+      <!-- FREE -->
+      <div class="plan-card">
+        <div class="plan-icon">⭐</div>
+        <div class="plan-name" style="color:var(--accent);">Free</div>
+        <p class="plan-tagline">Perfecto para empezar. Sin tarjeta de crédito.</p>
+        <div class="plan-price">
+          <div class="price-monthly">
+            <span class="currency">€</span><span class="amount">0</span>
+            <p class="period">Para siempre gratis</p>
+          </div>
+          <div class="price-yearly">
+            <span class="currency">€</span><span class="amount">0</span>
+            <p class="period">Para siempre gratis</p>
+          </div>
+        </div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Acceso online básico</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Lista de amigos (hasta 50)</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Notificaciones en tiempo real</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Juegos compatibles con NeXo</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Badge ⭐ Free en el perfil</span>
+          </li>
+          <li class="feat-disabled">
+            <span class="feat-check no">✗</span>
+            <span class="feat-label">Amigos ilimitados</span>
+          </li>
+          <li class="feat-disabled">
+            <span class="feat-check no">✗</span>
+            <span class="feat-label">Servidores prioritarios</span>
+          </li>
+          <li class="feat-disabled">
+            <span class="feat-check no">✗</span>
+            <span class="feat-label">Acceso a la API REST</span>
+          </li>
+        </ul>
+        <a href="#profile" class="plan-cta cta-outline">Crear cuenta gratis</a>
+        <p class="plan-note">Sin límite de tiempo</p>
+      </div>
+
+      <!-- PRO (destacado) -->
+      <div class="plan-card featured">
+        <div class="plan-popular">⚡ Más popular</div>
+        <div class="plan-icon">💎</div>
+        <div class="plan-name" style="color:#ffd700;">Pro</div>
+        <p class="plan-tagline">Para jugadores serios que quieren la mejor experiencia online.</p>
+        <div class="plan-price">
+          <div class="price-monthly">
+            <span class="currency" style="color:#ffd700;">€</span><span class="amount" style="color:#ffd700;">4<span style="font-size:1.8rem;">.99</span></span>
+            <p class="period">por mes, facturado mensualmente</p>
+          </div>
+          <div class="price-yearly">
+            <span class="currency" style="color:#ffd700;">€</span><span class="amount" style="color:#ffd700;">3<span style="font-size:1.8rem;">.99</span></span>
+            <p class="period">por mes · <strong style="color:#00d084;">€47.88/año</strong> (ahorra €12)</p>
+          </div>
+        </div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Todo lo del plan Free</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Lista de amigos <strong>ilimitada</strong></span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Servidores prioritarios (menor latencia)</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Badge 💎 Pro exclusivo en el perfil</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Acceso anticipado a nuevos juegos</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Soporte por email prioritario</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Estadísticas de partidas</span>
+          </li>
+          <li class="feat-disabled">
+            <span class="feat-check no">✗</span>
+            <span class="feat-label">Acceso a la API REST</span>
+          </li>
+        </ul>
+        <a href="#" class="plan-cta cta-gold" onclick="alert('Próximamente — sistema de pago en desarrollo')">Obtener Pro</a>
+        <p class="plan-note">Cancela cuando quieras</p>
+      </div>
+
+      <!-- DEV -->
+      <div class="plan-card">
+        <div class="plan-icon">🛠️</div>
+        <div class="plan-name" style="color:#00e676;">Dev</div>
+        <p class="plan-tagline">Para desarrolladores y creadores de proyectos en NeXo Network.</p>
+        <div class="plan-price">
+          <div class="price-monthly">
+            <span class="currency" style="color:#00e676;">€</span><span class="amount" style="color:#00e676;">9<span style="font-size:1.8rem;">.99</span></span>
+            <p class="period">por mes, facturado mensualmente</p>
+          </div>
+          <div class="price-yearly">
+            <span class="currency" style="color:#00e676;">€</span><span class="amount" style="color:#00e676;">7<span style="font-size:1.8rem;">.99</span></span>
+            <p class="period">por mes · <strong style="color:#00d084;">€95.88/año</strong> (ahorra €24)</p>
+          </div>
+        </div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Todo lo del plan Pro</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Acceso completo a la <strong>API REST</strong></span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Panel de desarrollador</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Acceso a servidores beta / test</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Badge 🛠️ Dev en el perfil</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Webhooks y eventos personalizados</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Soporte directo con el equipo</span>
+          </li>
+          <li>
+            <span class="feat-check yes">✓</span>
+            <span class="feat-label">Nombre en los créditos del proyecto</span>
+          </li>
+        </ul>
+        <a href="#" class="plan-cta cta-primary" onclick="alert('Próximamente — contacta con nosotros por Discord')">Contactar</a>
+        <p class="plan-note">Por invitación o solicitud</p>
+      </div>
+
+    </div>
+
+    <!-- Tabla comparativa -->
+    <div class="plans-compare fade-up">
+      <h3>Comparativa completa de planes</h3>
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;">Característica</th>
+            <th class="col-free">⭐ Free</th>
+            <th class="col-pro">💎 Pro</th>
+            <th class="col-dev">🛠️ Dev</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Acceso online al emulador</td>
+            <td><span class="check-yes">✓</span></td>
+            <td><span class="check-yes">✓</span></td>
+            <td><span class="check-yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Lista de amigos</td>
+            <td>Hasta 50</td>
+            <td>Ilimitada</td>
+            <td>Ilimitada</td>
+          </tr>
+          <tr>
+            <td>Notificaciones en tiempo real</td>
+            <td><span class="check-yes">✓</span></td>
+            <td><span class="check-yes">✓</span></td>
+            <td><span class="check-yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Servidores prioritarios</td>
+            <td><span class="check-no">✗</span></td>
+            <td><span class="check-yes">✓</span></td>
+            <td><span class="check-yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Acceso anticipado a juegos</td>
+            <td><span class="check-no">✗</span></td>
+            <td><span class="check-yes">✓</span></td>
+            <td><span class="check-yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Badge exclusivo en el perfil</td>
+            <td>⭐ Free</td>
+            <td>💎 Pro</td>
+            <td>🛠️ Dev</td>
+          </tr>
+          <tr>
+            <td>Estadísticas de partidas</td>
+            <td><span class="check-no">✗</span></td>
+            <td><span class="check-yes">✓</span></td>
+            <td><span class="check-yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Acceso a la API REST</td>
+            <td><span class="check-no">✗</span></td>
+            <td><span class="check-no">✗</span></td>
+            <td><span class="check-yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Panel de desarrollador</td>
+            <td><span class="check-no">✗</span></td>
+            <td><span class="check-no">✗</span></td>
+            <td><span class="check-yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Servidores beta / test</td>
+            <td><span class="check-no">✗</span></td>
+            <td><span class="check-no">✗</span></td>
+            <td><span class="check-yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Soporte</td>
+            <td>Comunidad</td>
+            <td>Email prioritario</td>
+            <td>Equipo directo</td>
+          </tr>
+          <tr>
+            <td style="font-weight:800;">Precio mensual</td>
+            <td style="font-weight:800; color:var(--accent);">Gratis</td>
+            <td style="font-weight:800; color:#ffd700;">€4.99/mes</td>
+            <td style="font-weight:800; color:#00e676;">€9.99/mes</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FAQ -->
+    <div class="plans-faq fade-up">
+      <h3>Preguntas frecuentes</h3>
+      <div class="faq-list">
+        <div class="faq-item">
+          <h4>¿El plan Free es realmente gratis para siempre?</h4>
+          <p>Sí. El plan Free no tiene límite de tiempo ni requiere tarjeta de crédito. Mientras NeXo Network esté activo, tendrás acceso online gratuito.</p>
+        </div>
+        <div class="faq-item">
+          <h4>¿Cómo cancelo mi suscripción?</h4>
+          <p>Puedes cancelar en cualquier momento desde tu panel de usuario. Seguirás teniendo acceso Pro hasta el final del período facturado.</p>
+        </div>
+        <div class="faq-item">
+          <h4>¿Cómo se actualiza mi badge en el emulador?</h4>
+          <p>El badge se actualiza automáticamente al reconectar el emulador. Si lo cambiaste hace poco, cierra sesión en NexoEmu y vuelve a conectar.</p>
+        </div>
+        <div class="faq-item">
+          <h4>¿El plan Pro mejora la latencia en los juegos?</h4>
+          <p>Los usuarios Pro tienen prioridad en los servidores de NeXo Network, lo que se traduce en menor tiempo de espera y conexiones más estables.</p>
+        </div>
+        <div class="faq-item">
+          <h4>¿Qué métodos de pago aceptáis?</h4>
+          <p>Próximamente aceptaremos tarjeta de crédito/débito y PayPal. El sistema de pagos está en desarrollo activo.</p>
+        </div>
+        <div class="faq-item">
+          <h4>¿El plan Dev es solo para programadores?</h4>
+          <p>No necesariamente. Es para cualquiera que quiera acceso a la API, participar en betas o apoyar activamente el proyecto con acceso completo.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
 <div class="divider"></div>
 
 <!-- ── FOOTER ────────────────────────────────────────────── -->
@@ -1160,8 +1798,9 @@
       <li><a href="#features">Características</a></li>
       <li><a href="#how">Cómo funciona</a></li>
       <li><a href="#gallery">Galería</a></li>
+      <li><a href="#plans">Planes</a></li>
       <li><a href="#download">Descargar</a></li>
-      <li><a href="https://nexonetwork.space">Nexo Network</a></li>
+      <li><a href="#profile">Mi Perfil</a></li>
     </ul>
     <div class="footer-copy">
       © 2026 NexoEmu Project. Código abierto bajo licencia GPL-3.0.
@@ -1340,6 +1979,17 @@
       btn.textContent = '✅';
       setTimeout(() => btn.textContent = '📋', 1500);
     });
+  }
+
+  // ── TOGGLE FACTURACIÓN PLANES ─────────────────────────────────────────────
+  let billingYearly = false;
+
+  function toggleBilling() {
+    billingYearly = !billingYearly;
+    const btn   = document.getElementById('billing-toggle');
+    const grid  = document.getElementById('plans-grid');
+    btn.classList.toggle('active', billingYearly);
+    grid.classList.toggle('yearly-mode', billingYearly);
   }
 
   // Al cargar la página, verificar si ya hay sesión activa
