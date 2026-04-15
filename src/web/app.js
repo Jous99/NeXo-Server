@@ -127,6 +127,65 @@ section{padding:4.5rem 2rem;}
 .bo{padding:12px 32px;background:transparent;color:white;border:2px solid rgba(255,255,255,.4);border-radius:var(--rlg);font-family:var(--font);font-weight:800;font-size:15px;cursor:pointer;transition:all .15s;text-decoration:none;display:inline-block;margin-left:10px;}
 .bo:hover{border-color:white;background:rgba(255,255,255,.1);}
 
+/* ══ PLANES ══ */
+#plans{background:var(--gb);}
+.plans-head{text-align:center;margin-bottom:2.5rem;}
+.plans-head .ptag{font-size:10px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:2px;margin-bottom:.6rem;}
+.plans-head h2{font-size:clamp(26px,4vw,42px);font-weight:900;letter-spacing:-.5px;margin-bottom:.75rem;}
+.plans-head p{font-size:14px;color:var(--tm);max-width:500px;margin:0 auto;line-height:1.6;}
+.pbill{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:2.5rem;}
+.pbill span{font-size:13px;font-weight:700;color:var(--tm);}
+.ptog{width:46px;height:26px;background:var(--gm);border-radius:13px;cursor:pointer;position:relative;transition:background .2s;border:none;padding:0;}
+.ptog.on{background:var(--red);}
+.ptogk{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:white;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+.ptog.on .ptogk{transform:translateX(20px);}
+.psave{background:rgba(34,197,94,.15);color:#16a34a;border:1px solid rgba(34,197,94,.3);font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px;align-items:start;}
+.pc{background:white;border-radius:var(--rlg);padding:1.75rem;border:2px solid var(--gm);transition:all .2s;position:relative;}
+.pc:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.1);border-color:var(--red);}
+.pc.hot{border-color:var(--red);box-shadow:0 0 0 3px rgba(228,0,15,.12);transform:translateY(-6px);}
+.pc.hot:hover{transform:translateY(-10px);box-shadow:0 0 0 3px rgba(228,0,15,.12),0 16px 40px rgba(228,0,15,.15);}
+.pop-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--red);color:white;font-size:10px;font-weight:900;padding:3px 14px;border-radius:20px;white-space:nowrap;letter-spacing:.5px;text-transform:uppercase;}
+.pico{font-size:2rem;margin-bottom:.75rem;}
+.pname{font-size:17px;font-weight:900;margin-bottom:.3rem;}
+.ptag2{font-size:12px;color:var(--tm);line-height:1.5;margin-bottom:1.25rem;}
+.pprice{margin-bottom:1.5rem;}
+.pprice .amount{font-size:42px;font-weight:900;line-height:1;}
+.pprice .cur{font-size:20px;font-weight:700;color:var(--tm);vertical-align:top;padding-top:6px;display:inline-block;}
+.pprice .per{font-size:12px;color:var(--tm);margin-top:4px;}
+.pprice .pyr{display:none;}
+.yearly .pprice .pmo{display:none;}
+.yearly .pprice .pyr{display:block;}
+.pdiv{height:1px;background:var(--gb);margin:1.25rem 0;}
+.pfl{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem;}
+.pfl li{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.45;}
+.pchk{width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:1px;}
+.pchk.y{background:rgba(34,197,94,.15);color:#16a34a;}
+.pchk.n{background:var(--gb);color:var(--gm);}
+.pfl li.off span.pl{color:var(--gm);}
+.pcta{display:block;width:100%;padding:11px;border-radius:var(--rmd);font-family:var(--font);font-size:13px;font-weight:800;text-align:center;cursor:pointer;border:2px solid var(--gm);background:white;color:var(--tx);transition:all .15s;text-decoration:none;}
+.pcta:hover{border-color:var(--red);color:var(--red);}
+.pcta.red{background:var(--red);color:white;border-color:var(--red);}
+.pcta.red:hover{background:var(--rd);border-color:var(--rd);}
+.pnote{text-align:center;font-size:11px;color:var(--tm);margin-top:6px;}
+/* Compare table */
+.ctbl-wrap{margin-top:3.5rem;overflow-x:auto;}
+.ctbl-wrap h3{font-size:18px;font-weight:900;margin-bottom:1.25rem;text-align:center;}
+.ctbl{width:100%;border-collapse:collapse;font-size:13px;}
+.ctbl th,.ctbl td{padding:10px 16px;text-align:center;border-bottom:1px solid var(--gb);}
+.ctbl th{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--tm);background:var(--gb);}
+.ctbl th:first-child,.ctbl td:first-child{text-align:left;font-weight:700;color:var(--tx);}
+.ctbl tr:hover td{background:var(--gb);}
+.ctbl .ck{color:#16a34a;font-size:15px;font-weight:900;}
+.ctbl .cx{color:var(--gm);font-size:15px;}
+/* FAQ */
+.pfaq{margin-top:3.5rem;}
+.pfaq h3{font-size:18px;font-weight:900;margin-bottom:1.25rem;text-align:center;}
+.fqg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;}
+.fqi{background:white;border-radius:var(--rmd);padding:1.1rem 1.25rem;border:1.5px solid var(--gb);}
+.fqi h4{font-size:13px;font-weight:800;margin-bottom:.4rem;}
+.fqi p{font-size:12px;color:var(--tm);line-height:1.6;}
+
 /* FOOTER */
 footer{background:var(--gd);color:rgba(255,255,255,.5);padding:2.5rem 2rem 2rem;}
 .fi2{max-width:1080px;margin:0 auto;}
@@ -306,6 +365,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
     <a class="nla" href="#feat">Características</a>
     <a class="nla" href="#api2">API</a>
     <a class="nla" href="#compat">Compatibilidad</a>
+    <a class="nla" href="#plans">Planes</a>
     <a class="nla" href="/emulator" target="_blank">Emulador</a>
   </div>
   <button class="ncta" onclick="openApp()">Portal →</button>
@@ -416,6 +476,162 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
   </div>
 </section>
 
+<!-- ══ PLANES ══ -->
+<section id="plans">
+  <div class="cnt">
+    <div class="plans-head">
+      <p class="ptag">Planes & Precios</p>
+      <h2>Elige tu plan de <span style="color:var(--red)">NeXo Network</span></h2>
+      <p>Empieza gratis y actualiza cuando quieras. Todos los planes incluyen acceso al emulador y a los servidores online de nexonetwork.space.</p>
+    </div>
+
+    <!-- Toggle mensual/anual -->
+    <div class="pbill">
+      <span>Mensual</span>
+      <button class="ptog" id="ptog" onclick="togglePBill()"><div class="ptogk"></div></button>
+      <span>Anual <span class="psave">Ahorra 20%</span></span>
+    </div>
+
+    <!-- Tarjetas -->
+    <div class="pgrid" id="pgrid">
+
+      <!-- FREE -->
+      <div class="pc">
+        <div class="pico">⭐</div>
+        <div class="pname" style="color:var(--blu)">Free</div>
+        <p class="ptag2">Perfecto para empezar.<br>Sin tarjeta de crédito.</p>
+        <div class="pprice">
+          <div class="pmo">
+            <span class="cur">€</span><span class="amount">0</span>
+            <p class="per">Para siempre gratis</p>
+          </div>
+          <div class="pyr">
+            <span class="cur">€</span><span class="amount">0</span>
+            <p class="per">Para siempre gratis</p>
+          </div>
+        </div>
+        <div class="pdiv"></div>
+        <ul class="pfl">
+          <li><span class="pchk y">✓</span><span class="pl">Acceso online básico</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Lista de amigos (hasta 50)</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Notificaciones en tiempo real</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Juegos compatibles con NeXo</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Badge ⭐ Free en el perfil</span></li>
+          <li class="off"><span class="pchk n">✗</span><span class="pl">Amigos ilimitados</span></li>
+          <li class="off"><span class="pchk n">✗</span><span class="pl">Servidores prioritarios</span></li>
+          <li class="off"><span class="pchk n">✗</span><span class="pl">Acceso a la API REST</span></li>
+        </ul>
+        <button class="pcta" onclick="openApp()">Crear cuenta gratis</button>
+        <p class="pnote">Sin límite de tiempo</p>
+      </div>
+
+      <!-- PRO -->
+      <div class="pc hot">
+        <div class="pop-tag">⚡ Más popular</div>
+        <div class="pico">💎</div>
+        <div class="pname" style="color:var(--red)">Pro</div>
+        <p class="ptag2">Para jugadores serios que quieren la mejor experiencia online.</p>
+        <div class="pprice">
+          <div class="pmo">
+            <span class="cur">€</span><span class="amount" style="color:var(--red)">4<span style="font-size:24px">.99</span></span>
+            <p class="per">por mes, facturado mensualmente</p>
+          </div>
+          <div class="pyr">
+            <span class="cur">€</span><span class="amount" style="color:var(--red)">3<span style="font-size:24px">.99</span></span>
+            <p class="per">por mes · <strong style="color:#16a34a">€47.88/año</strong> (ahorra €12)</p>
+          </div>
+        </div>
+        <div class="pdiv"></div>
+        <ul class="pfl">
+          <li><span class="pchk y">✓</span><span class="pl">Todo lo del plan Free</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Lista de amigos <strong>ilimitada</strong></span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Servidores prioritarios (menor latencia)</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Badge 💎 Pro exclusivo en el perfil</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Acceso anticipado a nuevos juegos</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Soporte por email prioritario</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Estadísticas de partidas</span></li>
+          <li class="off"><span class="pchk n">✗</span><span class="pl">Acceso a la API REST</span></li>
+        </ul>
+        <button class="pcta red" onclick="alert('Próximamente — sistema de pago en desarrollo')">Obtener Pro</button>
+        <p class="pnote">Cancela cuando quieras</p>
+      </div>
+
+      <!-- DEV -->
+      <div class="pc">
+        <div class="pico">🛠️</div>
+        <div class="pname" style="color:#16a34a">Dev</div>
+        <p class="ptag2">Para desarrolladores y creadores de proyectos en NeXo Network.</p>
+        <div class="pprice">
+          <div class="pmo">
+            <span class="cur">€</span><span class="amount" style="color:#16a34a">9<span style="font-size:24px">.99</span></span>
+            <p class="per">por mes, facturado mensualmente</p>
+          </div>
+          <div class="pyr">
+            <span class="cur">€</span><span class="amount" style="color:#16a34a">7<span style="font-size:24px">.99</span></span>
+            <p class="per">por mes · <strong style="color:#16a34a">€95.88/año</strong> (ahorra €24)</p>
+          </div>
+        </div>
+        <div class="pdiv"></div>
+        <ul class="pfl">
+          <li><span class="pchk y">✓</span><span class="pl">Todo lo del plan Pro</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Acceso completo a la <strong>API REST</strong></span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Panel de desarrollador</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Acceso a servidores beta / test</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Badge 🛠️ Dev en el perfil</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Webhooks y eventos personalizados</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Soporte directo con el equipo</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Nombre en los créditos del proyecto</span></li>
+        </ul>
+        <button class="pcta" style="border-color:#16a34a;color:#16a34a;" onclick="alert('Próximamente — contacta por Discord')">Contactar</button>
+        <p class="pnote">Por invitación o solicitud</p>
+      </div>
+
+    </div><!-- /pgrid -->
+
+    <!-- Tabla comparativa -->
+    <div class="ctbl-wrap">
+      <h3>Comparativa de planes</h3>
+      <table class="ctbl">
+        <thead>
+          <tr>
+            <th>Característica</th>
+            <th style="color:var(--blu)">⭐ Free</th>
+            <th style="color:var(--red)">💎 Pro</th>
+            <th style="color:#16a34a">🛠️ Dev</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Acceso online al emulador</td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Lista de amigos</td><td>Hasta 50</td><td>Ilimitada</td><td>Ilimitada</td></tr>
+          <tr><td>Notificaciones en tiempo real</td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Servidores prioritarios</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Acceso anticipado a juegos</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Badge en el perfil</td><td>⭐ Free</td><td>💎 Pro</td><td>🛠️ Dev</td></tr>
+          <tr><td>Estadísticas de partidas</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Acceso a la API REST</td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Panel de desarrollador</td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Soporte</td><td>Comunidad</td><td>Email prioritario</td><td>Equipo directo</td></tr>
+          <tr><td><strong>Precio mensual</strong></td><td><strong style="color:var(--blu)">Gratis</strong></td><td><strong style="color:var(--red)">€4.99/mes</strong></td><td><strong style="color:#16a34a">€9.99/mes</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FAQ -->
+    <div class="pfaq">
+      <h3>Preguntas frecuentes</h3>
+      <div class="fqg">
+        <div class="fqi"><h4>¿El plan Free es realmente gratis para siempre?</h4><p>Sí. El plan Free no tiene límite de tiempo ni requiere tarjeta de crédito. Mientras nexonetwork.space esté activo, tendrás acceso online gratuito.</p></div>
+        <div class="fqi"><h4>¿Cómo cancelo mi suscripción?</h4><p>Puedes cancelar en cualquier momento desde tu panel de usuario. Seguirás teniendo acceso Pro hasta el final del período facturado.</p></div>
+        <div class="fqi"><h4>¿Cómo se actualiza mi badge en el emulador?</h4><p>El badge se actualiza al reconectar el emulador. Si lo cambiaste hace poco, cierra sesión en NexoEmu y vuelve a conectar.</p></div>
+        <div class="fqi"><h4>¿El plan Pro mejora la latencia?</h4><p>Los usuarios Pro tienen prioridad en los servidores de nexonetwork.space, lo que se traduce en menor tiempo de espera y conexiones más estables.</p></div>
+        <div class="fqi"><h4>¿Qué métodos de pago aceptáis?</h4><p>Próximamente aceptaremos tarjeta de crédito/débito y PayPal. El sistema de pagos está en desarrollo activo.</p></div>
+        <div class="fqi"><h4>¿El plan Dev es solo para programadores?</h4><p>No. Es para cualquiera que quiera acceso a la API, participar en betas o apoyar activamente el proyecto con acceso completo.</p></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
 <!-- CTA -->
 <section class="ctas">
   <div class="cnt">
@@ -432,7 +648,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
     <div class="ft">
       <div class="fb"><h4>NeXoNetwork</h4><p style="font-size:12px;margin-top:.4rem;line-height:1.6;">Infraestructura open source para el ecosistema NeXo. Proyecto educativo, no afiliado con Nintendo.</p></div>
       <div class="fl"><h4>Proyecto</h4><a href="https://github.com/Jous99/NeXo-Server" target="_blank">NeXo-Server</a><a href="https://github.com/Jous99/NeXo-Emu" target="_blank">NeXo-Emu</a><a href="https://forgejo.joustech.space/NeXo/NeXoNetwork-Server" target="_blank">Forgejo</a></div>
-      <div class="fl"><h4>Portal</h4><a href="#" onclick="openApp();return false;">Crear cuenta</a><a href="#" onclick="openApp();return false;">Iniciar sesión</a><a href="#" onclick="openApp();return false;">Estado servidores</a></div>
+      <div class="fl"><h4>Portal</h4><a href="#" onclick="openApp();return false;">Crear cuenta</a><a href="#" onclick="openApp();return false;">Iniciar sesión</a><a href="#plans">Planes</a><a href="#" onclick="openApp();return false;">Estado servidores</a></div>
     </div>
     <div class="fb2"><p style="font-size:11px;">© 2026 NeXo Team · GPL-2.0 · Proyecto educativo · No afiliado con Nintendo</p><div style="display:flex;gap:10px;"><a href="https://github.com/Jous99/NeXo-Server" target="_blank" style="color:rgba(255,255,255,.35);font-size:11px;font-weight:700;text-decoration:none;">GitHub</a><a href="https://forgejo.joustech.space" target="_blank" style="color:rgba(255,255,255,.35);font-size:11px;font-weight:700;text-decoration:none;">Forgejo</a></div></div>
   </div>
@@ -1132,6 +1348,14 @@ async function doUpdate() {
     msg.style.display = 'block'; msg.style.color = 'var(--rd)';
     msg.textContent = 'Error al iniciar la actualización.';
   }
+}
+
+// ─── PLANES TOGGLE ────────────────────────────────────────────────────────────
+let pBillYearly = false;
+function togglePBill() {
+  pBillYearly = !pBillYearly;
+  document.getElementById('ptog').classList.toggle('on', pBillYearly);
+  document.getElementById('pgrid').classList.toggle('yearly', pBillYearly);
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
