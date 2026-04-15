@@ -147,14 +147,8 @@ async function nintendoStubs(fastify) {
         });
     });
 
-    // GET /v1/users/:id — Perfil de usuario del eShop
-    fastify.get('/v1/users/:id', async (req, reply) => {
-        if (!isNintendoStubSubdomain(req)) return reply.code(404).send();
-        return reply.send({
-            id:      req.params.id,
-            country: 'US',
-        });
-    });
+    // GET /v1/users/:id ya está manejado en accounts-api.js (BAAS profile)
+    // No lo definimos aquí para evitar FST_ERR_DUPLICATED_ROUTE.
 
     // ══════════════════════════════════════════════════════════════════════════
     //  SECTOR API — api.sect.srv.nintendo.net
@@ -208,17 +202,9 @@ async function nintendoStubs(fastify) {
     });
 
     // ══════════════════════════════════════════════════════════════════════════
-    //  CATCH-ALL para nintendo-stubs
-    //  Cualquier ruta desconocida de dominios Nintendo que no tenga handler
-    //  específico devuelve 200 OK vacío en lugar de 404 o timeout.
-    //  Esto evita que la Switch o los juegos se queden colgados.
+    //  NOTA: El not-found handler global de server.js devuelve 404 para
+    //  cualquier ruta de nintendo-stubs no definida aquí.
     // ══════════════════════════════════════════════════════════════════════════
-
-    // Este hook se ejecuta ANTES del not-found handler global
-    fastify.addHook('onRequest', async (req, reply) => {
-        // No hacemos nada aquí; el not-found handler de server.js maneja el resto.
-        // Este módulo solo define rutas específicas.
-    });
 }
 
 module.exports = nintendoStubs;
