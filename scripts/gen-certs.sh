@@ -69,21 +69,61 @@ extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 
 [alt_names]
+# ── Dominio NeXo ──────────────────────────────────────────────────────────────
 DNS.1  = ${DOMAIN}
 DNS.2  = *.${DOMAIN}
-DNS.3  = *.nintendo.net
-DNS.4  = *.nintendo.com
-DNS.5  = *.ndas.srv.nintendo.net
-DNS.6  = *.npln.srv.nintendo.net
-DNS.7  = *.baas.nintendo.com
-DNS.8  = *.s.n.srv.nintendo.net
+
+# ── Auth chain ────────────────────────────────────────────────────────────────
+DNS.3  = dauth-lp1.ndas.srv.nintendo.net
+DNS.4  = aauth-lp1.ndas.srv.nintendo.net
+DNS.5  = accounts.nintendo.com
+DNS.6  = api.accounts.nintendo.com
+DNS.7  = *.ndas.srv.nintendo.net
+
+# ── BAAS (wildcard) ───────────────────────────────────────────────────────────
+DNS.8  = *.baas.nintendo.com
+
+# ── Lista de amigos ───────────────────────────────────────────────────────────
 DNS.9  = friends.lp1.s.n.srv.nintendo.net
-DNS.10 = api.lp1.npln.srv.nintendo.net
-DNS.11 = g9s300c4msl.lp1.s.n.srv.nintendo.net
-DNS.12 = accounts.nintendo.com
-DNS.13 = *.cdn.nintendo.net
-DNS.14 = dauth-lp1.ndas.srv.nintendo.net
-DNS.15 = aauth-lp1.ndas.srv.nintendo.net
+DNS.10 = friends-lp1.s.n.srv.nintendo.net
+DNS.11 = *.s.n.srv.nintendo.net
+
+# ── NPLN / NEX (juegos) ───────────────────────────────────────────────────────
+DNS.12 = api.lp1.npln.srv.nintendo.net
+DNS.13 = g9s300c4msl.lp1.s.n.srv.nintendo.net
+DNS.14 = *.npln.srv.nintendo.net
+DNS.15 = *.lp1.t.npln.srv.nintendo.net
+
+# ── BCAT ──────────────────────────────────────────────────────────────────────
+DNS.16 = bcat-list-lp1.cdn.nintendo.net
+DNS.17 = bcat-dl-lp1.cdn.nintendo.net
+DNS.18 = *.cdn.nintendo.net
+
+# ── Captive portal ────────────────────────────────────────────────────────────
+DNS.19 = ctest.cdn.nintendo.net
+DNS.20 = nasc.nintendowifi.net
+
+# ── Error reporting ───────────────────────────────────────────────────────────
+DNS.21 = receive-lp1.er.srv.nintendo.net
+DNS.22 = receive-lp1.dg.srv.nintendo.net
+DNS.23 = pushmo.hac.lp1.er.nintendo.net
+
+# ── System updates ────────────────────────────────────────────────────────────
+DNS.24 = atum.hac.lp1.d4c.nintendo.net
+DNS.25 = sun.hac.lp1.d4c.nintendo.net
+DNS.26 = aqua.hac.lp1.d4c.nintendo.net
+
+# ── eShop ─────────────────────────────────────────────────────────────────────
+DNS.27 = tagaya.hac.lp1.eshop.nintendo.net
+DNS.28 = shogun-lp1.eshop.nintendo.net
+DNS.29 = beach.hac.lp1.eshop.nintendo.net
+DNS.30 = *.eshop.nintendo.net
+
+# ── Otros servicios Nintendo ──────────────────────────────────────────────────
+DNS.31 = api.sect.srv.nintendo.net
+DNS.32 = nifm.lp1.srv.nintendo.net
+DNS.33 = *.nintendo.net
+DNS.34 = *.nintendo.com
 EOF
 
 openssl req -new \
@@ -112,22 +152,22 @@ echo "   nexo-ca.crt  ← Instalar en la Switch (Atmosphere)"
 echo "   server.crt   ← Configurar en Fastify / nginx"
 echo "   server.key   ← Clave privada del servidor"
 echo ""
-echo "━━━ SIGUIENTE PASO — SWITCH ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "━━━ SIGUIENTE PASO — SWITCH (Atmosphere) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "  1. Copia nexo-ca.crt a la SD de la Switch:"
-echo "     SD:/atmosphere/config/ssl/nexo-ca.crt"
+echo "  1. Instala la CA en la Switch:"
+echo "     Copia nexo-ca.crt a la SD → /atmosphere/config/exefs_patches/"
+echo "     O usa la app homebrew NX-CA-Installer para instalarla."
 echo ""
-echo "  2. En tu router o Pi-hole, añade estos registros DNS:"
-echo "     dauth-lp1.ndas.srv.nintendo.net    → IP DE TU SERVIDOR"
-echo "     aauth-lp1.ndas.srv.nintendo.net    → IP DE TU SERVIDOR"
-echo "     accounts.nintendo.com              → IP DE TU SERVIDOR"
-echo "     friends.lp1.s.n.srv.nintendo.net   → IP DE TU SERVIDOR"
-echo "     *.baas.nintendo.com                → IP DE TU SERVIDOR"
-echo "     api.lp1.npln.srv.nintendo.net      → IP DE TU SERVIDOR"
+echo "  2. Configura los hosts de Atmosphere:"
+echo "     Copia scripts/atmosphere-hosts.txt a la SD → /atmosphere/hosts/default.txt"
+echo "     Edita el archivo y reemplaza TU_IP_AQUI por la IP de tu servidor."
 echo ""
 echo "  3. Activa HTTPS en el servidor:"
-echo "     Pon NEXO_HTTPS=true en tu .env"
-echo "     (o edita src/server.js para cargar los certs)"
+echo "     Añade NEXO_HTTPS=true en tu .env"
+echo ""
+echo "  4. Reinicia la Switch con Atmosphere y ya debería conectar a NeXoNetwork."
+echo ""
+echo "  Para más detalles: ver docs/switch-setup.md"
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""

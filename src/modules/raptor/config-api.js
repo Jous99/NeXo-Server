@@ -31,32 +31,7 @@ const BASE = process.env.BASE_DOMAIN || 'nexonetwork.space';
 
 function buildRewrites() {
     return [
-        // ── BCAT (noticias/eventos en el juego) ──────────────────────────────
-        {
-            source:      'bcat-list-lp1.cdn.nintendo.net',
-            destination: `bcat-lp1.${BASE}`,
-        },
-        {
-            source:      'bcat-dl-lp1.cdn.nintendo.net',
-            destination: `bcat-lp1.${BASE}`,
-        },
-        // ── Super Mario Maker 2 — DataStore ──────────────────────────────────
-        // El juego sube/descarga niveles a través del DataStore de Nintendo.
-        // Lo redirigimos al módulo SMM2 de NeXo.
-        {
-            source:      'g9s300c4msl.lp1.s.n.srv.nintendo.net',
-            destination: `smm2-lp1.${BASE}`,
-        },
-        {
-            source:      'api.lp1.npln.srv.nintendo.net',
-            destination: `smm2-lp1.${BASE}`,
-        },
-        // ── Servicios de cuenta Nintendo ─────────────────────────────────────
-        // El juego pide un token de cuenta antes de conectar online.
-        {
-            source:      'accounts.nintendo.com',
-            destination: `accounts-api-lp1.${BASE}`,
-        },
+        // ── Auth chain ────────────────────────────────────────────────────────
         {
             source:      'dauth-lp1.ndas.srv.nintendo.net',
             destination: `accounts-api-lp1.${BASE}`,
@@ -65,17 +40,21 @@ function buildRewrites() {
             source:      'aauth-lp1.ndas.srv.nintendo.net',
             destination: `accounts-api-lp1.${BASE}`,
         },
-        // ── BAAS (autenticación de usuario para NPLN) ─────────────────────────
-        // Después de dauth/aauth, el juego llama a un subdominio BAAS único por
-        // título para obtener el token de usuario de NPLN.
-        // Usamos wildcard "*.baas.nintendo.com" para capturar cualquier subdominio.
-        // El emulador soporta este patrón desde el fix de RewriteUrl en
-        // online_initiator.cpp (búsqueda por sufijo).
+        {
+            source:      'accounts.nintendo.com',
+            destination: `accounts-api-lp1.${BASE}`,
+        },
+        {
+            source:      'api.accounts.nintendo.com',
+            destination: `accounts-api-lp1.${BASE}`,
+        },
+        // ── BAAS (wildcard) ───────────────────────────────────────────────────
+        // El emulador soporta búsqueda por sufijo desde el fix de RewriteUrl.
         {
             source:      '*.baas.nintendo.com',
             destination: `accounts-api-lp1.${BASE}`,
         },
-        // ── Lista de amigos Switch ────────────────────────────────────────────
+        // ── Lista de amigos ───────────────────────────────────────────────────
         {
             source:      'friends.lp1.s.n.srv.nintendo.net',
             destination: `switch-friends-lp1.${BASE}`,
@@ -84,7 +63,25 @@ function buildRewrites() {
             source:      'friends-lp1.s.n.srv.nintendo.net',
             destination: `switch-friends-lp1.${BASE}`,
         },
-        // ── Conectores de red ─────────────────────────────────────────────────
+        // ── Super Mario Maker 2 — DataStore ───────────────────────────────────
+        {
+            source:      'g9s300c4msl.lp1.s.n.srv.nintendo.net',
+            destination: `smm2-lp1.${BASE}`,
+        },
+        {
+            source:      'api.lp1.npln.srv.nintendo.net',
+            destination: `smm2-lp1.${BASE}`,
+        },
+        // ── BCAT ──────────────────────────────────────────────────────────────
+        {
+            source:      'bcat-list-lp1.cdn.nintendo.net',
+            destination: `bcat-lp1.${BASE}`,
+        },
+        {
+            source:      'bcat-dl-lp1.cdn.nintendo.net',
+            destination: `bcat-lp1.${BASE}`,
+        },
+        // ── Captive portal / conectividad ─────────────────────────────────────
         {
             source:      'ctest.cdn.nintendo.net',
             destination: `connector-lp1.${BASE}`,
@@ -92,6 +89,26 @@ function buildRewrites() {
         {
             source:      'nasc.nintendowifi.net',
             destination: `connector-lp1.${BASE}`,
+        },
+        // ── Servicios de sistema (stubs) ──────────────────────────────────────
+        // Error reporting — aceptamos y descartamos
+        {
+            source:      'receive-lp1.er.srv.nintendo.net',
+            destination: `status-lp1.${BASE}`,
+        },
+        // System updates — respondemos "sin actualizaciones"
+        {
+            source:      'atum.hac.lp1.d4c.nintendo.net',
+            destination: `status-lp1.${BASE}`,
+        },
+        {
+            source:      'sun.hac.lp1.d4c.nintendo.net',
+            destination: `status-lp1.${BASE}`,
+        },
+        // Title version list — evita que el emulador pida updates de juegos
+        {
+            source:      'tagaya.hac.lp1.eshop.nintendo.net',
+            destination: `status-lp1.${BASE}`,
         },
     ];
 }

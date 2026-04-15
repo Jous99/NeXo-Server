@@ -1027,6 +1027,7 @@
     <li><a href="#features">Características</a></li>
     <li><a href="#how">Cómo funciona</a></li>
     <li><a href="#gallery">Galería</a></li>
+    <li><a href="#status">Servicios</a></li>
     <li><a href="#plans">Planes</a></li>
     <li><a href="#download" class="nav-cta">Descargar</a></li>
     <li><a href="#profile" id="nav-profile-link" class="nav-cta" style="background:rgba(0,168,232,0.15);border:1px solid var(--accent);">Mi Perfil</a></li>
@@ -1779,6 +1780,173 @@
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- ── SERVER STATUS ────────────────────────────────────────── -->
+<section id="status" style="padding:5rem 2rem; background:var(--bg2);">
+  <div class="section-inner">
+    <div class="fade-up" style="text-align:center; margin-bottom:3rem;">
+      <p class="section-label">Estado de Servicios</p>
+      <h2>Servicios de Nintendo que reemplazamos</h2>
+      <p class="section-desc" style="margin:0 auto;">
+        NeXo Server intercepta y sustituye estos servicios oficiales de Nintendo Switch.
+        Tu consola o emulador se comunica con nuestro servidor en lugar de con Nintendo.
+      </p>
+    </div>
+
+    <!-- Leyenda -->
+    <div class="fade-up" style="display:flex; gap:1.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2.5rem;">
+      <span style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem; color:var(--text-muted);">
+        <span style="color:#00d084; font-size:1.1rem;">✅</span> Implementado
+      </span>
+      <span style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem; color:var(--text-muted);">
+        <span style="font-size:1rem;">🚧</span> En desarrollo
+      </span>
+      <span style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem; color:var(--text-muted);">
+        <span style="font-size:1rem;">📋</span> Planificado
+      </span>
+      <span style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem; color:var(--text-muted);">
+        <span style="font-size:1rem;">💡</span> Stub (acepta y responde vacío)
+      </span>
+    </div>
+
+    <!-- Grid de módulos -->
+    <div class="fade-up" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem;">
+
+      <!-- Auth chain -->
+      <div style="background:var(--card); border:1px solid rgba(0,208,132,0.3); border-radius:14px; padding:1.5rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
+          <span style="font-size:1.5rem;">🔐</span>
+          <div>
+            <div style="font-weight:800; font-size:0.95rem;">Autenticación Nintendo</div>
+            <div style="font-size:0.75rem; color:#00d084; font-weight:700; margin-top:2px;">✅ Completado</div>
+          </div>
+        </div>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.4rem;">
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span><code style="font-size:0.75rem; color:var(--accent);">dauth-lp1.ndas.srv.nintendo.net</code></li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span><code style="font-size:0.75rem; color:var(--accent);">aauth-lp1.ndas.srv.nintendo.net</code></li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span><code style="font-size:0.75rem; color:var(--accent);">accounts.nintendo.com</code></li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span><code style="font-size:0.75rem; color:var(--accent);">*.baas.nintendo.com</code> (wildcard)</li>
+        </ul>
+      </div>
+
+      <!-- Lista de amigos -->
+      <div style="background:var(--card); border:1px solid rgba(0,208,132,0.3); border-radius:14px; padding:1.5rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
+          <span style="font-size:1.5rem;">👥</span>
+          <div>
+            <div style="font-weight:800; font-size:0.95rem;">Amigos & Presencia</div>
+            <div style="font-size:0.75rem; color:#00d084; font-weight:700; margin-top:2px;">✅ Completado</div>
+          </div>
+        </div>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.4rem;">
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>Lista de amigos</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>Solicitudes de amistad</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>Presencia (online / in-game)</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>Bloqueo de usuarios</li>
+        </ul>
+      </div>
+
+      <!-- BCAT & Conectividad -->
+      <div style="background:var(--card); border:1px solid rgba(0,208,132,0.3); border-radius:14px; padding:1.5rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
+          <span style="font-size:1.5rem;">📡</span>
+          <div>
+            <div style="font-weight:800; font-size:0.95rem;">BCAT & Conectividad</div>
+            <div style="font-size:0.75rem; color:#00d084; font-weight:700; margin-top:2px;">✅ Completado</div>
+          </div>
+        </div>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.4rem;">
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>BCAT (contenido de fondo de juegos)</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>NIFM captive portal test</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>Notificaciones WebSocket</li>
+        </ul>
+      </div>
+
+      <!-- Servicios de sistema -->
+      <div style="background:var(--card); border:1px solid rgba(0,212,255,0.2); border-radius:14px; padding:1.5rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
+          <span style="font-size:1.5rem;">🛡️</span>
+          <div>
+            <div style="font-weight:800; font-size:0.95rem;">Servicios de Sistema</div>
+            <div style="font-size:0.75rem; color:var(--accent); font-weight:700; margin-top:2px;">💡 Stubs anti-ban</div>
+          </div>
+        </div>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.4rem;">
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>Error reporting (acepta, descarta)</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>System updates → «sin actualizaciones»</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>Title version list (sin updates de juegos)</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>eShop básico (stubs de licencias)</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>Parental controls (stub)</li>
+        </ul>
+      </div>
+
+      <!-- SMM2 -->
+      <div style="background:var(--card); border:1px solid rgba(245,166,35,0.3); border-radius:14px; padding:1.5rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
+          <span style="font-size:1.5rem;">🍄</span>
+          <div>
+            <div style="font-weight:800; font-size:0.95rem;">Super Mario Maker 2</div>
+            <div style="font-size:0.75rem; color:#f5a623; font-weight:700; margin-top:2px;">🚧 En pruebas básicas</div>
+          </div>
+        </div>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.4rem;">
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>Subir/descargar niveles</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#00d084;">✓</span>Likes, comentarios, clears</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#f5a623;">○</span>Ranking y búsqueda avanzada</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#f5a623;">○</span>Modo historia online</li>
+        </ul>
+      </div>
+
+      <!-- Matchmaking -->
+      <div style="background:var(--card); border:1px solid rgba(245,166,35,0.3); border-radius:14px; padding:1.5rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
+          <span style="font-size:1.5rem;">🎮</span>
+          <div>
+            <div style="font-weight:800; font-size:0.95rem;">Matchmaking & Salas</div>
+            <div style="font-size:0.75rem; color:#f5a623; font-weight:700; margin-top:2px;">🚧 En desarrollo</div>
+          </div>
+        </div>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.4rem;">
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#f5a623;">○</span>Crear / unirse a salas</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#f5a623;">○</span>Matchmaking por juego</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#f5a623;">○</span>P2P relay (STUN/TURN)</li>
+        </ul>
+      </div>
+
+      <!-- Juegos planificados -->
+      <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.5rem; grid-column: 1 / -1;">
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1.25rem;">
+          <span style="font-size:1.5rem;">📋</span>
+          <div>
+            <div style="font-weight:800; font-size:0.95rem;">Próximos módulos de juego</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-top:2px;">Planificados para versiones futuras</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:0.6rem;">
+          <div style="background:var(--bg3); border-radius:8px; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; gap:0.5rem;">
+            <span>📋</span> Mario Kart 8 Deluxe
+          </div>
+          <div style="background:var(--bg3); border-radius:8px; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; gap:0.5rem;">
+            <span>📋</span> Splatoon 3
+          </div>
+          <div style="background:var(--bg3); border-radius:8px; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; gap:0.5rem;">
+            <span>📋</span> Smash Bros Ultimate
+          </div>
+          <div style="background:var(--bg3); border-radius:8px; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; gap:0.5rem;">
+            <span>📋</span> Animal Crossing: NH
+          </div>
+          <div style="background:var(--bg3); border-radius:8px; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; gap:0.5rem;">
+            <span>📋</span> Pokémon Scarlet/Violet
+          </div>
+          <div style="background:var(--bg3); border-radius:8px; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; gap:0.5rem;">
+            <span>📋</span> NPLN completo (gRPC)
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </section>
 

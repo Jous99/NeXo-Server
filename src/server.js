@@ -36,6 +36,9 @@ const systemRoutes = require('./routes/system');
 // ── Juegos ────────────────────────────────────────────────────────────────────
 const smm2Routes = require('./modules/games/smm2/routes');
 
+// ── Stubs de servicios Nintendo (Switch real) ─────────────────────────────────
+const nintendoStubs = require('./modules/nintendo/stubs');
+
 // ── Web (HTML embebido) ───────────────────────────────────────────────────────
 const webHtml    = require('./web/app');
 const emuHtml    = fs.readFileSync(path.join(__dirname, 'web/nexo-emu.html'), 'utf8');
@@ -44,6 +47,66 @@ const emuHtml    = fs.readFileSync(path.join(__dirname, 'web/nexo-emu.html'), 'u
 // Tu dominio base configurado en .env (ej: "nexonetwork.space")
 // El servidor distingue el subdominio por el header Host de cada petición.
 const BASE_DOMAIN = process.env.BASE_DOMAIN || 'nexonetwork.space';
+
+// ── Mapa de dominios Nintendo reales → módulo interno ────────────────────────
+// Cuando la Switch moddeada se conecta vía Atmosphere hosts, el header Host
+// llega con el dominio real de Nintendo (ej: "dauth-lp1.ndas.srv.nintendo.net")
+// en lugar de nuestro subdominio. Esta tabla hace el mapeo.
+const NINTENDO_HOST_MAP = {
+    // ── Auth chain ──────────────────────────────────────────────────────────
+    'dauth-lp1.ndas.srv.nintendo.net':              'accounts-api-lp1',
+    'aauth-lp1.ndas.srv.nintendo.net':              'accounts-api-lp1',
+    'accounts.nintendo.com':                         'accounts-api-lp1',
+    'api.accounts.nintendo.com':                     'accounts-api-lp1',
+
+    // ── Lista de amigos ──────────────────────────────────────────────────────
+    'friends.lp1.s.n.srv.nintendo.net':             'switch-friends-lp1',
+    'friends-lp1.s.n.srv.nintendo.net':             'switch-friends-lp1',
+
+    // ── Juego: Super Mario Maker 2 ───────────────────────────────────────────
+    'g9s300c4msl.lp1.s.n.srv.nintendo.net':         'smm2-lp1',
+    'api.lp1.npln.srv.nintendo.net':                'smm2-lp1',
+
+    // ── BCAT ────────────────────────────────────────────────────────────────
+    'bcat-list-lp1.cdn.nintendo.net':               'bcat-lp1',
+    'bcat-dl-lp1.cdn.nintendo.net':                 'bcat-lp1',
+
+    // ── Captive portal / conectividad ────────────────────────────────────────
+    'ctest.cdn.nintendo.net':                        'connector-lp1',
+    'nasc.nintendowifi.net':                         'connector-lp1',
+    'conntest.romstation.fr':                        'connector-lp1',  // algunos CFW
+
+    // ── Servicios de sistema Nintendo (nuevos stubs) ──────────────────────────
+    'receive-lp1.er.srv.nintendo.net':              'nintendo-stubs', // error reporting
+    'receive-lp1.dg.srv.nintendo.net':              'nintendo-stubs', // diagnosis
+    'atum.hac.lp1.d4c.nintendo.net':                'nintendo-stubs', // system update
+    'sun.hac.lp1.d4c.nintendo.net':                 'nintendo-stubs', // update metadata
+    'aqua.hac.lp1.d4c.nintendo.net':                'nintendo-stubs', // update content
+    'tagaya.hac.lp1.eshop.nintendo.net':            'nintendo-stubs', // title versions
+    'shogun-lp1.eshop.nintendo.net':                'nintendo-stubs', // eShop API
+    'beach.hac.lp1.eshop.nintendo.net':             'nintendo-stubs', // eShop login
+    'pushmo.hac.lp1.er.nintendo.net':               'nintendo-stubs', // push errors
+    'api.sect.srv.nintendo.net':                     'nintendo-stubs', // sector API
+    'nifm.lp1.srv.nintendo.net':                    'nintendo-stubs', // NIFM
+};
+
+// Resuelve el subdominio interno a partir del header Host.
+// Soporta dominios NeXo, dominios Nintendo reales (Switch con Atmosphere),
+// y el wildcard *.baas.nintendo.com.
+function resolveSubdomain(host) {
+    // 1. Lookup directo en la tabla Nintendo
+    if (NINTENDO_HOST_MAP[host]) return NINTENDO_HOST_MAP[host];
+
+    // 2. Wildcard BAAS: e97b8a9d672e4ce4845b-sb.baas.nintendo.com
+    if (host.endsWith('.baas.nintendo.com')) return 'accounts-api-lp1';
+
+    // 3. Wildcard NEX por juego: *.lp1.s.n.srv.nintendo.net (genérico)
+    if (host.endsWith('.lp1.s.n.srv.nintendo.net')) return 'nintendo-stubs';
+
+    // 4. Subdominios NeXo normales
+    const sub = host.replace(`.${BASE_DOMAIN}`, '').replace(BASE_DOMAIN, '');
+    return sub || 'www';
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -112,20 +175,18 @@ async function buildApp() {
 
     fastify.addHook('onRequest', async (request, reply) => {
         const host = (request.headers.host || '').split(':')[0].toLowerCase();
-
-        // Extraer subdominio (ej: "accounts-api-lp1" de "accounts-api-lp1.nexonetwork.space")
-        const sub = host.replace(`.${BASE_DOMAIN}`, '').replace(BASE_DOMAIN, '');
-        request.subdomain = sub || 'www';
+        request.subdomain = resolveSubdomain(host);
     });
 
     // ── Web pública (dominio raíz o www) + NIFM captive portal ───────────────
     fastify.get('/', async (req, reply) => {
         const sub = req.subdomain;
 
-        // NIFM captive portal test (connector-lp1.nexonetwork.space)
-        // Nintendo Switch hace GET / para verificar conectividad.
+        // NIFM captive portal test
+        // La Switch hace GET / a ctest.cdn.nintendo.net para verificar internet.
         // Sin 200 OK → error 2038-2306 y el juego no conecta.
-        if (sub === 'connector-lp1') {
+        // Aplica tanto al subdominio NeXo como al dominio Nintendo redirigido.
+        if (sub === 'connector-lp1' || sub === 'nintendo-stubs') {
             return reply.code(200).type('text/plain').send('ok');
         }
 
@@ -189,6 +250,10 @@ async function buildApp() {
     // switch-friends-lp1.nexonetwork.space — Nintendo Switch friends HTTP API
     // La Switch real redirige friends.lp1.s.n.srv.nintendo.net aquí vía DNS.
     fastify.register(switchFriendsApi, { prefix: '/' });
+
+    // nintendo-stubs — Servicios Nintendo que la Switch llama pero que solo
+    // necesitan respuesta básica (error reporting, actualizaciones, eShop básico).
+    fastify.register(nintendoStubs, { prefix: '/' });
 
     // ══════════════════════════════════════════════════════════════════════════
     //  RUTAS WEB — Portal de usuario (dominio raíz)
