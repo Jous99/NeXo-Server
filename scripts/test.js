@@ -43,12 +43,14 @@ async function req(method, path, { body, headers = {}, host } = {}) {
     const lib  = isHttps ? https : http;
 
     const bodyStr = body ? JSON.stringify(body) : null;
-    const h = {
-        'Content-Type': 'application/json',
-        ...headers,
-    };
-    if (host)     h['Host']           = host;
-    if (bodyStr)  h['Content-Length'] = Buffer.byteLength(bodyStr);
+    const h = { ...headers };
+    if (host)    h['Host']           = host;
+    // Solo ponemos Content-Type y Content-Length si realmente hay body.
+    // Sin esto, Fastify 5 intenta parsear JSON vacío y devuelve 400.
+    if (bodyStr) {
+        h['Content-Type']   = 'application/json';
+        h['Content-Length'] = Buffer.byteLength(bodyStr);
+    }
 
     return new Promise((resolve) => {
         const opts = {
