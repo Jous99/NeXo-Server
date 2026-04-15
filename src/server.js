@@ -28,6 +28,7 @@ const statusApiRoutes    = require('./modules/raptor/status-api');
 const notifApiRoutes     = require('./modules/raptor/notification-api');
 const connectorRoutes    = require('./modules/raptor/connector-api');
 const bcastRoutes        = require('./modules/raptor/bcat-api');
+const switchFriendsApi   = require('./modules/raptor/switch-friends-api');
 
 // ── Sistema ───────────────────────────────────────────────────────────────────
 const systemRoutes = require('./routes/system');
@@ -47,9 +48,28 @@ const BASE_DOMAIN = process.env.BASE_DOMAIN || 'nexonetwork.space';
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function buildApp() {
+    // ── HTTPS opcional (para Switch real con certificados propios) ────────────
+    // Activa con: NEXO_HTTPS=true en .env
+    // Genera los certs con: ./scripts/gen-certs.sh
+    let httpsConfig = undefined;
+    if (process.env.NEXO_HTTPS === 'true') {
+        const certsDir = path.join(__dirname, '..', 'certs');
+        try {
+            httpsConfig = {
+                key:  fs.readFileSync(path.join(certsDir, 'server.key')),
+                cert: fs.readFileSync(path.join(certsDir, 'server.crt')),
+            };
+            console.log('🔒 HTTPS activado con certificados propios');
+        } catch (e) {
+            console.warn('⚠️  NEXO_HTTPS=true pero no se encontraron los certs en /certs/');
+            console.warn('   Ejecuta: ./scripts/gen-certs.sh');
+        }
+    }
+
     const fastify = Fastify({
         logger:     { level: process.env.NODE_ENV === 'production' ? 'warn' : 'info' },
         trustProxy: true,
+        ...(httpsConfig ? { https: httpsConfig } : {}),
     });
 
     // ── CORS ──────────────────────────────────────────────────────────────────
@@ -126,7 +146,7 @@ async function buildApp() {
             'accounts-api-lp1', 'profile-lp1', 'friends-lp1',
             'config-lp1', 'bcat-lp1', 'notification-lp1',
             'connector-lp1', 'status-lp1', 'citrus-api-lp1',
-            'smm2-lp1',
+            'smm2-lp1', 'switch-friends-lp1',
         ].includes(sub);
 
         if (!isApiSubdomain && req.method === 'GET') {
@@ -165,6 +185,10 @@ async function buildApp() {
 
     // smm2-lp1.nexonetwork.space — Super Mario Maker 2
     fastify.register(smm2Routes, { prefix: '/' });
+
+    // switch-friends-lp1.nexonetwork.space — Nintendo Switch friends HTTP API
+    // La Switch real redirige friends.lp1.s.n.srv.nintendo.net aquí vía DNS.
+    fastify.register(switchFriendsApi, { prefix: '/' });
 
     // ══════════════════════════════════════════════════════════════════════════
     //  RUTAS WEB — Portal de usuario (dominio raíz)

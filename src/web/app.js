@@ -186,6 +186,67 @@ section{padding:4.5rem 2rem;}
 .fqi h4{font-size:13px;font-weight:800;margin-bottom:.4rem;}
 .fqi p{font-size:12px;color:var(--tm);line-height:1.6;}
 
+/* ══ ROADMAP ══ */
+#roadmap{background:white;}
+.rdhead{text-align:center;margin-bottom:2.5rem;}
+.rdhead .rtag{font-size:10px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:2px;margin-bottom:.6rem;}
+.rdhead h2{font-size:clamp(24px,4vw,38px);font-weight:900;letter-spacing:-.5px;margin-bottom:.75rem;}
+.rdhead p{font-size:14px;color:var(--tm);max-width:520px;margin:0 auto;line-height:1.6;}
+/* progress bar global */
+.gbar-wrap{background:var(--gb);border-radius:8px;height:10px;margin-bottom:2.5rem;overflow:hidden;}
+.gbar{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--red),var(--blu));transition:width .8s ease;}
+.gbar-label{text-align:center;font-size:12px;font-weight:800;color:var(--tm);margin-bottom:.5rem;}
+/* category grid */
+.rdgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem;}
+.rdc{background:var(--gb);border-radius:var(--rlg);padding:1.5rem;border:2px solid transparent;transition:border-color .2s;}
+.rdc:hover{border-color:var(--gm);}
+.rdchead{display:flex;align-items:center;gap:10px;margin-bottom:1.1rem;}
+.rdcico{width:36px;height:36px;border-radius:var(--rmd);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.rdcico.red{background:var(--rs);}
+.rdcico.blu{background:var(--bs);}
+.rdcico.grn{background:rgba(34,197,94,.12);}
+.rdcico.pur{background:rgba(168,85,247,.1);}
+.rdcico.yel{background:rgba(251,191,36,.12);}
+.rdcico.gry{background:var(--gb);}
+.rdctitle{font-size:14px;font-weight:900;}
+.rdcsub{font-size:11px;color:var(--tm);font-weight:600;}
+/* mini progress bar per category */
+.mbar-wrap{background:white;border-radius:4px;height:6px;margin-bottom:1rem;overflow:hidden;}
+.mbar{height:100%;border-radius:4px;transition:width .6s ease;}
+.mbar.red{background:var(--red);}
+.mbar.blu{background:var(--blu);}
+.mbar.grn{background:#22c55e;}
+.mbar.pur{background:#a855f7;}
+.mbar.yel{background:#f59e0b;}
+/* item list */
+.rditems{display:flex;flex-direction:column;gap:6px;}
+.rdi{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.45;}
+.rdibadge{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:1px;}
+.rdibadge.done{background:rgba(34,197,94,.15);color:#16a34a;}
+.rdibadge.wip{background:rgba(251,191,36,.2);color:#d97706;}
+.rdibadge.todo{background:var(--gb);color:var(--gm);}
+.rdilabel{color:var(--tx);}
+.rdilabel.dim{color:var(--tm);}
+/* legend */
+.rdlegend{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;margin-bottom:2rem;font-size:12px;color:var(--tm);}
+.rdlegend span{display:flex;align-items:center;gap:5px;font-weight:700;}
+.ll{width:14px;height:14px;border-radius:3px;display:inline-block;}
+.ll.done{background:rgba(34,197,94,.2);border:1px solid #22c55e;}
+.ll.wip{background:rgba(251,191,36,.2);border:1px solid #f59e0b;}
+.ll.todo{background:var(--gb);border:1px solid var(--gm);}
+/* version badge */
+.vbadge{display:inline-flex;align-items:center;gap:6px;background:var(--rs);border:1.5px solid rgba(228,0,15,.2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:800;color:var(--red);letter-spacing:.3px;margin-bottom:1rem;}
+/* switch section */
+.sw-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:1.5rem;}
+.sw-step{background:var(--gb);border-radius:var(--rmd);padding:1.1rem;position:relative;}
+.sw-step .snum{width:26px;height:26px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-bottom:.6rem;}
+.sw-step h4{font-size:13px;font-weight:800;margin-bottom:.3rem;}
+.sw-step p{font-size:12px;color:var(--tm);line-height:1.5;}
+.sw-step .stag{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;margin-bottom:.5rem;text-transform:uppercase;}
+.stag.done{background:rgba(34,197,94,.15);color:#16a34a;}
+.stag.wip{background:rgba(251,191,36,.2);color:#d97706;}
+.stag.todo{background:var(--gb);color:var(--tm);}
+
 /* FOOTER */
 footer{background:var(--gd);color:rgba(255,255,255,.5);padding:2.5rem 2rem 2rem;}
 .fi2{max-width:1080px;margin:0 auto;}
@@ -366,6 +427,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
     <a class="nla" href="#api2">API</a>
     <a class="nla" href="#compat">Compatibilidad</a>
     <a class="nla" href="#plans">Planes</a>
+    <a class="nla" href="#roadmap">Progreso</a>
     <a class="nla" href="/emulator" target="_blank">Emulador</a>
   </div>
   <button class="ncta" onclick="openApp()">Portal →</button>
@@ -499,7 +561,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
       <div class="pc">
         <div class="pico">⭐</div>
         <div class="pname" style="color:var(--blu)">Free</div>
-        <p class="ptag2">Perfecto para empezar.<br>Sin tarjeta de crédito.</p>
+        <p class="ptag2">Todo lo que necesitas para jugar online.<br>Sin tarjeta de crédito.</p>
         <div class="pprice">
           <div class="pmo">
             <span class="cur">€</span><span class="amount">0</span>
@@ -512,14 +574,12 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
         </div>
         <div class="pdiv"></div>
         <ul class="pfl">
-          <li><span class="pchk y">✓</span><span class="pl">Acceso online básico</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Lista de amigos (hasta 50)</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Acceso online completo al emulador</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Lista de amigos ilimitada</span></li>
           <li><span class="pchk y">✓</span><span class="pl">Notificaciones en tiempo real</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Juegos compatibles con NeXo</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Todos los juegos compatibles con NeXo</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Estadísticas de partidas</span></li>
           <li><span class="pchk y">✓</span><span class="pl">Badge ⭐ Free en el perfil</span></li>
-          <li class="off"><span class="pchk n">✗</span><span class="pl">Amigos ilimitados</span></li>
-          <li class="off"><span class="pchk n">✗</span><span class="pl">Servidores prioritarios</span></li>
-          <li class="off"><span class="pchk n">✗</span><span class="pl">Acceso a la API REST</span></li>
         </ul>
         <button class="pcta" onclick="openApp()">Crear cuenta gratis</button>
         <p class="pnote">Sin límite de tiempo</p>
@@ -530,7 +590,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
         <div class="pop-tag">⚡ Más popular</div>
         <div class="pico">💎</div>
         <div class="pname" style="color:var(--red)">Pro</div>
-        <p class="ptag2">Para jugadores serios que quieren la mejor experiencia online.</p>
+        <p class="ptag2">Todo lo de Free más extras exclusivos que no afectan al juego.</p>
         <div class="pprice">
           <div class="pmo">
             <span class="cur">€</span><span class="amount" style="color:var(--red)">4<span style="font-size:24px">.99</span></span>
@@ -544,46 +604,44 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
         <div class="pdiv"></div>
         <ul class="pfl">
           <li><span class="pchk y">✓</span><span class="pl">Todo lo del plan Free</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Lista de amigos <strong>ilimitada</strong></span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Servidores prioritarios (menor latencia)</span></li>
           <li><span class="pchk y">✓</span><span class="pl">Badge 💎 Pro exclusivo en el perfil</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Acceso anticipado a nuevos juegos</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Acceso anticipado a betas de nuevos juegos</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Color de nombre personalizado en el perfil</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Canal VIP exclusivo en Discord</span></li>
           <li><span class="pchk y">✓</span><span class="pl">Soporte por email prioritario</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Estadísticas de partidas</span></li>
-          <li class="off"><span class="pchk n">✗</span><span class="pl">Acceso a la API REST</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Tu nombre en la sección Supporters de la web</span></li>
         </ul>
         <button class="pcta red" onclick="alert('Próximamente — sistema de pago en desarrollo')">Obtener Pro</button>
         <p class="pnote">Cancela cuando quieras</p>
       </div>
 
-      <!-- DEV -->
+      <!-- PATRON -->
       <div class="pc">
-        <div class="pico">🛠️</div>
-        <div class="pname" style="color:#16a34a">Dev</div>
-        <p class="ptag2">Para desarrolladores y creadores de proyectos en NeXo Network.</p>
+        <div class="pico">👑</div>
+        <div class="pname" style="color:#a855f7">Patron</div>
+        <p class="ptag2">Para quienes quieren apoyar el proyecto y dejar huella en NeXo Network.</p>
         <div class="pprice">
           <div class="pmo">
-            <span class="cur">€</span><span class="amount" style="color:#16a34a">9<span style="font-size:24px">.99</span></span>
+            <span class="cur">€</span><span class="amount" style="color:#a855f7">9<span style="font-size:24px">.99</span></span>
             <p class="per">por mes, facturado mensualmente</p>
           </div>
           <div class="pyr">
-            <span class="cur">€</span><span class="amount" style="color:#16a34a">7<span style="font-size:24px">.99</span></span>
+            <span class="cur">€</span><span class="amount" style="color:#a855f7">7<span style="font-size:24px">.99</span></span>
             <p class="per">por mes · <strong style="color:#16a34a">€95.88/año</strong> (ahorra €24)</p>
           </div>
         </div>
         <div class="pdiv"></div>
         <ul class="pfl">
           <li><span class="pchk y">✓</span><span class="pl">Todo lo del plan Pro</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Acceso completo a la <strong>API REST</strong></span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Panel de desarrollador</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Acceso a servidores beta / test</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Badge 🛠️ Dev en el perfil</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Webhooks y eventos personalizados</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Soporte directo con el equipo</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Nombre en los créditos del proyecto</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Badge 👑 Patron animado en el perfil</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Tu nombre en los créditos del proyecto</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Voto en nuevas características del servidor</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Acceso a canales privados del equipo</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Mención en changelogs y actualizaciones</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Apoyas directamente el servidor ❤️</span></li>
         </ul>
-        <button class="pcta" style="border-color:#16a34a;color:#16a34a;" onclick="alert('Próximamente — contacta por Discord')">Contactar</button>
-        <p class="pnote">Por invitación o solicitud</p>
+        <button class="pcta" style="border-color:#a855f7;color:#a855f7;" onclick="alert('Próximamente — contacta por Discord')">Ser Patron</button>
+        <p class="pnote">Gracias por apoyar el proyecto</p>
       </div>
 
     </div><!-- /pgrid -->
@@ -597,21 +655,25 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
             <th>Característica</th>
             <th style="color:var(--blu)">⭐ Free</th>
             <th style="color:var(--red)">💎 Pro</th>
-            <th style="color:#16a34a">🛠️ Dev</th>
+            <th style="color:#a855f7">👑 Patron</th>
           </tr>
         </thead>
         <tbody>
           <tr><td>Acceso online al emulador</td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Lista de amigos</td><td>Hasta 50</td><td>Ilimitada</td><td>Ilimitada</td></tr>
+          <tr><td>Amigos ilimitados</td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
           <tr><td>Notificaciones en tiempo real</td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Servidores prioritarios</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Acceso anticipado a juegos</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Badge en el perfil</td><td>⭐ Free</td><td>💎 Pro</td><td>🛠️ Dev</td></tr>
-          <tr><td>Estadísticas de partidas</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Acceso a la API REST</td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Panel de desarrollador</td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Todos los juegos compatibles</td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Estadísticas de partidas</td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Badge en el perfil</td><td>⭐ Free</td><td>💎 Pro</td><td>👑 Patron</td></tr>
+          <tr><td>Acceso anticipado a betas</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Color de nombre personalizado</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Canal VIP en Discord</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Nombre en Supporters</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Nombre en créditos del proyecto</td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Voto en nuevas características</td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td></tr>
+          <tr><td>Canales privados del equipo</td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td></tr>
           <tr><td>Soporte</td><td>Comunidad</td><td>Email prioritario</td><td>Equipo directo</td></tr>
-          <tr><td><strong>Precio mensual</strong></td><td><strong style="color:var(--blu)">Gratis</strong></td><td><strong style="color:var(--red)">€4.99/mes</strong></td><td><strong style="color:#16a34a">€9.99/mes</strong></td></tr>
+          <tr><td><strong>Precio mensual</strong></td><td><strong style="color:var(--blu)">Gratis</strong></td><td><strong style="color:var(--red)">€4.99/mes</strong></td><td><strong style="color:#a855f7">€9.99/mes</strong></td></tr>
         </tbody>
       </table>
     </div>
@@ -620,12 +682,198 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
     <div class="pfaq">
       <h3>Preguntas frecuentes</h3>
       <div class="fqg">
-        <div class="fqi"><h4>¿El plan Free es realmente gratis para siempre?</h4><p>Sí. El plan Free no tiene límite de tiempo ni requiere tarjeta de crédito. Mientras nexonetwork.space esté activo, tendrás acceso online gratuito.</p></div>
-        <div class="fqi"><h4>¿Cómo cancelo mi suscripción?</h4><p>Puedes cancelar en cualquier momento desde tu panel de usuario. Seguirás teniendo acceso Pro hasta el final del período facturado.</p></div>
-        <div class="fqi"><h4>¿Cómo se actualiza mi badge en el emulador?</h4><p>El badge se actualiza al reconectar el emulador. Si lo cambiaste hace poco, cierra sesión en NexoEmu y vuelve a conectar.</p></div>
-        <div class="fqi"><h4>¿El plan Pro mejora la latencia?</h4><p>Los usuarios Pro tienen prioridad en los servidores de nexonetwork.space, lo que se traduce en menor tiempo de espera y conexiones más estables.</p></div>
-        <div class="fqi"><h4>¿Qué métodos de pago aceptáis?</h4><p>Próximamente aceptaremos tarjeta de crédito/débito y PayPal. El sistema de pagos está en desarrollo activo.</p></div>
-        <div class="fqi"><h4>¿El plan Dev es solo para programadores?</h4><p>No. Es para cualquiera que quiera acceso a la API, participar en betas o apoyar activamente el proyecto con acceso completo.</p></div>
+        <div class="fqi"><h4>¿El plan Free incluye todo el online?</h4><p>Sí. El plan Free tiene acceso completo al emulador online: amigos ilimitados, todos los juegos, notificaciones y estadísticas. Sin restricciones de juego.</p></div>
+        <div class="fqi"><h4>¿Qué diferencia al Pro del Free?</h4><p>El Pro añade extras exclusivos que no afectan al juego: badge Pro, acceso a betas, color de nombre personalizado, canal VIP en Discord y soporte prioritario.</p></div>
+        <div class="fqi"><h4>¿Cómo cancelo mi suscripción?</h4><p>Puedes cancelar en cualquier momento desde tu panel de usuario. Seguirás teniendo acceso hasta el final del período facturado.</p></div>
+        <div class="fqi"><h4>¿Cómo se actualiza mi badge en el emulador?</h4><p>El badge se actualiza al reconectar. Si lo cambiaste hace poco, cierra sesión en NexoEmu y vuelve a conectar.</p></div>
+        <div class="fqi"><h4>¿Qué métodos de pago aceptáis?</h4><p>Próximamente tarjeta de crédito/débito y PayPal. El sistema de pagos está en desarrollo activo.</p></div>
+        <div class="fqi"><h4>¿Qué es el plan Patron?</h4><p>Es para quienes quieren apoyar directamente el proyecto. Obtienes el badge 👑, nombre en créditos, voto en nuevas funciones y acceso a canales privados del equipo.</p></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ ROADMAP / PROGRESO ══ -->
+<section id="roadmap">
+  <div class="cnt">
+    <div class="rdhead">
+      <p class="rtag">Estado del desarrollo</p>
+      <div class="vbadge"><span>●</span> v0.8.0-alpha — En desarrollo activo</div>
+      <h2>Progreso de <span style="color:var(--red)">NeXo Network</span></h2>
+      <p>Seguimiento en tiempo real de todo lo que está implementado, en desarrollo o pendiente — tanto para el emulador como para la Switch real.</p>
+    </div>
+
+    <!-- Barra de progreso global -->
+    <p class="gbar-label">Progreso global del proyecto — 52%</p>
+    <div class="gbar-wrap"><div class="gbar" style="width:52%"></div></div>
+
+    <!-- Leyenda -->
+    <div class="rdlegend">
+      <span><span class="ll done"></span>Implementado</span>
+      <span><span class="ll wip"></span>En progreso</span>
+      <span><span class="ll todo"></span>Pendiente</span>
+    </div>
+
+    <!-- Grid de categorías -->
+    <div class="rdgrid">
+
+      <!-- 🔐 Autenticación -->
+      <div class="rdc">
+        <div class="rdchead">
+          <div class="rdcico red">🔐</div>
+          <div><div class="rdctitle">Autenticación & Cuentas</div><div class="rdcsub">Login, tokens, Nintendo auth</div></div>
+        </div>
+        <div class="mbar-wrap"><div class="mbar red" style="width:90%"></div></div>
+        <div class="rditems">
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Login con usuario y contraseña</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Registro de cuenta nueva</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Refresh de token JWT</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">dauth — device_auth_token (Switch)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">aauth — application_auth_token (Switch)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">BAAS Login — token de usuario NPLN</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo Accounts /connect/1.0.0/api/token</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Planes de suscripción (Free/Pro/Patron)</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">OAuth2 completo (Nintendo accounts)</span></div>
+        </div>
+      </div>
+
+      <!-- 👥 Lista de amigos -->
+      <div class="rdc">
+        <div class="rdchead">
+          <div class="rdcico blu">👥</div>
+          <div><div class="rdctitle">Lista de Amigos</div><div class="rdcsub">Emulador + Switch real</div></div>
+        </div>
+        <div class="mbar-wrap"><div class="mbar blu" style="width:70%"></div></div>
+        <div class="rditems">
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Ver lista de amigos (emulador)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Enviar solicitud de amistad</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Aceptar / rechazar solicitudes</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Presencia online (qué juego juegas)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Estado offline / online / in_game</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Nintendo friends HTTP API (Switch real)</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NEX Friends protocol (Switch OS nativa)</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Invitaciones a partida en tiempo real</span></div>
+        </div>
+      </div>
+
+      <!-- 🔔 Notificaciones -->
+      <div class="rdc">
+        <div class="rdchead">
+          <div class="rdcico grn">🔔</div>
+          <div><div class="rdctitle">Notificaciones</div><div class="rdcsub">WebSocket, push, tiempo real</div></div>
+        </div>
+        <div class="mbar-wrap"><div class="mbar grn" style="width:75%"></div></div>
+        <div class="rditems">
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">WebSocket en tiempo real</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Notificación: amigo conectado</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Notificación: solicitud de amistad</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Notificación: nuevo juego activo</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">BCAT (noticias del juego en Switch)</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Push notifications nativas Switch</span></div>
+        </div>
+      </div>
+
+      <!-- 🎮 Online de juegos -->
+      <div class="rdc">
+        <div class="rdchead">
+          <div class="rdcico red">🎮</div>
+          <div><div class="rdctitle">Online en Juegos</div><div class="rdcsub">SMM2, matchmaking, DataStore</div></div>
+        </div>
+        <div class="mbar-wrap"><div class="mbar red" style="width:30%"></div></div>
+        <div class="rditems">
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdibadge"></span><span class="rdilabel">Redirección DNS automática (emulador)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">URL rewrites Nintendo → NeXo</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">SMM2 — endpoints REST (subir/bajar niveles)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Estado por título (qué juegos tienen online)</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">SMM2 DataStore protocolo Nintendo</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NPLN gRPC (online moderno)</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NEX / Rendez-Vous (matchmaking)</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Salas de juego multijugador</span></div>
+        </div>
+      </div>
+
+      <!-- 🌐 Infraestructura -->
+      <div class="rdc">
+        <div class="rdchead">
+          <div class="rdcico yel">🌐</div>
+          <div><div class="rdctitle">Infraestructura</div><div class="rdcsub">Servidor, SSL, base de datos</div></div>
+        </div>
+        <div class="mbar-wrap"><div class="mbar yel" style="width:65%"></div></div>
+        <div class="rditems">
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Servidor Node.js + Fastify</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Base de datos MySQL</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Routing por subdominio automático</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">nexonetwork.space configurado</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">HTTPS con CA propia (para Switch real)</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Script de generación de certificados SSL</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Panel de administración web</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Sistema de pagos (Stripe/PayPal)</span></div>
+        </div>
+      </div>
+
+      <!-- 🕹️ Switch Real -->
+      <div class="rdc">
+        <div class="rdchead">
+          <div class="rdcico pur">🕹️</div>
+          <div><div class="rdctitle">Switch Real (CFW)</div><div class="rdcsub">Atmosphere, DNS, certificados</div></div>
+        </div>
+        <div class="mbar-wrap"><div class="mbar pur" style="width:40%"></div></div>
+        <div class="rditems">
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">dauth / aauth stubs (device & app token)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">BAAS stub (token de usuario NPLN)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo Accounts stub (token exchange)</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">CA raíz propia + cert SSL compatible Switch</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Nintendo friends HTTP API (lista de amigos)</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">DNS personalizado (guía de configuración)</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NEX Friends protocol completo</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NPLN gRPC completo</span></div>
+        </div>
+      </div>
+
+    </div><!-- /rdgrid -->
+
+    <!-- Guía de conexión Switch real -->
+    <div style="margin-top:3rem;background:var(--gb);border-radius:var(--rlg);padding:2rem;">
+      <h3 style="font-size:18px;font-weight:900;margin-bottom:.5rem;">🕹️ Cómo conectar tu Switch modificada</h3>
+      <p style="font-size:13px;color:var(--tm);margin-bottom:1.5rem;">Pasos necesarios para que una Switch con Atmosphere se conecte a nexonetwork.space</p>
+      <div class="sw-steps">
+        <div class="sw-step">
+          <div class="snum">1</div>
+          <span class="stag done">Disponible</span>
+          <h4>Instalar CFW</h4>
+          <p>Atmosphere 1.x en tu Switch. Necesario para instalar certificados personalizados y redirigir el tráfico SSL.</p>
+        </div>
+        <div class="sw-step">
+          <div class="snum">2</div>
+          <span class="stag wip">En progreso</span>
+          <h4>Certificado SSL propio</h4>
+          <p>Generar una CA raíz y un certificado que cubra <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">*.nintendo.net</code> y <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">*.nexonetwork.space</code>. Instalar en <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">SD:/atmosphere/config/ssl/</code></p>
+        </div>
+        <div class="sw-step">
+          <div class="snum">3</div>
+          <span class="stag todo">Pendiente guía</span>
+          <h4>DNS personalizado</h4>
+          <p>Configurar el router o usar Pi-hole para redirigir los dominios de Nintendo a la IP de nexonetwork.space.</p>
+        </div>
+        <div class="sw-step">
+          <div class="snum">4</div>
+          <span class="stag done">Implementado</span>
+          <h4>Auth completa</h4>
+          <p>dauth, aauth y BAAS ya están implementados. Tu Switch puede obtener todos los tokens necesarios para el online.</p>
+        </div>
+        <div class="sw-step">
+          <div class="snum">5</div>
+          <span class="stag wip">En progreso</span>
+          <h4>Lista de amigos</h4>
+          <p>Implementando la Nintendo friends HTTP API para que la lista de amigos funcione en la Switch real.</p>
+        </div>
+        <div class="sw-step">
+          <div class="snum">6</div>
+          <span class="stag todo">Futuro</span>
+          <h4>Online en juegos</h4>
+          <p>Requiere NEX/Rendez-Vous y NPLN gRPC. Son los protocolos más complejos del ecosistema Switch.</p>
+        </div>
       </div>
     </div>
 

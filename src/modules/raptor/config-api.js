@@ -75,6 +75,15 @@ function buildRewrites() {
             source:      '*.baas.nintendo.com',
             destination: `accounts-api-lp1.${BASE}`,
         },
+        // ── Lista de amigos Switch ────────────────────────────────────────────
+        {
+            source:      'friends.lp1.s.n.srv.nintendo.net',
+            destination: `switch-friends-lp1.${BASE}`,
+        },
+        {
+            source:      'friends-lp1.s.n.srv.nintendo.net',
+            destination: `switch-friends-lp1.${BASE}`,
+        },
         // ── Conectores de red ─────────────────────────────────────────────────
         {
             source:      'ctest.cdn.nintendo.net',
