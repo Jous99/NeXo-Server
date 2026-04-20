@@ -15,6 +15,14 @@ yarn-error.log*
 .env.local
 .env.production
 
+# Certificados SSL (¡NUNCA subir claves privadas a git!)
+certs/
+*.key
+*.crt
+*.pem
+*.csr
+*.srl
+
 # Compilación y salida (Build/Dist)
 dist/
 build/
