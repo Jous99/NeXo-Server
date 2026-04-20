@@ -350,7 +350,115 @@ async function main() {
         assert(r.status === 200, `HTTP ${r.status}`);
     }, { skip: !hasToken });
 
-    // ── 9. FRIENDS API ────────────────────────────────────────────────────────
+    // ── 9. NINTENDO OAUTH — FLUJO VINCULACIÓN CUENTA SWITCH HOME ─────────────
+    section('Nintendo OAuth — Vincular cuenta desde menú HOME');
+
+    await test('GET /connect/1.0.0/authorize → sirve página HTML de login', async () => {
+        const r = await req('GET', '/connect/1.0.0/authorize?response_type=session_token_code&client_id=test&redirect_uri=npifr%3A%2F%2Fauth&state=STATE123', {
+            host: 'accounts.nintendo.com'
+        });
+        // El servidor recibe accounts.nintendo.com → subdomain accounts-api-lp1
+        // Debe devolver HTML con el formulario de login
+        assert(r.status === 200, `HTTP ${r.status}`);
+        const html = typeof r.data === 'string' ? r.data : JSON.stringify(r.data);
+        assert(html.includes('NeXoNetwork'), 'la página no contiene "NeXoNetwork"');
+        assert(html.includes('<form'), 'la página no tiene formulario');
+        console.log(DIM(`       Página de login OK (${html.length} bytes)`));
+    });
+
+    await test('GET /connect/1.0.0/authorize?tab=register → sirve tab de registro', async () => {
+        const r = await req('GET', '/connect/1.0.0/authorize?tab=register&client_id=test&redirect_uri=npifr%3A%2F%2Fauth', {
+            host: 'accounts.nintendo.com'
+        });
+        assert(r.status === 200, `HTTP ${r.status}`);
+        const html = typeof r.data === 'string' ? r.data : JSON.stringify(r.data);
+        assert(html.includes('Crear cuenta'), 'tab de registro no aparece');
+    });
+
+    let sessionToken = null;
+
+    const oauthLoginResult = await test('POST /connect/1.0.0/authorize → login → redirect con session_token_code', async () => {
+        if (!regResult?.user_id) throw new Error('Sin usuario de prueba');
+        const r = await req('POST', '/connect/1.0.0/authorize', {
+            host: 'accounts.nintendo.com',
+            body: {
+                action:      'login',
+                username:    testUser.username,
+                password:    testUser.password,
+                redirect_uri: 'https://nexonetwork.space/test_callback',
+                state:       'TESTSTATE',
+                client_id:   'test_client',
+                session_token_code_challenge: '',
+            }
+        });
+        // Esperamos 302 redirect con session_token_code en la URL
+        assert(r.status === 302 || r.status === 301, `HTTP ${r.status} (esperaba redirect)`);
+        const location = r.headers?.location || '';
+        assert(location.includes('session_token_code='), `redirect no tiene session_token_code: ${location}`);
+        const code = new URL(location).searchParams.get('session_token_code');
+        console.log(DIM(`       Código OAuth generado: ${code?.slice(0, 20)}...`));
+        return { code, location };
+    }, { skip: !regResult?.user_id });
+
+    await test('POST /connect/1.0.0/api/session_token → intercambia código por session_token', async () => {
+        if (!oauthLoginResult?.code) throw new Error('Sin código OAuth');
+        const r = await req('POST', '/connect/1.0.0/api/session_token', {
+            host: 'accounts.nintendo.com',
+            body: {
+                client_id:                     'test_client',
+                session_token_code:            oauthLoginResult.code,
+                session_token_code_verifier:   '',
+            }
+        });
+        assert(r.status === 200, `HTTP ${r.status} — ${JSON.stringify(r.data)}`);
+        assert(r.data?.session_token, 'falta session_token');
+        sessionToken = r.data.session_token;
+        console.log(DIM(`       Session token: ${sessionToken.slice(0, 30)}...`));
+    }, { skip: !oauthLoginResult?.code });
+
+    await test('POST /connect/1.0.0/api/token → session_token → access_token con nexo_id', async () => {
+        if (!sessionToken) throw new Error('Sin session_token');
+        const r = await req('POST', '/connect/1.0.0/api/token', {
+            host: 'accounts.nintendo.com',
+            body: {
+                client_id:   'test_client',
+                session_token: sessionToken,
+                grant_type:  'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            }
+        });
+        assert(r.status === 200, `HTTP ${r.status}`);
+        assert(r.data?.access_token, 'falta access_token');
+        assert(r.data?.id_token, 'falta id_token');
+        console.log(DIM(`       Access token (real user): ${r.data.access_token.slice(0, 30)}...`));
+    }, { skip: !sessionToken });
+
+    await test('GET /2.0.0/users/me → perfil real del usuario', async () => {
+        if (!sessionToken) throw new Error('Sin session_token');
+        // Primero obtenemos el access_token
+        const tokenR = await req('POST', '/connect/1.0.0/api/token', {
+            host: 'accounts.nintendo.com',
+            body: { client_id: 'test', session_token: sessionToken, grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer' }
+        });
+        if (!tokenR.data?.access_token) throw new Error('No se pudo obtener access_token');
+        const r = await req('GET', '/2.0.0/users/me', {
+            host: 'accounts.nintendo.com',
+            headers: { Authorization: `Bearer ${tokenR.data.access_token}` }
+        });
+        assert(r.status === 200, `HTTP ${r.status}`);
+        assert(r.data?.id, 'falta id de usuario');
+        assert(r.data?.nickname, 'falta nickname');
+        console.log(DIM(`       Perfil: ${r.data.nickname} (${r.data.id})`));
+    }, { skip: !sessionToken });
+
+    await test('POST /connect/1.0.0/api/session_token → código inválido → 400', async () => {
+        const r = await req('POST', '/connect/1.0.0/api/session_token', {
+            host: 'accounts.nintendo.com',
+            body: { client_id: 'test', session_token_code: 'codigo_inventado_invalido' }
+        });
+        assert(r.status === 400, `HTTP ${r.status} (esperaba 400)`);
+    });
+
+    // ── 10. FRIENDS API ────────────────────────────────────────────────────────
     section('Friends API — Lista de amigos (Switch real)');
 
     await test('GET /v1/users/:pid/friends → lista de amigos (sin auth → 401)', async () => {

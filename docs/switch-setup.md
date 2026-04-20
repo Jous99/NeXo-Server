@@ -1,180 +1,209 @@
-# Conectar Nintendo Switch moddeada a NeXoNetwork
+# NeXoNetwork — Configuración de Nintendo Switch
 
-Esta guía explica cómo hacer que tu Nintendo Switch con Atmosphere CFW se conecte a tu servidor NeXoNetwork en lugar de los servidores oficiales de Nintendo.
-
----
-
-## Cómo funciona
-
-La Switch hace peticiones HTTPS a varios dominios de Nintendo (ej: `dauth-lp1.ndas.srv.nintendo.net`). Para interceptarlas necesitamos dos cosas:
-
-1. **DNS redirect** — Atmosphere puede sobrescribir qué IP responde para cada dominio. Cuando la Switch resuelve `dauth-lp1.ndas.srv.nintendo.net`, en lugar de la IP de Nintendo devuelve la IP de tu servidor.
-
-2. **Certificado SSL** — La Switch verifica que el certificado HTTPS sea válido. Como ahora es tu servidor quien responde, necesita un certificado firmado por una CA en la que la Switch confíe. Instalamos nuestra propia CA en la Switch.
-
-```
-Switch → DNS resolve "dauth-lp1.ndas.srv.nintendo.net"
-       → Atmosphere devuelve IP de tu servidor
-       → Switch abre HTTPS con tu servidor
-       → Tu servidor presenta server.crt (firmado por nexo-ca.crt)
-       → Switch verifica: nexo-ca.crt está en su lista de CAs de confianza ✅
-       → Conexión establecida → Tu servidor responde con los stubs NeXo
-```
+Guía completa para conectar tu Nintendo Switch modificada (Atmosphere CFW)
+a NeXoNetwork y vincular una cuenta desde el menú HOME.
 
 ---
 
-## Requisitos
+## Requisitos previos
 
-- Nintendo Switch con **Atmosphere 1.0+**
-- Servidor NeXoNetwork corriendo con **NEXO_HTTPS=true**
-- OpenSSL instalado en tu PC o servidor (para generar los certs)
+- Nintendo Switch con **Atmosphere CFW** (versión 1.4.0 o superior)
+- **sigpatches** actualizados (para ejecutar juegos sin firma)
+- Servidor NeXoNetwork corriendo en `nexonetwork.space` (o tu dominio)
+- Acceso al VPS por SSH (para los pasos del servidor)
 
 ---
 
-## Paso 1 — Generar los certificados
+## Paso 1 — Activar HTTPS en el servidor
 
-En el servidor, ejecuta:
+La Switch *siempre* verifica certificados SSL cuando hace peticiones a Nintendo.
+Si el servidor no tiene HTTPS, la Switch ignorará las respuestas.
+
+Ejecuta esto en el VPS:
 
 ```bash
-chmod +x scripts/gen-certs.sh
-./scripts/gen-certs.sh
+# En el VPS, dentro de la carpeta del servidor
+chmod +x scripts/setup-https.sh
+./scripts/setup-https.sh
 ```
 
-Esto genera en la carpeta `certs/`:
-- `nexo-ca.crt` — CA raíz que instalarás en la Switch
-- `server.crt` + `server.key` — Certificado del servidor
+Esto genera los certificados y activa `NEXO_HTTPS=true` automáticamente.
 
----
+Si quieres hacerlo manualmente:
 
-## Paso 2 — Instalar la CA en la Switch
-
-La Switch necesita confiar en tu CA para validar los certificados de tu servidor.
-
-### Opción A — Atmosphere exefs patches (recomendada)
-
-Atmosphere puede parchear el módulo SSL del sistema para añadir CAs adicionales.
-
-1. Descarga el homebrew **[NX-CA-Installer](https://github.com/HookedBehemoth/sys-clk)** (busca la versión actual para tu firmware).
-2. Copia `nexo-ca.crt` a la SD: `SD:/config/nx-ca-installer/nexo-ca.crt`
-3. Ejecuta la app desde el Homebrew Menu.
-4. La CA quedará instalada permanentemente en tu Switch.
-
-### Opción B — Parche manual del sysmodule ssl
-
-Si tienes experiencia con patches de Atmosphere, puedes añadir la CA directamente al bundle de certificados del sistema:
-
-1. Extrae el certificado bundle de tu firmware (archivo `ssl` en el NAND).
-2. Añade `nexo-ca.crt` al bundle con OpenSSL.
-3. Reemplaza el archivo via exefs patches.
-
-> Esta opción es más compleja y depende de la versión del firmware. No se documenta aquí en detalle.
-
----
-
-## Paso 3 — Configurar el archivo hosts de Atmosphere
-
-El archivo `scripts/atmosphere-hosts.txt` contiene la plantilla con todos los dominios de Nintendo que necesitas redirigir.
-
-### 3.1 Editar la IP
-
-Abre `scripts/atmosphere-hosts.txt` y reemplaza `TU_IP_AQUI` por la IP pública de tu servidor NeXoNetwork.
-
-Si el servidor está en tu red local (para pruebas): usa la IP local, ej `192.168.1.100`.
-
-### 3.2 Copiar a la SD
-
-Copia el archivo editado a tu SD card:
-
-```
-SD:/atmosphere/hosts/default.txt
-```
-
-Si solo quieres que aplique a un juego específico, usa el title ID como nombre:
-
-```
-SD:/atmosphere/hosts/0100000000100000.txt   ← Solo Super Mario Maker 2
-```
-
-### 3.3 BAAS por juego
-
-Atmosphere no soporta wildcards en los hosts (`*.baas.nintendo.com`), así que hay que añadir el subdominio BAAS específico de cada juego. El archivo ya incluye los más comunes, pero si un juego no conecta, busca su subdominio BAAS:
-
-Método para encontrarlo: con un proxy (ej: mitmproxy) intercepta el tráfico de la Switch y busca peticiones a `*.baas.nintendo.com`. El subdominio que aparezca es el que tienes que añadir.
-
----
-
-## Paso 4 — Activar HTTPS en el servidor
-
-En el `.env` del servidor:
-
-```env
+```bash
+./scripts/gen-certs.sh          # genera certs/nexo-ca.crt y certs/server.crt
+# Luego edita .env:
 NEXO_HTTPS=true
-```
-
-Reinicia el servidor. Ahora escucha en HTTPS con los certificados de `certs/`.
-
----
-
-## Paso 5 — Reiniciar la Switch
-
-Apaga la Switch, inserta la SD con el archivo hosts y la CA instalada, y arranca con Atmosphere. El DNS override ya está activo.
-
-Para verificar que funciona: ve a **Configuración del sistema → Internet → Configuración de red** y ejecuta el test de conexión. Debería pasar sin errores.
-
----
-
-## Verificar que la Switch conecta a tu servidor
-
-En los logs del servidor (`pm2 logs nexo-server`), cuando la Switch arranque deberías ver:
-
-```
-POST /v6/device_auth_token       ← dauth
-POST /v3/application_auth_token  ← aauth
-POST /connect/1.0.0/api/token    ← accounts.nintendo.com
-POST /v1/Login                   ← BAAS
-GET  /v1/users/:pid/friends      ← friends API
+# Y reinicia el servidor en PM2
+pm2 restart nexo --update-env
 ```
 
 ---
 
-## Servicios que se reemplazan
+## Paso 2 — Instalar el certificado CA en la Switch
 
-| Dominio Nintendo | Módulo NeXo | Función |
-|---|---|---|
-| `dauth-lp1.ndas.srv.nintendo.net` | accounts-api | Device auth token |
-| `aauth-lp1.ndas.srv.nintendo.net` | accounts-api | App auth token |
-| `accounts.nintendo.com` | accounts-api | OAuth token |
-| `*.baas.nintendo.com` | accounts-api | User login |
-| `friends.lp1.s.n.srv.nintendo.net` | switch-friends | Lista de amigos |
-| `bcat-list-lp1.cdn.nintendo.net` | bcat | Noticias de juegos |
-| `ctest.cdn.nintendo.net` | connector | Test de conectividad |
-| `receive-lp1.er.srv.nintendo.net` | nintendo-stubs | Error reporting |
-| `atum.hac.lp1.d4c.nintendo.net` | nintendo-stubs | Actualizaciones sistema |
-| `tagaya.hac.lp1.eshop.nintendo.net` | nintendo-stubs | Versiones de títulos |
-| `g9s300c4msl.lp1.s.n.srv.nintendo.net` | smm2 | Super Mario Maker 2 |
+La Switch tiene sus propios certificados de confianza y no aceptará los nuestros
+a menos que instalemos nuestra CA raíz.
+
+### Descargar el certificado del servidor
+
+```bash
+# En tu PC (Windows PowerShell o macOS/Linux terminal):
+scp root@nexonetwork.space:/ruta/al/servidor/certs/nexo-ca.crt .
+```
+
+O descárgalo con WinSCP / FileZilla conectándote al VPS.
+
+### Instalar la CA en la Switch (método recomendado)
+
+Atmosphere 1.5+ soporta CAs personalizadas. Copia el archivo a la SD:
+
+```
+SD:/
+ └── atmosphere/
+      └── config/
+           └── ssl/                    ← crea esta carpeta si no existe
+                └── nexo-ca.crt       ← pega el archivo aquí
+```
+
+> **Nota**: El nombre del archivo no importa, lo que importa es que esté
+> en `/atmosphere/config/ssl/` con extensión `.crt`.
+
+Reinicia la Switch con Atmosphere para que cargue el certificado.
 
 ---
 
-## Servicios que NO se reemplazan (todavía)
+## Paso 3 — Configurar los hosts de Atmosphere
 
-Estos dominios no están en el hosts file, por lo que la Switch sigue conectándose a Nintendo para ellos. No afectan al online de los juegos:
+Los hosts de Atmosphere funcionan como el archivo `hosts` de Windows/Linux:
+redirigen los dominios de Nintendo a tu servidor en lugar de a los de Nintendo.
 
-- `cfw.hac.lp1.allerway.nintendo.net` — Nintendo CDN para parches
-- `pptest.nintendo.net` — Test de conectividad alternativo (no crítico)
-- La Nintendo eShop completa (compras, descargas)
+### Editar el archivo de hosts
+
+Abre `scripts/atmosphere-hosts.txt` y reemplaza `TU_IP_AQUI` con la IP de tu VPS:
+
+```
+# Antes:
+dauth-lp1.ndas.srv.nintendo.net TU_IP_AQUI
+
+# Después (ejemplo):
+dauth-lp1.ndas.srv.nintendo.net 185.123.45.67
+```
+
+> Puedes usar la IP o el dominio `nexonetwork.space` directamente.
+
+### Copiar a la SD
+
+```
+SD:/
+ └── atmosphere/
+      └── hosts/
+           └── default.txt    ← pega el contenido del archivo editado aquí
+```
+
+> **¿Esto me puede banear?** No. Los hosts de Atmosphere redirigen el tráfico
+> DESDE la Switch HACIA tu servidor. La Switch nunca llega a los servidores
+> de Nintendo, por lo que Nintendo no puede detectar nada.
+> Es el mismo mecanismo que usa 90DNS.
 
 ---
 
-## Troubleshooting
+## Paso 4 — Vincular una cuenta desde el menú HOME
 
-**El test de conexión falla con error 2110-3127:**
-El DNS override no está activo. Verifica que el archivo está en `SD:/atmosphere/hosts/default.txt` y que Atmosphere arrancó correctamente (debe aparecer el menú de Atmosphere al mantener VOL+).
+Este es el paso que permite iniciar sesión con tu cuenta de NeXoNetwork
+directamente desde el menú HOME de la Switch, igual que se hace con Nintendo Account.
 
-**Error de certificado / 2155-8007:**
-La CA no está instalada o el servidor no tiene NEXO_HTTPS=true. Verifica ambas cosas.
+### Proceso paso a paso
 
-**Los juegos conectan pero dicen "error de comunicación":**
-El subdominio BAAS del juego no está en el hosts file. Añádelo (ver Paso 3.3).
+1. En la Switch, ve a: **Configuración del sistema** → **Usuarios** → tu perfil
+2. Selecciona **"Vincular cuenta de Nintendo"**
+3. La Switch abrirá su navegador web y cargará la **página de login de NeXoNetwork**
+   (interceptamos `accounts.nintendo.com` con nuestro servidor)
+4. Verás la pantalla de **NeXoNetwork — Cuenta**:
+   - **Si ya tienes cuenta** → escribe tu usuario y contraseña → **Entrar →**
+   - **Si eres nuevo** → toca la pestaña **"Crear cuenta"** → rellena los campos → **Crear cuenta →**
+5. La Switch recibirá el token y vinculará la cuenta automáticamente
+6. En el perfil de usuario aparecerá tu nombre de NeXoNetwork
 
-**El servidor muestra requests pero los juegos siguen fallando:**
-Revisa los logs con `pm2 logs nexo-server` y busca el error específico que devuelve el servidor.
+### Qué pasa detrás de escena
+
+```
+Switch → GET accounts.nintendo.com/connect/1.0.0/authorize
+       ← NeXo sirve página HTML de login
+
+Usuario introduce credenciales
+Switch → POST accounts.nintendo.com/connect/1.0.0/authorize
+       ← NeXo valida, genera código OAuth, redirige a npifr://
+
+Switch → POST accounts.nintendo.com/connect/1.0.0/api/session_token
+       ← NeXo devuelve session_token (JWT con tu nexo_id)
+
+Switch → POST accounts.nintendo.com/connect/1.0.0/api/token
+       ← NeXo devuelve access_token con tu nexo_id y nickname
+
+Switch → GET accounts.nintendo.com/2.0.0/users/me
+       ← NeXo devuelve tu perfil (nombre, país, etc.)
+
+Cuenta vinculada — la Switch muestra tu nombre de NeXoNetwork
+```
+
+---
+
+## Paso 5 — Verificar la conexión
+
+Reinicia la Switch con Atmosphere y comprueba:
+
+1. **Menú HOME → Configuración del sistema → Internet → Configuración de internet**
+   → Prueba de conexión → debería decir "Conectado"
+
+2. **Perfil de usuario** → debería mostrar el nombre de NeXoNetwork después de vincular
+
+3. **Jugar online** → abre un juego compatible y prueba el modo online
+
+### Diagnóstico si algo falla
+
+| Síntoma | Causa probable | Solución |
+|---------|---------------|----------|
+| Switch no conecta | Hosts no copiados o IP incorrecta | Revisa `/atmosphere/hosts/default.txt` |
+| Error SSL / certificado | CA no instalada | Revisa `/atmosphere/config/ssl/nexo-ca.crt` |
+| Página de login no carga | HTTPS no activado en servidor | Ejecuta `setup-https.sh` |
+| Login falla con "Error de auth" | Usuario o contraseña incorrectos | Prueba crear cuenta nueva |
+| Juego no conecta en online | Juego no en lista de títulos compatibles | Añade el title_id en `scripts/migrate.sql` |
+
+---
+
+## Paso 6 — (Opcional) Crear cuenta desde la web
+
+También puedes crear tu cuenta desde el panel web antes de usar la Switch:
+
+1. Abre `https://nexonetwork.space` en tu PC
+2. Regístrate con usuario, email y contraseña
+3. En la Switch, usa esas mismas credenciales para vincular la cuenta
+
+---
+
+## Referencia rápida — Estructura de archivos en la SD
+
+```
+SD:/
+ ├── atmosphere/
+ │    ├── config/
+ │    │    └── ssl/
+ │    │         └── nexo-ca.crt         ← certificado CA de NeXo
+ │    └── hosts/
+ │         └── default.txt              ← redirección de dominios Nintendo
+ └── ...
+```
+
+---
+
+## Archivos relacionados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `scripts/setup-https.sh` | Activa HTTPS en el servidor (ejecutar en VPS) |
+| `scripts/gen-certs.sh` | Genera los certificados SSL |
+| `scripts/atmosphere-hosts.txt` | Template del archivo hosts para la SD |
+| `scripts/migrate.sql` | Schema de la base de datos |
+| `scripts/test.js` | Test completo de todos los endpoints |

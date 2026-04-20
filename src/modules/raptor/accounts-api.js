@@ -1,5 +1,119 @@
 'use strict';
 
+const crypto = require('crypto');
+
+// Genera un ID estable de 16 chars a partir de cualquier string (device_id, IP, etc.)
+// SHA-256 → primeros 16 chars en hex → siempre el mismo resultado para el mismo input
+function stableId(input) {
+    return crypto.createHash('sha256').update(String(input)).digest('hex').slice(0, 16);
+}
+
+// ── Almacén en memoria para auth codes (flujo OAuth Switch HOME) ──────────────
+// Código de un solo uso con TTL 5 min. Clave: code aleatorio, valor: datos del usuario.
+const authCodes = new Map(); // code → { nexo_id, challenge, redirect_uri, expires_at }
+setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of authCodes) {
+        if (v.expires_at < now) authCodes.delete(k);
+    }
+}, 60_000);
+
+// Escapa caracteres especiales HTML para evitar XSS en la página de login
+function encodeHtml(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+// ── Página HTML de login/registro ─────────────────────────────────────────────
+// La Switch la muestra en su navegador WebKit al vincular una cuenta desde el menú HOME.
+// Usa CSS puro, sin JS complejo, para máxima compatibilidad con el browser de Switch.
+function buildLoginPage({ redirect_uri = '', state = '', client_id = '', challenge = '', tab = 'login', error = '' } = {}) {
+    const qBase = `redirect_uri=${encodeURIComponent(redirect_uri)}&state=${encodeURIComponent(state)}&client_id=${encodeURIComponent(client_id)}&session_token_code_challenge=${encodeURIComponent(challenge)}`;
+    const isReg  = tab === 'register';
+    const errHtml = error
+        ? `<div class="err">⚠ ${encodeHtml(error)}</div>`
+        : '';
+
+    const hiddenFields = `
+        <input type="hidden" name="redirect_uri"                    value="${encodeHtml(redirect_uri)}">
+        <input type="hidden" name="state"                           value="${encodeHtml(state)}">
+        <input type="hidden" name="client_id"                       value="${encodeHtml(client_id)}">
+        <input type="hidden" name="session_token_code_challenge"    value="${encodeHtml(challenge)}">`;
+
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NeXoNetwork — Cuenta</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,Arial,sans-serif;background:#0d1117;color:#e6edf3;
+         min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+    .card{background:#161b22;border:1px solid #30363d;border-radius:16px;
+          padding:28px 24px;width:100%;max-width:380px}
+    .logo{text-align:center;margin-bottom:20px}
+    .logo h1{font-size:26px;color:#e94560;font-weight:800;letter-spacing:-0.5px}
+    .logo p{font-size:13px;color:#8b949e;margin-top:4px}
+    .tabs{display:flex;background:#0d1117;border-radius:8px;padding:3px;margin-bottom:20px}
+    .tab{flex:1;padding:9px;text-align:center;border-radius:6px;font-size:14px;
+         font-weight:600;text-decoration:none;color:#8b949e;display:block}
+    .tab.on{background:#e94560;color:#fff}
+    label{display:block;font-size:13px;color:#8b949e;margin-bottom:5px;margin-top:14px}
+    input[type=text],input[type=password],input[type=email]{
+      width:100%;padding:11px 14px;background:#0d1117;border:1px solid #30363d;
+      border-radius:8px;color:#e6edf3;font-size:16px;outline:none}
+    input:focus{border-color:#e94560}
+    .btn{display:block;width:100%;padding:13px;background:#e94560;border:none;
+         border-radius:8px;color:#fff;font-size:16px;font-weight:700;
+         cursor:pointer;margin-top:20px;-webkit-appearance:none}
+    .btn:active{background:#c73652}
+    .err{background:rgba(233,69,96,.15);border:1px solid rgba(233,69,96,.5);
+         border-radius:8px;padding:10px 12px;font-size:13px;color:#ff8099;margin-bottom:14px}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <h1>NeXoNetwork</h1>
+    <p>Open Switch Online</p>
+  </div>
+  ${errHtml}
+  <div class="tabs">
+    <a class="tab${!isReg ? ' on' : ''}" href="/connect/1.0.0/authorize?tab=login&${qBase}">Iniciar sesión</a>
+    <a class="tab${isReg  ? ' on' : ''}" href="/connect/1.0.0/authorize?tab=register&${qBase}">Crear cuenta</a>
+  </div>
+  ${isReg ? `
+  <form method="POST" action="/connect/1.0.0/authorize">
+    ${hiddenFields}
+    <input type="hidden" name="action" value="register">
+    <label>Usuario</label>
+    <input type="text" name="username" autocomplete="username" required placeholder="mi_usuario">
+    <label>Email</label>
+    <input type="email" name="email" autocomplete="email" required placeholder="correo@ejemplo.com">
+    <label>Contraseña</label>
+    <input type="password" name="password" autocomplete="new-password" required placeholder="min. 6 caracteres">
+    <label>Nombre visible (opcional)</label>
+    <input type="text" name="display_name" placeholder="Ej: JoseSwitch">
+    <button type="submit" class="btn">Crear cuenta →</button>
+  </form>` : `
+  <form method="POST" action="/connect/1.0.0/authorize">
+    ${hiddenFields}
+    <input type="hidden" name="action" value="login">
+    <label>Usuario</label>
+    <input type="text" name="username" autocomplete="username" required placeholder="mi_usuario">
+    <label>Contraseña</label>
+    <input type="password" name="password" autocomplete="current-password" required placeholder="contraseña">
+    <button type="submit" class="btn">Entrar →</button>
+  </form>`}
+</div>
+</body>
+</html>`;
+}
+
 /**
  * accounts-api-lp1.nexonetwork.space
  *
@@ -291,9 +405,18 @@ async function accountsApiRoutes(fastify) {
     // ══════════════════════════════════════════════════════════════════════════
 
     // POST /v6/device_auth_token  — dauth stub
+    // La Switch manda su device_id en el body (form-encoded o JSON).
+    // Lo extraemos para generar un fingerprint estable por dispositivo.
     fastify.post('/v6/device_auth_token', async (req, reply) => {
-        // El juego espera un JSON con device_auth_token (string) y expire_in (número)
-        const fakeToken = fastify.jwt.sign({ type: 'device_auth' }, { expiresIn: '1h' });
+        // Intentar extraer device_id del body (puede venir como JSON o form-encoded)
+        const body = req.body || {};
+        const deviceId = body.device_id || body.deviceId || req.ip || 'unknown';
+        const deviceFingerprint = stableId(deviceId);
+
+        const fakeToken = fastify.jwt.sign(
+            { type: 'device_auth', device_fingerprint: deviceFingerprint },
+            { expiresIn: '1h' }
+        );
         return reply.send({
             device_auth_token: fakeToken,
             expire_in: 3600,
@@ -325,28 +448,269 @@ async function accountsApiRoutes(fastify) {
     //    accounts.nintendo.com → accounts-api-lp1.nexonetwork.space
     // ══════════════════════════════════════════════════════════════════════════
 
-    // POST /connect/1.0.0/api/token  — Nintendo account token exchange
-    // El juego manda: grant_type, device_auth_token, client_id, etc.
-    // Respondemos con un access_token falso que el juego acepta.
-    fastify.post('/connect/1.0.0/api/token', async (req, reply) => {
-        const fakeToken = fastify.jwt.sign({ type: 'nintendo_user', scope: 'openid user' }, { expiresIn: '1h' });
+    // ══════════════════════════════════════════════════════════════════════════
+    //  FLUJO OAUTH2 — VINCULACIÓN DE CUENTA DESDE EL MENÚ HOME DE LA SWITCH
+    //
+    //  Cuando el usuario va a Settings → Users → Link Nintendo Account, la Switch
+    //  abre su navegador WebKit en:
+    //    https://accounts.nintendo.com/connect/1.0.0/authorize?response_type=session_token_code&...
+    //
+    //  Como tenemos accounts.nintendo.com redirigido a nuestro servidor (via Atmosphere
+    //  hosts file), esa petición llega aquí. Servimos nuestra propia página de login.
+    //
+    //  Flujo completo:
+    //    1. Switch → GET  /connect/1.0.0/authorize      → HTML login page
+    //    2. User   → POST /connect/1.0.0/authorize      → login/register → redirect npifr://
+    //    3. Switch → POST /connect/1.0.0/api/session_token  → session_token
+    //    4. Switch → POST /connect/1.0.0/api/token          → access_token con nexo_id real
+    //    5. Switch → GET  /2.0.0/users/me                   → perfil del usuario
+    //    ¡Cuenta vinculada! La Switch muestra el nombre de NeXo en el perfil.
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // GET /connect/1.0.0/authorize  — Sirve la página de login al navegador de la Switch
+    fastify.get('/connect/1.0.0/authorize', async (req, reply) => {
+        const q = req.query || {};
+        const html = buildLoginPage({
+            redirect_uri: q.redirect_uri   || '',
+            state:        q.state          || '',
+            client_id:    q.client_id      || '',
+            challenge:    q.session_token_code_challenge || '',
+            tab:          q.tab            || 'login',
+            error:        '',
+        });
+        return reply.type('text/html').send(html);
+    });
+
+    // POST /connect/1.0.0/authorize  — Procesa el formulario de login/registro
+    fastify.post('/connect/1.0.0/authorize', async (req, reply) => {
+        const body = req.body || {};
+        const {
+            action       = 'login',
+            username     = '',
+            password     = '',
+            email        = '',
+            display_name = '',
+            redirect_uri = '',
+            state        = '',
+            client_id    = '',
+            session_token_code_challenge: challenge = '',
+        } = body;
+
+        const pageParams = { redirect_uri, state, client_id, challenge };
+
+        let userResult;
+        try {
+            if (action === 'register') {
+                if (!username || !email || !password) {
+                    const html = buildLoginPage({ ...pageParams, tab: 'register', error: 'Faltan campos obligatorios.' });
+                    return reply.type('text/html').send(html);
+                }
+                userResult = await accounts.register({ username, email, password, nickname: display_name || username });
+            } else {
+                if (!username || !password) {
+                    const html = buildLoginPage({ ...pageParams, tab: 'login', error: 'Introduce usuario y contraseña.' });
+                    return reply.type('text/html').send(html);
+                }
+                userResult = await accounts.login({ login: username, password, deviceInfo: 'SwitchBrowser', ip: req.ip });
+            }
+        } catch (err) {
+            const tab = action === 'register' ? 'register' : 'login';
+            const html = buildLoginPage({ ...pageParams, tab, error: err.message || 'Error de autenticación.' });
+            return reply.type('text/html').send(html);
+        }
+
+        // Generar un código de un solo uso (session_token_code)
+        const code = crypto.randomBytes(32).toString('base64url');
+        authCodes.set(code, {
+            nexo_id:      userResult.nexo_id,
+            challenge,
+            redirect_uri,
+            expires_at:   Date.now() + 5 * 60 * 1000,  // TTL: 5 minutos
+        });
+
+        // Redirigir a la Switch con el código (la Switch detecta el esquema npifr://)
+        // La URL puede ser: npifr://auth?session_token_code=CODE&state=STATE
+        let callbackUrl;
+        try {
+            callbackUrl = new URL(redirect_uri);
+        } catch {
+            // Fallback por si el redirect_uri no es una URL válida para Node
+            callbackUrl = { toString: () => redirect_uri };
+            const sep = redirect_uri.includes('?') ? '&' : '?';
+            const extra = `session_token_code=${encodeURIComponent(code)}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
+            return reply.redirect(302, `${redirect_uri}${sep}${extra}`);
+        }
+        callbackUrl.searchParams.set('session_token_code', code);
+        if (state) callbackUrl.searchParams.set('state', state);
+        return reply.redirect(302, callbackUrl.toString());
+    });
+
+    // POST /connect/1.0.0/api/session_token  — Intercambia el código por un session_token
+    // La Switch llama a este endpoint después de recibir el session_token_code en el redirect.
+    fastify.post('/connect/1.0.0/api/session_token', async (req, reply) => {
+        const body = req.body || {};
+        const code     = body.session_token_code;
+        const verifier = body.session_token_code_verifier; // PKCE verifier (S256)
+
+        const codeData = authCodes.get(code);
+        if (!codeData || codeData.expires_at < Date.now()) {
+            return reply.code(400).send({ error: 'invalid_grant', error_description: 'Code expired or invalid.' });
+        }
+
+        // Verificación PKCE opcional: SHA-256(verifier) debería coincidir con el challenge
+        if (codeData.challenge && verifier) {
+            const computed = crypto.createHash('sha256').update(verifier).digest('base64url');
+            if (computed !== codeData.challenge) {
+                return reply.code(400).send({ error: 'invalid_grant', error_description: 'PKCE verification failed.' });
+            }
+        }
+
+        // El código se consume (un solo uso)
+        authCodes.delete(code);
+
+        // El session_token es un JWT de larga duración (30 días) con el nexo_id del usuario
+        const sessionToken = fastify.jwt.sign(
+            { type: 'session_token', nexo_id: codeData.nexo_id },
+            { expiresIn: process.env.JWT_REFRESH_EXPIRES || '30d' }
+        );
+
         return reply.send({
-            access_token:  fakeToken,
-            token_type:    'Bearer',
-            expires_in:    3600,
-            scope:         'openid user',
-            id_token:      fakeToken,
+            code:          'session_token_code',
+            session_token: sessionToken,
         });
     });
 
-    // GET /2.0.0/users/:userId  — Perfil de usuario Nintendo
+    // GET /2.0.0/agreements  — Stub TOS (la Switch puede pedirlo antes del authorize)
+    fastify.get('/2.0.0/agreements', async (req, reply) => {
+        return reply.send({ agreements: [] });
+    });
+
+    // POST /2.0.0/agreements  — Aceptar TOS (stub, siempre OK)
+    fastify.post('/2.0.0/agreements', async (req, reply) => {
+        return reply.code(204).send();
+    });
+
+    // POST /connect/1.0.0/api/token  — Nintendo account token exchange
+    // Modos:
+    //  a) grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer + session_token
+    //     → devuelve access_token con el nexo_id real del usuario
+    //  b) grant_type=device_auth_token (juego sin login de usuario)
+    //     → devuelve access_token genérico (como antes)
+    fastify.post('/connect/1.0.0/api/token', async (req, reply) => {
+        const body = req.body || {};
+        const sessionToken = body.session_token;
+
+        let nexo_id  = null;
+        let nickname = 'NexoUser';
+
+        // Si viene un session_token real (del flujo authorize), extraemos el nexo_id
+        if (sessionToken) {
+            try {
+                const decoded = fastify.jwt.verify(sessionToken);
+                if (decoded.type === 'session_token' && decoded.nexo_id) {
+                    nexo_id = decoded.nexo_id;
+                    // Buscar el nickname en la DB
+                    try {
+                        const db = require('../../db');
+                        const [rows] = await db.query(
+                            'SELECT username, nickname FROM users WHERE nexo_id = ?',
+                            [nexo_id]
+                        );
+                        if (rows.length) {
+                            nickname = rows[0].nickname || rows[0].username || nickname;
+                        }
+                    } catch { /* DB no disponible, usamos 'NexoUser' */ }
+                }
+            } catch { /* session_token inválido — generamos token anónimo */ }
+        }
+
+        const accessToken = fastify.jwt.sign(
+            { type: 'nintendo_user', nexo_id, nickname, scope: 'openid user' },
+            { expiresIn: '1h' }
+        );
+
+        return reply.send({
+            access_token:  accessToken,
+            token_type:    'Bearer',
+            expires_in:    3600,
+            scope:         'openid user',
+            id_token:      accessToken,
+        });
+    });
+
+    // GET /2.0.0/users/me  — Perfil del usuario actual (via Bearer token)
+    // La Switch llama a este endpoint justo después del token exchange para mostrar el nombre.
+    fastify.get('/2.0.0/users/me', async (req, reply) => {
+        const bearer = (req.headers['authorization'] || '').replace('Bearer ', '');
+        let nexo_id = null, nickname = 'NexoUser', country = 'US';
+
+        if (bearer) {
+            try {
+                const decoded = fastify.jwt.verify(bearer);
+                nexo_id  = decoded.nexo_id  || null;
+                nickname = decoded.nickname || 'NexoUser';
+            } catch {}
+        }
+
+        // Buscar datos reales en la DB si tenemos nexo_id
+        if (nexo_id) {
+            try {
+                const db = require('../../db');
+                const [rows] = await db.query(
+                    'SELECT username, nickname, country FROM users WHERE nexo_id = ?',
+                    [nexo_id]
+                );
+                if (rows.length) {
+                    nickname = rows[0].nickname || rows[0].username || nickname;
+                    country  = rows[0].country  || 'US';
+                }
+            } catch {}
+        }
+
+        return reply.send({
+            id:       nexo_id || 'nexo_guest',
+            nickname,
+            country,
+            birthday: '1990-01-01',
+            links:    { nintendoAccount: { membership: { active: true } } },
+        });
+    });
+
+    // GET /2.0.0/users/:userId  — Perfil de usuario por ID
     // El juego pide el perfil después de obtener el access_token.
     fastify.get('/2.0.0/users/:userId', async (req, reply) => {
+        const userId = req.params.userId;
+
+        // Si el userId es "me", redirigimos al handler de arriba
+        if (userId === 'me') {
+            const bearer = (req.headers['authorization'] || '').replace('Bearer ', '');
+            let nexo_id = null, nickname = 'NexoUser';
+            if (bearer) {
+                try { const d = fastify.jwt.verify(bearer); nexo_id = d.nexo_id; nickname = d.nickname || 'NexoUser'; } catch {}
+            }
+            return reply.send({ id: nexo_id || userId, nickname, country: 'US', birthday: '1990-01-01' });
+        }
+
+        // Intentar buscar en la DB
+        let nickname = 'NexoUser', country = 'US';
+        try {
+            const db = require('../../db');
+            const [rows] = await db.query(
+                'SELECT username, nickname, country FROM users WHERE nexo_id = ?',
+                [userId]
+            );
+            if (rows.length) {
+                nickname = rows[0].nickname || rows[0].username || nickname;
+                country  = rows[0].country  || 'US';
+            }
+        } catch {}
+
         return reply.send({
-            id:          req.params.userId,
-            nickname:    'NexoUser',
-            country:     'US',
-            birthday:    '1990-01-01',
+            id:       userId,
+            nickname,
+            country,
+            birthday: '1990-01-01',
+            links:    { nintendoAccount: { membership: { active: true } } },
         });
     });
 
@@ -372,28 +736,85 @@ async function accountsApiRoutes(fastify) {
     // ══════════════════════════════════════════════════════════════════════════
 
     // POST /v1/Login  — Login BAAS principal
-    // El juego manda: application_auth_token, device_auth_token, client_id, etc.
-    // Respondemos con tokens falsos que hacen que la chain de auth continue.
+    // El juego manda: application_auth_token, device_auth_token, id_token, client_id, etc.
+    //
+    // Prioridad para determinar el userId:
+    //   1. id_token real (viene del flujo OAuth authorize si el usuario vinculó su cuenta
+    //      desde el menú HOME) → usa el nexo_id real de la DB → ¡amigos funcionan!
+    //   2. device_auth_token con device_fingerprint (generado por nosotros en /v6/device_auth_token)
+    //   3. Hash de la IP como último fallback
     fastify.post('/v1/Login', async (req, reply) => {
-        const userId = `nexo_${Date.now().toString(16)}`;
-        const idToken = fastify.jwt.sign(
-            { type: 'baas_user', user_id: userId, 'nintendo_account_id': userId },
+        const body = req.body || {};
+
+        let nexo_id           = null;
+        let deviceFingerprint = null;
+
+        // ── 1. Intentar id_token real (flujo OAuth completo) ──────────────────
+        // Si el usuario vinculó su cuenta desde el menú HOME, el juego incluirá un
+        // id_token que contiene el nexo_id real. Esto da el mejor resultado.
+        const idToken = body.id_token || body.idToken;
+        if (idToken) {
+            try {
+                const decoded = fastify.jwt.verify(idToken);
+                if (decoded.nexo_id) {
+                    nexo_id = decoded.nexo_id;
+                }
+            } catch { /* id_token expirado o no nuestro */ }
+        }
+
+        // ── 2. Fallback: device_auth_token con fingerprint ────────────────────
+        if (!nexo_id) {
+            const rawDeviceToken = body.device_auth_token || body.deviceAuthToken;
+            if (rawDeviceToken) {
+                try {
+                    const decoded = fastify.jwt.verify(rawDeviceToken);
+                    deviceFingerprint = decoded.device_fingerprint || null;
+                } catch { /* Token expirado o no nuestro */ }
+            }
+        }
+
+        // ── 3. Último fallback: hash de IP ─────────────────────────────────────
+        if (!nexo_id && !deviceFingerprint) {
+            deviceFingerprint = stableId(req.ip || 'unknown');
+        }
+
+        const userId = nexo_id || `nx_${deviceFingerprint}`;
+
+        // Buscar nickname real si tenemos un nexo_id de un usuario registrado
+        let nickname = 'NexoUser';
+        if (nexo_id) {
+            try {
+                const db = require('../../db');
+                const [rows] = await db.query(
+                    'SELECT username, nickname FROM users WHERE nexo_id = ?',
+                    [nexo_id]
+                );
+                if (rows.length) {
+                    nickname = rows[0].nickname || rows[0].username || nickname;
+                }
+            } catch {}
+        }
+
+        const baasToken = fastify.jwt.sign(
+            { type: 'baas_user', user_id: userId, nintendo_account_id: userId, nickname },
             { expiresIn: '1h' }
         );
+
         return reply.send({
             user: {
-                id:                    userId,
-                etag:                  '"1"',
-                links:                 { nintendoAccount: { membership: { active: true } } },
-                memberships:           [],
-                analyticsOptedIn:      false,
-                isChildRestricted:     false,
-                country:               'US',
+                id:                userId,
+                etag:              '"1"',
+                nickname,
+                links:             { nintendoAccount: { membership: { active: true } } },
+                memberships:       [],
+                analyticsOptedIn:  false,
+                isChildRestricted: false,
+                country:           'US',
             },
-            idToken,
-            accessToken:           idToken,
-            expiresIn:             3600,
-            fileServerToken:       fastify.jwt.sign({ type: 'file_server' }, { expiresIn: '1h' }),
+            idToken:         baasToken,
+            accessToken:     baasToken,
+            expiresIn:       3600,
+            fileServerToken: fastify.jwt.sign({ type: 'file_server' }, { expiresIn: '1h' }),
         });
     });
 
