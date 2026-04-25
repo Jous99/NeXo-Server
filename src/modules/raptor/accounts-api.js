@@ -211,16 +211,18 @@ async function accountsApiRoutes(fastify) {
         try {
             let result;
             if (token) {
-                // Re-autenticación con token existente
+                // Re-autenticación con refresh_token existente
                 result = await accounts.refreshSession(token);
                 const access_token = fastify.jwt.sign(
-                    { nexo_id: result.nexo_id },
-                    { expiresIn: process.env.JWT_ACCESS_EXPIRES || '15m' }
+                    { nexo_id: result.nexo_id, nickname: result.nickname },
+                    { expiresIn: process.env.JWT_REFRESH_EXPIRES || '30d' }
                 );
                 return reply.send({
-                    result:    'Success',
-                    token:     access_token,
-                    user_id:   result.nexo_id,
+                    result:        'Success',
+                    token:         access_token,
+                    refresh_token: result.refresh_token,
+                    user_id:       result.nexo_id,
+                    display_name:  result.nickname,
                 });
             }
 
@@ -262,7 +264,7 @@ async function accountsApiRoutes(fastify) {
             const result = await accounts.login({ login: username, password, deviceInfo: 'NeXoEmulator', ip: req.ip });
             const access_token = fastify.jwt.sign(
                 { nexo_id: result.nexo_id, nickname: result.nickname },
-                { expiresIn: '15m' }
+                { expiresIn: process.env.JWT_REFRESH_EXPIRES || '30d' }
             );
             return reply.send({
                 result:        'Success',
@@ -295,14 +297,24 @@ async function accountsApiRoutes(fastify) {
     });
 
     // ── Refresh token ─────────────────────────────────────────────────────────
+    // El emulador llama a este endpoint cuando raptor_token expira.
+    // Devuelve un nuevo raptor_token (30 días) y opcionalmente un nuevo refresh_token.
     fastify.post('/api/v1/auth/refresh', async (req, reply) => {
         const raw = req.body?.refresh_token || req.headers['x-refresh-token'];
         if (!raw) return reply.code(400).send({ result: 'Failed', error: 'Missing refresh token' });
 
         try {
-            const { nexo_id } = await accounts.refreshSession(raw);
-            const token = fastify.jwt.sign({ nexo_id }, { expiresIn: '15m' });
-            return reply.send({ result: 'Success', token });
+            const result = await accounts.refreshSession(raw);
+            const token = fastify.jwt.sign(
+                { nexo_id: result.nexo_id, nickname: result.nickname },
+                { expiresIn: process.env.JWT_REFRESH_EXPIRES || '30d' }
+            );
+            const resp = { result: 'Success', token };
+            // Rotar el refresh_token si el módulo de cuentas devuelve uno nuevo
+            if (result.refresh_token) {
+                resp.refresh_token = result.refresh_token;
+            }
+            return reply.send(resp);
         } catch (err) {
             return reply.code(401).send({ result: 'Failed', error: err.message });
         }

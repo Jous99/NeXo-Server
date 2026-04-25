@@ -29,6 +29,7 @@ const notifApiRoutes     = require('./modules/raptor/notification-api');
 const connectorRoutes    = require('./modules/raptor/connector-api');
 const bcastRoutes        = require('./modules/raptor/bcat-api');
 const switchFriendsApi   = require('./modules/raptor/switch-friends-api');
+const chatApiRoutes      = require('./modules/raptor/chat-api');
 
 // ── Sistema ───────────────────────────────────────────────────────────────────
 const systemRoutes = require('./routes/system');
@@ -207,7 +208,7 @@ async function buildApp() {
             'accounts-api-lp1', 'profile-lp1', 'friends-lp1',
             'config-lp1', 'bcat-lp1', 'notification-lp1',
             'connector-lp1', 'status-lp1', 'citrus-api-lp1',
-            'smm2-lp1', 'switch-friends-lp1',
+            'smm2-lp1', 'switch-friends-lp1', 'chat-lp1',
         ].includes(sub);
 
         if (!isApiSubdomain && req.method === 'GET') {
@@ -250,6 +251,9 @@ async function buildApp() {
     // switch-friends-lp1.nexonetwork.space — Nintendo Switch friends HTTP API
     // La Switch real redirige friends.lp1.s.n.srv.nintendo.net aquí vía DNS.
     fastify.register(switchFriendsApi, { prefix: '/' });
+
+    // chat-lp1.nexonetwork.space — Mensajería de texto entre usuarios del emulador
+    fastify.register(chatApiRoutes, { prefix: '/' });
 
     // nintendo-stubs — Servicios Nintendo que la Switch llama pero que solo
     // necesitan respuesta básica (error reporting, actualizaciones, eShop básico).
