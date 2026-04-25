@@ -1151,6 +1151,17 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
   </div><!-- /app-cnt -->
 </div><!-- /app-ov -->
 
+<!-- FRIEND PICKER MODAL (nueva conversación de chat) -->
+<div class="mbg" id="fp-mod" onclick="if(event.target===this)closeFriendPicker()">
+  <div class="mbox" style="max-width:360px;">
+    <h3 style="margin-bottom:.9rem;">💬 Nueva conversación</h3>
+    <div id="fp-list" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:.5rem;">
+      <div style="text-align:center;padding:1.5rem;color:var(--tm);">Cargando amigos...</div>
+    </div>
+    <div class="macts"><button class="bcnc" onclick="closeFriendPicker()">Cancelar</button></div>
+  </div>
+</div>
+
 <!-- BAN MODAL -->
 <div class="mbg" id="bmod">
   <div class="mbox">
@@ -1763,15 +1774,60 @@ async function chatSend() {
 
 async function chatNewDm(user_id) {
   if (!user_id) {
-    user_id = prompt('NexoID del usuario con quien chatear:');
-    if (!user_id || !user_id.trim()) return;
-    user_id = user_id.trim();
+    // Sin ID: abrir el selector de amigos
+    showFriendPicker();
+    return;
   }
-  const { ok, data } = await apiFetch(\`/api/v1/chat/dm/\${encodeURIComponent(user_id)}\`, { method: 'POST' });
+  // Corregir: siempre mandar body JSON aunque esté vacío (Fastify lo exige)
+  const { ok, data } = await apiFetch(\`/api/v1/chat/dm/\${encodeURIComponent(user_id)}\`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
   if (!ok) { toast(data.error || 'No se pudo abrir la conversación', 'error'); return; }
+  closeFriendPicker();
   showP('chat');
   await loadChatRooms();
   openRoom(data.room_id, user_id);
+}
+
+async function showFriendPicker() {
+  const mod  = document.getElementById('fp-mod');
+  const list = document.getElementById('fp-list');
+  list.innerHTML = \`<div style="text-align:center;padding:1.5rem;color:var(--tm);">Cargando amigos...</div>\`;
+  mod.classList.add('open');
+
+  const { ok, data } = await apiFetch('/friends');
+  if (!ok) {
+    list.innerHTML = \`<div style="text-align:center;padding:1rem;color:var(--rd);">Error al cargar amigos</div>\`;
+    return;
+  }
+
+  const acc = (data.data || []).filter(f => f.friendship_status === 'accepted');
+  if (!acc.length) {
+    list.innerHTML = \`<div style="text-align:center;padding:1.5rem;color:var(--tm);line-height:1.7;">No tienes amigos añadidos.<br><span style="font-size:12px;">Ve a la sección <b>Amigos</b> para añadir uno.</span></div>\`;
+    return;
+  }
+
+  const cols = ['var(--red)', 'var(--blu)', '#8b5cf6', '#22c55e', '#f59e0b'];
+  list.innerHTML = acc.map(f => {
+    const c  = cols[f.nickname.charCodeAt(0) % cols.length];
+    const sl = f.online_status === 'in_game'
+      ? \`🎮 \${f.game_title || 'Jugando'}\`
+      : f.online_status === 'online' ? '🟢 En línea' : '⚫ Desconectado';
+    return \`<div class="fcard" style="cursor:pointer;transition:background .12s;" onclick="chatNewDm('\${f.nexo_id}')"
+         onmouseenter="this.style.background='var(--gb)'" onmouseleave="this.style.background=''">
+      <div class="avmd" style="background:\${c}">\${initials(f.nickname)}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="fn">\${escHtml(f.nickname)}</div>
+        <div class="fst" style="font-size:11px;">\${escHtml(sl)}</div>
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--tm)"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+    </div>\`;
+  }).join('');
+}
+
+function closeFriendPicker() {
+  document.getElementById('fp-mod')?.classList.remove('open');
 }
 
 function connectChatWs() {
