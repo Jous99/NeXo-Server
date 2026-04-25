@@ -18,6 +18,18 @@ setInterval(() => {
     }
 }, 60_000);
 
+// ── Almacén en memoria para flujo login del emulador (register/redirect) ──────
+// El emulador abre el navegador con la URL de login y sondea el token.
+// TTL: 10 minutos. Clave: polling_token (hex aleatorio de 32 bytes)
+// Valor: { raptor_token: string|null, expires_at: number, hardware_id: string }
+const redirectSessions = new Map();
+setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of redirectSessions) {
+        if (v.expires_at < now) redirectSessions.delete(k);
+    }
+}, 60_000);
+
 // Escapa caracteres especiales HTML para evitar XSS en la página de login
 function encodeHtml(str) {
     return String(str || '')
@@ -28,9 +40,11 @@ function encodeHtml(str) {
 }
 
 // ── Página HTML de login/registro ─────────────────────────────────────────────
+// Diseño idéntico a la web principal: fondo #0a0e1a, azul #00a8e8, grid lines.
 // La Switch la muestra en su navegador WebKit al vincular una cuenta desde el menú HOME.
 // Usa CSS puro, sin JS complejo, para máxima compatibilidad con el browser de Switch.
-function buildLoginPage({ redirect_uri = '', state = '', client_id = '', challenge = '', tab = 'login', error = '' } = {}) {
+function buildLoginPage({ redirect_uri = '', state = '', client_id = '', challenge = '', tab = 'login', error = '', form_action = '' } = {}) {
+    const action  = form_action || '/connect/1.0.0/authorize';
     const qBase = `redirect_uri=${encodeURIComponent(redirect_uri)}&state=${encodeURIComponent(state)}&client_id=${encodeURIComponent(client_id)}&session_token_code_challenge=${encodeURIComponent(challenge)}`;
     const isReg  = tab === 'register';
     const errHtml = error
@@ -50,66 +64,109 @@ function buildLoginPage({ redirect_uri = '', state = '', client_id = '', challen
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>NeXoNetwork — Cuenta</title>
   <style>
+    :root{--bg:#0a0e1a;--bg2:#0f1525;--card:#131b2e;--border:#1e2d4a;
+          --accent:#00a8e8;--red:#e4003a;--text:#e8eaf0;--muted:#8892a4}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,Arial,sans-serif;background:#0d1117;color:#e6edf3;
-         min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
-    .card{background:#161b22;border:1px solid #30363d;border-radius:16px;
-          padding:28px 24px;width:100%;max-width:380px}
-    .logo{text-align:center;margin-bottom:20px}
-    .logo h1{font-size:26px;color:#e94560;font-weight:800;letter-spacing:-0.5px}
-    .logo p{font-size:13px;color:#8b949e;margin-top:4px}
-    .tabs{display:flex;background:#0d1117;border-radius:8px;padding:3px;margin-bottom:20px}
-    .tab{flex:1;padding:9px;text-align:center;border-radius:6px;font-size:14px;
-         font-weight:600;text-decoration:none;color:#8b949e;display:block}
-    .tab.on{background:#e94560;color:#fff}
-    label{display:block;font-size:13px;color:#8b949e;margin-bottom:5px;margin-top:14px}
+    body{
+      font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+      background:var(--bg);color:var(--text);
+      min-height:100vh;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;padding:16px;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,168,232,.1) 0%,transparent 70%),
+        linear-gradient(rgba(0,168,232,.03) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(0,168,232,.03) 1px,transparent 1px);
+      background-size:auto,60px 60px,60px 60px;
+    }
+    .logo-wrap{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+    .logo-icon{
+      width:40px;height:40px;border-radius:10px;
+      background:linear-gradient(135deg,var(--accent),var(--red));
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.2rem;font-weight:900;color:#fff;
+      box-shadow:0 0 16px rgba(0,168,232,.4);
+    }
+    .logo-text .name{font-size:1.3rem;font-weight:800;letter-spacing:.3px}
+    .logo-text .name .n{color:var(--accent)}.logo-text .name .x{color:var(--red)}
+    .logo-text .sub{font-size:.72rem;color:var(--muted);margin-top:1px}
+    .card{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:16px;padding:28px 24px;width:100%;max-width:390px;
+      box-shadow:0 8px 40px rgba(0,0,0,.4);
+    }
+    .tabs{display:flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:22px;gap:4px}
+    .tab{
+      flex:1;padding:9px;text-align:center;border-radius:7px;font-size:.85rem;
+      font-weight:600;text-decoration:none;color:var(--muted);display:block;
+    }
+    .tab.on{background:linear-gradient(90deg,var(--accent),#0077b6);color:#fff;
+            box-shadow:0 2px 12px rgba(0,168,232,.3)}
+    label{
+      display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px;margin-top:16px;
+      font-weight:600;letter-spacing:.4px;text-transform:uppercase;
+    }
     input[type=text],input[type=password],input[type=email]{
-      width:100%;padding:11px 14px;background:#0d1117;border:1px solid #30363d;
-      border-radius:8px;color:#e6edf3;font-size:16px;outline:none}
-    input:focus{border-color:#e94560}
-    .btn{display:block;width:100%;padding:13px;background:#e94560;border:none;
-         border-radius:8px;color:#fff;font-size:16px;font-weight:700;
-         cursor:pointer;margin-top:20px;-webkit-appearance:none}
-    .btn:active{background:#c73652}
-    .err{background:rgba(233,69,96,.15);border:1px solid rgba(233,69,96,.5);
-         border-radius:8px;padding:10px 12px;font-size:13px;color:#ff8099;margin-bottom:14px}
+      width:100%;padding:11px 14px;background:var(--bg2);
+      border:1px solid var(--border);border-radius:9px;
+      color:var(--text);font-size:1rem;outline:none;
+      transition:border-color .2s,box-shadow .2s;
+    }
+    input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,168,232,.12)}
+    .btn{
+      display:block;width:100%;padding:13px;margin-top:22px;
+      background:linear-gradient(90deg,var(--accent),#0077b6);
+      border:none;border-radius:10px;color:#fff;font-size:1rem;
+      font-weight:700;cursor:pointer;letter-spacing:.2px;
+      box-shadow:0 4px 20px rgba(0,168,232,.3);-webkit-appearance:none;
+    }
+    .btn:active{filter:brightness(.88)}
+    .err{
+      background:rgba(228,0,58,.1);border:1px solid rgba(228,0,58,.35);
+      border-radius:9px;padding:10px 13px;font-size:.85rem;
+      color:#ff6b8a;margin-bottom:16px;
+    }
+    .footer{margin-top:18px;font-size:.72rem;color:var(--muted);text-align:center}
   </style>
 </head>
 <body>
-<div class="card">
-  <div class="logo">
-    <h1>NeXoNetwork</h1>
-    <p>Open Switch Online</p>
+  <div class="logo-wrap">
+    <div class="logo-icon">N</div>
+    <div class="logo-text">
+      <div class="name"><span class="n">Ne</span><span class="x">Xo</span>Network</div>
+      <div class="sub">Open Switch Online</div>
+    </div>
   </div>
-  ${errHtml}
-  <div class="tabs">
-    <a class="tab${!isReg ? ' on' : ''}" href="/connect/1.0.0/authorize?tab=login&${qBase}">Iniciar sesión</a>
-    <a class="tab${isReg  ? ' on' : ''}" href="/connect/1.0.0/authorize?tab=register&${qBase}">Crear cuenta</a>
+  <div class="card">
+    ${errHtml}
+    <div class="tabs">
+      <a class="tab${!isReg ? ' on' : ''}" href="${action}?tab=login&${qBase}">Iniciar sesión</a>
+      <a class="tab${isReg  ? ' on' : ''}" href="${action}?tab=register&${qBase}">Crear cuenta</a>
+    </div>
+    ${isReg ? `
+    <form method="POST" action="${action}">
+      ${hiddenFields}
+      <input type="hidden" name="action" value="register">
+      <label>Usuario</label>
+      <input type="text" name="username" autocomplete="username" required placeholder="mi_usuario">
+      <label>Email</label>
+      <input type="email" name="email" autocomplete="email" required placeholder="correo@ejemplo.com">
+      <label>Contraseña</label>
+      <input type="password" name="password" autocomplete="new-password" required placeholder="mínimo 6 caracteres">
+      <label>Nombre visible <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+      <input type="text" name="display_name" placeholder="Ej: JoseSwitch">
+      <button type="submit" class="btn">Crear cuenta →</button>
+    </form>` : `
+    <form method="POST" action="${action}">
+      ${hiddenFields}
+      <input type="hidden" name="action" value="login">
+      <label>Usuario</label>
+      <input type="text" name="username" autocomplete="username" required placeholder="mi_usuario">
+      <label>Contraseña</label>
+      <input type="password" name="password" autocomplete="current-password" required placeholder="contraseña">
+      <button type="submit" class="btn">Entrar →</button>
+    </form>`}
+    <div class="footer">NeXoNetwork · Open Source · Sin ánimo de lucro</div>
   </div>
-  ${isReg ? `
-  <form method="POST" action="/connect/1.0.0/authorize">
-    ${hiddenFields}
-    <input type="hidden" name="action" value="register">
-    <label>Usuario</label>
-    <input type="text" name="username" autocomplete="username" required placeholder="mi_usuario">
-    <label>Email</label>
-    <input type="email" name="email" autocomplete="email" required placeholder="correo@ejemplo.com">
-    <label>Contraseña</label>
-    <input type="password" name="password" autocomplete="new-password" required placeholder="min. 6 caracteres">
-    <label>Nombre visible (opcional)</label>
-    <input type="text" name="display_name" placeholder="Ej: JoseSwitch">
-    <button type="submit" class="btn">Crear cuenta →</button>
-  </form>` : `
-  <form method="POST" action="/connect/1.0.0/authorize">
-    ${hiddenFields}
-    <input type="hidden" name="action" value="login">
-    <label>Usuario</label>
-    <input type="text" name="username" autocomplete="username" required placeholder="mi_usuario">
-    <label>Contraseña</label>
-    <input type="password" name="password" autocomplete="current-password" required placeholder="contraseña">
-    <button type="submit" class="btn">Entrar →</button>
-  </form>`}
-</div>
 </body>
 </html>`;
 }
@@ -174,9 +231,12 @@ async function accountsApiRoutes(fastify) {
                 ip:         req.ip,
             });
 
+            // El token que devolvemos aquí es el raptor_token del emulador.
+            // El emulador lo guarda en la config y no hace refresh automático,
+            // así que usamos una duración larga (30 días, igual que los refresh tokens).
             const access_token = fastify.jwt.sign(
                 { nexo_id: result.nexo_id, nickname: result.nickname },
-                { expiresIn: process.env.JWT_ACCESS_EXPIRES || '15m' }
+                { expiresIn: process.env.JWT_REFRESH_EXPIRES || '30d' }
             );
 
             return reply.send({
@@ -859,6 +919,195 @@ async function accountsApiRoutes(fastify) {
         ).catch(() => {});
 
         return reply.send({ result: 'Success' });
+    });
+
+    // ══════════════════════════════════════════════════════════════════════════
+    //  FLUJO DE LOGIN DESDE EL BOTÓN DEL EMULADOR (register/redirect)
+    //
+    //  Cuando el usuario hace clic en "Click Here to Login" en la barra del
+    //  emulador, monitor.cpp ejecuta este flujo:
+    //
+    //    1. POST /api/v1/client/register/redirect
+    //       ← { url, token }
+    //       El emulador abre `url` en el navegador del sistema.
+    //
+    //    2. El usuario inicia sesión en la página web (GET/POST /emu-login?token=TOKEN)
+    //
+    //    3. GET /api/v1/client/register/redirect/token (Header R-Token: TOKEN)
+    //       ← 204 mientras el usuario aún no completó el login
+    //       ← 200 + body (plain text) = JWT del usuario cuando ya completó
+    //       ← 4xx si el token expiró o es inválido
+    //
+    //  La sesión expira a los 10 minutos si no se completa.
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // POST /api/v1/client/register/redirect
+    // monitor.cpp → WorkerLoop() — se llama cuando el usuario pulsa el botón de login
+    fastify.post('/api/v1/client/register/redirect', async (req, reply) => {
+        if (!isAccountsSubdomain(req)) return reply.code(404).send({ error: 'not found' });
+
+        const hardwareId = req.headers['r-hardwareid'] || req.headers['r-hardware-id'] || 'unknown';
+        const clientId   = req.headers['r-clientid']   || req.headers['r-client-id']   || 'nexoemu';
+
+        // Generar un token de sondeo único y de un solo uso
+        const pollingToken = crypto.randomBytes(32).toString('hex');
+
+        redirectSessions.set(pollingToken, {
+            raptor_token: null,          // null = aún sin completar
+            hardware_id:  hardwareId,
+            client_id:    clientId,
+            expires_at:   Date.now() + 10 * 60 * 1000, // TTL: 10 minutos
+        });
+
+        const BASE = process.env.BASE_DOMAIN || 'nexonetwork.space';
+        const loginUrl = `https://${BASE}/emu-login?token=${pollingToken}`;
+
+        return reply.send({
+            url:   loginUrl,
+            token: pollingToken,
+        });
+    });
+
+    // GET /api/v1/client/register/redirect/token
+    // monitor.cpp → WorkerLoop() — sondea periódicamente hasta que el usuario complete el login
+    fastify.get('/api/v1/client/register/redirect/token', async (req, reply) => {
+        if (!isAccountsSubdomain(req)) return reply.code(404).send({ error: 'not found' });
+
+        const pollingToken = req.headers['r-token'] || '';
+        if (!pollingToken) return reply.code(400).send('');
+
+        const session = redirectSessions.get(pollingToken);
+        if (!session) return reply.code(410).send(''); // 410 Gone: expiró o no existe
+
+        if (session.expires_at < Date.now()) {
+            redirectSessions.delete(pollingToken);
+            return reply.code(410).send('');
+        }
+
+        if (!session.raptor_token) {
+            // Aún esperando que el usuario complete el login
+            return reply.code(204).send();
+        }
+
+        // Login completado — devolver el JWT al emulador (texto plano, como esperan en Settings)
+        const raptorToken = session.raptor_token;
+        redirectSessions.delete(pollingToken); // un solo uso
+        return reply.type('text/plain').send(raptorToken);
+    });
+
+    // GET /emu-login   — Página de login para el flujo del emulador
+    // El navegador del sistema abre esta URL. El usuario inicia sesión aquí.
+    fastify.get('/emu-login', async (req, reply) => {
+        const token = req.query?.token || '';
+        const session = redirectSessions.get(token);
+
+        if (!session || session.expires_at < Date.now()) {
+            return reply.type('text/html').send(`<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><title>NeXoNetwork</title>
+<style>body{font-family:system-ui;background:#0a0e1a;color:#e8eaf0;
+display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}</style>
+</head><body><div style="text-align:center">
+<h2 style="color:#e4003a">Enlace expirado</h2>
+<p>Este enlace de login ha expirado o ya fue usado.<br>Haz clic en el botón del emulador para generar uno nuevo.</p>
+</div></body></html>`);
+        }
+
+        const html = buildLoginPage({
+            redirect_uri: `/emu-login?token=${encodeURIComponent(token)}`,
+            form_action:  '/emu-login',
+        });
+        return reply.type('text/html').send(html);
+    });
+
+    // POST /emu-login  — Procesa el formulario de login del flujo del emulador
+    fastify.post('/emu-login', async (req, reply) => {
+        const body = req.body || {};
+        const {
+            action       = 'login',
+            username     = '',
+            password     = '',
+            email        = '',
+            display_name = '',
+            redirect_uri = '',
+        } = body;
+
+        // Extraer el token de la query de redirect_uri
+        const tokenMatch = redirect_uri.match(/[?&]token=([^&]+)/);
+        const pollingToken = tokenMatch ? decodeURIComponent(tokenMatch[1]) : '';
+        const session = pollingToken ? redirectSessions.get(pollingToken) : null;
+
+        const errorPage = (err, tab = 'login') => {
+            const html = buildLoginPage({
+                redirect_uri,
+                form_action: '/emu-login',
+                error: err,
+                tab,
+            });
+            return reply.type('text/html').send(html);
+        };
+
+        if (!session || session.expires_at < Date.now()) {
+            return errorPage('Sesión expirada. Vuelve a hacer clic en el emulador.');
+        }
+
+        let userResult;
+        try {
+            if (action === 'register') {
+                if (!username || !email || !password) {
+                    return errorPage('Faltan campos obligatorios.');
+                }
+                userResult = await accounts.register({
+                    username, email, password, nickname: display_name || username,
+                });
+            } else {
+                if (!username || !password) {
+                    return errorPage('Introduce usuario y contraseña.');
+                }
+                userResult = await accounts.login({
+                    login: username, password, deviceInfo: 'EmuBrowser', ip: req.ip,
+                });
+            }
+        } catch (err) {
+            const errTab = action === 'register' ? 'register' : 'login';
+            return errorPage(err.message || 'Error de autenticación.', errTab);
+        }
+
+        // Generar el JWT que el emulador guardará como raptor_token.
+        // Debe ser de larga duración: el emulador lo guarda en la config y no hace
+        // refresh automático. Usamos el mismo TTL que los refresh tokens (30 días).
+        const raptorJwt = fastify.jwt.sign(
+            { nexo_id: userResult.nexo_id, nickname: userResult.nickname },
+            { expiresIn: process.env.JWT_REFRESH_EXPIRES || '30d' }
+        );
+
+        // Marcar la sesión como completada con el token
+        session.raptor_token = raptorJwt;
+
+        return reply.type('text/html').send(`<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><title>NeXoNetwork — Login completado</title>
+<style>
+:root{--bg:#0a0e1a;--accent:#00a8e8;--text:#e8eaf0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);
+     display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px;
+     background-image:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,168,232,.1) 0%,transparent 70%)}
+.card{background:#131b2e;border:1px solid #1e2d4a;border-radius:16px;padding:32px 24px;
+      text-align:center;max-width:340px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
+.icon{font-size:3rem;margin-bottom:16px}
+h2{font-size:1.2rem;margin-bottom:8px;color:var(--accent)}
+p{color:#8892a4;font-size:.9rem;line-height:1.5}
+.name{color:var(--text);font-weight:700}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">✅</div>
+    <h2>¡Login completado!</h2>
+    <p>Bienvenido, <span class="name">${userResult.nickname || username}</span>.<br><br>
+       Puedes cerrar esta ventana.<br>El emulador se conectará automáticamente.</p>
+  </div>
+</body>
+</html>`);
     });
 
     // GET /api/v1/client/subscription

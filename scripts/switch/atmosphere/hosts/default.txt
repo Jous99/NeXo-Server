@@ -1,0 +1,75 @@
+# ══════════════════════════════════════════════════════════════════════════════
+#  NeXoNetwork — Hosts para Atmosphere CFW (Switch)
+#  Redirige servidores Nintendo → NeXoNetwork y bloquea lo que no usamos.
+#
+#  INSTALAR EN:  SD:/atmosphere/hosts/default.txt
+#  REQUIERE:     system_settings.ini con enable_dns_mitm = u8!0x1
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── AUTH CHAIN ────────────────────────────────────────────────────────────────
+nexonetwork.space dauth-lp1.ndas.srv.nintendo.net
+nexonetwork.space aauth-lp1.ndas.srv.nintendo.net
+nexonetwork.space accounts.nintendo.com
+nexonetwork.space api.accounts.nintendo.com
+nexonetwork.space cdn.accounts.nintendo.com
+
+# ── BAAS (tokens por juego) ───────────────────────────────────────────────────
+nexonetwork.space e97b8a9d672e4ce4845b-sb.baas.nintendo.com
+nexonetwork.space d78dbb08cf698e042d54-sb.baas.nintendo.com
+nexonetwork.space ed9e2f05d286b7b8ceda-sb.baas.nintendo.com
+nexonetwork.space a9e5b722a406f9cee4ea-sb.baas.nintendo.com
+nexonetwork.space e1c218b5657e4e03b6e0-sb.baas.nintendo.com
+nexonetwork.space 7fbcac5a1e52b070d5a2-sb.baas.nintendo.com
+nexonetwork.space 9dc9e6e4765c77a5d4d1-sb.baas.nintendo.com
+nexonetwork.space f4a0f589eca62d8e8f79-sb.baas.nintendo.com
+nexonetwork.space ead00c7dc4b91df4-sb.baas.nintendo.com
+nexonetwork.space 7d3231955ef40ca3-sb.baas.nintendo.com
+
+# ── AMIGOS Y PRESENCIA ────────────────────────────────────────────────────────
+nexonetwork.space friends.lp1.s.n.srv.nintendo.net
+nexonetwork.space friends-lp1.s.n.srv.nintendo.net
+
+# ── SERVIDORES DE JUEGO / NPLN ────────────────────────────────────────────────
+nexonetwork.space api.lp1.npln.srv.nintendo.net
+nexonetwork.space g9s300c4msl.lp1.s.n.srv.nintendo.net
+nexonetwork.space g9s300c4msl-sb.lp1.s.n.srv.nintendo.net
+
+# ── BCAT (contenido background de juegos) ────────────────────────────────────
+nexonetwork.space bcat-list-lp1.cdn.nintendo.net
+nexonetwork.space bcat-dl-lp1.cdn.nintendo.net
+nexonetwork.space bcat-list-lp1-sb.cdn.nintendo.net
+
+# ── CONECTIVIDAD / NIFM ──────────────────────────────────────────────────────
+nexonetwork.space ctest.cdn.nintendo.net
+nexonetwork.space nasc.nintendowifi.net
+nexonetwork.space pptest.nintendo.net
+nexonetwork.space conntest.nintendowifi.net
+
+# ── ESHOP Y TÍTULOS ──────────────────────────────────────────────────────────
+nexonetwork.space tagaya.hac.lp1.eshop.nintendo.net
+nexonetwork.space shogun-lp1.eshop.nintendo.net
+nexonetwork.space beach.hac.lp1.eshop.nintendo.net
+nexonetwork.space api.hac.lp1.eshop.nintendo.net
+nexonetwork.space bugyo.hac.lp1.eshop.nintendo.net
+nexonetwork.space moon.hac.lp1.eshop.nintendo.net
+nexonetwork.space sea.hac.lp1.eshop.nintendo.net
+nexonetwork.space gw.lp1.eshop.nintendo.net
+nexonetwork.space albatross.lp1.eshop.nintendo.net
+nexonetwork.space tiger.hac.lp1.eshop.nintendo.net
+nexonetwork.space api-lp1.pctl.srv.nintendo.net
+
+# ── TELEMETRÍA Y ERRORES (bloqueados — no necesitamos emularlos) ──────────────
+0.0.0.0 receive-lp1.er.srv.nintendo.net
+0.0.0.0 receive-lp1.dg.srv.nintendo.net
+0.0.0.0 pushmo.hac.lp1.er.nintendo.net
+0.0.0.0 service.lp1.er.srv.nintendo.net
+
+# ── ACTUALIZACIONES DEL SISTEMA (bloqueadas) ─────────────────────────────────
+0.0.0.0 atum.hac.lp1.d4c.nintendo.net
+0.0.0.0 sun.hac.lp1.d4c.nintendo.net
+0.0.0.0 aqua.hac.lp1.d4c.nintendo.net
+0.0.0.0 atumn.hac.lp1.d4c.nintendo.net
+
+# ── CDN DE NINTENDO (bloqueado para no filtrar datos a Nintendo) ──────────────
+0.0.0.0 atum-lp1.cdn.nintendo.net
+0.0.0.0 camo.cdn.nintendo.net

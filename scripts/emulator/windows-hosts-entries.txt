@@ -1,0 +1,42 @@
+# ══════════════════════════════════════════════════════════════════════════════
+#  NeXoNetwork — Entradas para hosts de Windows (emulador NeXo-emu)
+#
+#  AÑADIR AL FINAL DE:  C:\Windows\System32\drivers\etc\hosts
+#  (requiere ejecutar el editor como Administrador)
+#
+#  O usa el script setup-emulator.ps1 que lo hace automáticamente.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# NeXoNetwork — Nintendo domains redirect
+185.X.X.X dauth-lp1.ndas.srv.nintendo.net
+185.X.X.X aauth-lp1.ndas.srv.nintendo.net
+185.X.X.X accounts.nintendo.com
+185.X.X.X api.accounts.nintendo.com
+185.X.X.X cdn.accounts.nintendo.com
+185.X.X.X e97b8a9d672e4ce4845b-sb.baas.nintendo.com
+185.X.X.X d78dbb08cf698e042d54-sb.baas.nintendo.com
+185.X.X.X ed9e2f05d286b7b8ceda-sb.baas.nintendo.com
+185.X.X.X a9e5b722a406f9cee4ea-sb.baas.nintendo.com
+185.X.X.X e1c218b5657e4e03b6e0-sb.baas.nintendo.com
+185.X.X.X 7fbcac5a1e52b070d5a2-sb.baas.nintendo.com
+185.X.X.X 9dc9e6e4765c77a5d4d1-sb.baas.nintendo.com
+185.X.X.X f4a0f589eca62d8e8f79-sb.baas.nintendo.com
+185.X.X.X friends.lp1.s.n.srv.nintendo.net
+185.X.X.X friends-lp1.s.n.srv.nintendo.net
+185.X.X.X api.lp1.npln.srv.nintendo.net
+185.X.X.X bcat-list-lp1.cdn.nintendo.net
+185.X.X.X bcat-dl-lp1.cdn.nintendo.net
+185.X.X.X tagaya.hac.lp1.eshop.nintendo.net
+185.X.X.X shogun-lp1.eshop.nintendo.net
+185.X.X.X beach.hac.lp1.eshop.nintendo.net
+185.X.X.X api.hac.lp1.eshop.nintendo.net
+185.X.X.X ctest.cdn.nintendo.net
+185.X.X.X nasc.nintendowifi.net
+185.X.X.X conntest.nintendowifi.net
+
+# Bloquear telemetría y actualizaciones
+0.0.0.0 receive-lp1.er.srv.nintendo.net
+0.0.0.0 receive-lp1.dg.srv.nintendo.net
+0.0.0.0 atum.hac.lp1.d4c.nintendo.net
+0.0.0.0 sun.hac.lp1.d4c.nintendo.net
+0.0.0.0 aqua.hac.lp1.d4c.nintendo.net
