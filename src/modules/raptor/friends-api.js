@@ -12,6 +12,10 @@
  */
 
 const accounts = require('../accounts/services/accounts');
+const { sendPushNotification } = require('./notification-api');
+
+// Tipos de notificación (deben coincidir con el enum del emulador)
+const NOTIF_TYPE_FRIEND_STATUS = 102;  // FriendStatus
 
 function isThisSubdomain(req) {
     return ['friends-lp1', 'www', ''].includes(req.subdomain || '');
@@ -115,15 +119,55 @@ async function friendsApiRoutes(fastify) {
     }, async (req, reply) => {
         if (!isThisSubdomain(req)) return reply.code(404).send({ error: 'not found' });
 
+        const nexo_id  = String(req.user.nexo_id);
         const { status, game_title, game_id } = req.body || {};
-        await accounts.updatePresence(req.user.nexo_id, {
-            status:     status    || 'online',
+        const normalizedStatus = status || 'online';
+
+        await accounts.updatePresence(nexo_id, {
+            status:     normalizedStatus,
             game_title: game_title || null,
             game_id:    game_id   || null,
         });
 
+        // Notificar en tiempo real a los amigos conectados cuando el usuario
+        // empieza o deja de jugar. Esto activa el toast "X está jugando a Y".
+        // Se hace async (sin await) para no bloquear la respuesta HTTP.
+        _pushStatusToFriends(nexo_id, normalizedStatus, game_title || null).catch(() => {});
+
         return reply.send({ result: 'Success' });
     });
+}
+
+// ── Helper: empujar cambio de estado a los amigos del usuario ──────────────────
+// status_code: "1" = in_game, "0" = offline/online (no muestra toast en el cliente)
+async function _pushStatusToFriends(nexo_id, normalizedStatus, game_title) {
+    // Obtener el perfil del usuario para saber su nombre y avatar
+    const profile = await accounts.getProfile(nexo_id).catch(() => null);
+    if (!profile) return;
+
+    // Solo enviamos toast cuando el usuario empieza a jugar (in_game)
+    // o cuando el juego cambia. Para offline/online simplemente mapeamos sin ruido.
+    const status_code = normalizedStatus === 'in_game' ? '1' : '0';
+
+    // Obtener la lista de amigos aceptados
+    const friends = await accounts.getFriends(nexo_id).catch(() => []);
+
+    const notification = {
+        type:         NOTIF_TYPE_FRIEND_STATUS,
+        priority:     1,   // Standard
+        display_type: 0,   // OutOfGame
+        properties: {
+            player_avatar_url: profile.avatar_url || '',
+            player_name:       profile.nickname   || nexo_id,
+            status_code,
+            status_title_name: game_title || '',
+        },
+    };
+
+    for (const friend of friends) {
+        if (friend.friendship_status !== 'accepted') continue;
+        sendPushNotification(String(friend.nexo_id), notification);
+    }
 }
 
 module.exports = friendsApiRoutes;

@@ -9,7 +9,17 @@
  * Transporte dual:
  *   - WebSocket  wss://chat-lp1.{domain}/api/v1/chat/ws   (entrega en tiempo real)
  *   - REST HTTP  /api/v1/chat/...                          (fallback / historial)
+ *
+ * Notificaciones:
+ *   Cuando el destinatario no tiene la ventana de chat abierta, se le envía una
+ *   notificación tipo 300 (ChatMessage) a través del WebSocket de notificaciones
+ *   para que el emulador muestre un toast aunque ChatDialog esté cerrado.
  */
+
+const { sendPushNotification } = require('./notification-api');
+
+// Tipo de notificación 300 = ChatMessage (debe coincidir con la enum del emulador)
+const NOTIF_TYPE_CHAT_MESSAGE = 300;
 
 // ── Almacén en memoria ────────────────────────────────────────────────────────
 // En producción esto debería ir a una base de datos.
@@ -50,7 +60,10 @@ async function chatApiRoutes(fastify) {
     // Autenticación: header Authorization: Bearer <raptor_token>
     fastify.get('/api/v1/chat/ws', { websocket: true }, async (socket, req) => {
         const authHeader = req.headers['authorization'] || '';
-        const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+        // Los navegadores no pueden enviar headers en WebSocket, así que
+        // aceptamos también el token como query param: ?token=<jwt>
+        const token = authHeader.replace(/^Bearer\s+/i, '').trim()
+            || (req.query && req.query.token) || '';
 
         let nexo_id = null;
         let nickname = 'Unknown';
@@ -206,11 +219,30 @@ async function chatApiRoutes(fastify) {
             msgs.splice(0, msgs.length - MAX_MESSAGES_PER_ROOM);
         }
 
-        // Entregar en tiempo real a todos los participantes vía WebSocket
+        // Entregar en tiempo real a todos los participantes vía WebSocket de chat
         const pushPayload = { type: 'chat_message', room_id, message };
         const [, idA, idB] = room_id.split('_'); // "dm_<idA>_<idB>"
         pushToUser(idA, pushPayload);
         pushToUser(idB, pushPayload);
+
+        // Si el destinatario no tiene el chat WebSocket abierto, enviarle un
+        // toast de notificación a través del WebSocket de notificaciones (tipo 300).
+        const recipientId = idA === nexo_id ? idB : idA;
+        const recipientHasChatWs = connections.has(String(recipientId)) &&
+                                   connections.get(String(recipientId)).size > 0;
+        if (!recipientHasChatWs) {
+            sendPushNotification(recipientId, {
+                type:         NOTIF_TYPE_CHAT_MESSAGE,
+                priority:     1,   // Standard
+                display_type: 0,   // OutOfGame
+                properties: {
+                    sender_id:   nexo_id,
+                    sender_name: nickname,
+                    room_id,
+                    content:     message.content.slice(0, 80), // preview truncado
+                },
+            });
+        }
 
         return reply.code(201).send({ result: 'Success', message });
     });
