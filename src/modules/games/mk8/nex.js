@@ -579,21 +579,7 @@ function handleNexConnection(ws) {
     ws.on('error', () => {}); // ignorar errores de red
 }
 
-// ─── Plugin Fastify ───────────────────────────────────────────────────────────
-async function mk8NexRoutes(fastify) {
-    // El emulador conecta a wss://mk8-lp1.<domain>/
-    // Con @fastify/websocket, registrar un handler { websocket:true } en la misma
-    // ruta que el GET normal es válido: Fastify los despacha por protocolo.
-    fastify.get('/nex', { websocket: true }, (socket, req) => {
-        if (req.subdomain !== 'mk8-lp1') { socket.close(); return; }
-        handleNexConnection(socket);
-    });
-
-    // Alias raíz — algunos builds del emulador conectan sin path
-    fastify.get('/ws', { websocket: true }, (socket, req) => {
-        if (req.subdomain !== 'mk8-lp1') { socket.close(); return; }
-        handleNexConnection(socket);
-    });
-}
-
-module.exports = mk8NexRoutes;
+// ─── Exports ──────────────────────────────────────────────────────────────────
+// handleNexConnection is exported for use by the unified NEX WebSocket module
+// (nex_ws.js). Route registration is done there to avoid FST_ERR_DUPLICATED_ROUTE.
+module.exports = { handleNexConnection };

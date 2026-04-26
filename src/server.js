@@ -37,11 +37,14 @@ const systemRoutes = require('./routes/system');
 
 // ── Juegos ────────────────────────────────────────────────────────────────────
 const smm2Routes    = require('./modules/games/smm2/routes');
-const smm2NexRoutes = require('./modules/games/smm2/nex');
 const smm2NexTcp    = require('./modules/games/smm2/nex_tcp');
 const mk8Routes     = require('./modules/games/mk8/routes');
-const mk8NexRoutes  = require('./modules/games/mk8/nex');
 const mk8NexTcp     = require('./modules/games/mk8/nex_tcp');
+
+// ── NEX WebSocket unificado ───────────────────────────────────────────────────
+// Ambos juegos (MK8 y SMM2) usan las mismas rutas WS (/nex, /ws),
+// así que se registran una sola vez y se despacha por subdominio.
+const nexWsRoutes   = require('./modules/games/nex_ws');
 
 // ── Stubs de servicios Nintendo (Switch real) ─────────────────────────────────
 const nintendoStubs = require('./modules/nintendo/stubs');
@@ -260,14 +263,12 @@ async function buildApp() {
     // smm2-lp1.nexonetwork.space — Super Mario Maker 2 (HTTP API)
     fastify.register(smm2Routes, { prefix: '/' });
 
-    // smm2-lp1.nexonetwork.space — Super Mario Maker 2 (NEX/PRUDP matchmaking + DataStore por WebSocket)
-    fastify.register(smm2NexRoutes, { prefix: '/' });
-
     // mk8-lp1.nexonetwork.space — Mario Kart 8 Deluxe (HTTP API)
     fastify.register(mk8Routes, { prefix: '/' });
 
-    // mk8-lp1.nexonetwork.space — Mario Kart 8 Deluxe (NEX/PRUDP matchmaking por WebSocket)
-    fastify.register(mk8NexRoutes, { prefix: '/' });
+    // NEX WebSocket unificado — despacha MK8/SMM2 por subdominio
+    // Las rutas /nex y /ws se registran UNA sola vez aquí.
+    fastify.register(nexWsRoutes, { prefix: '/' });
 
     // switch-friends-lp1.nexonetwork.space — Nintendo Switch friends HTTP API
     // La Switch real redirige friends.lp1.s.n.srv.nintendo.net aquí vía DNS.
