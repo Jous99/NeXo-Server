@@ -187,6 +187,14 @@ function buildLoginPage({ redirect_uri = '', state = '', client_id = '', challen
 
 const accounts = require('../accounts/services/accounts');
 
+// Title IDs con soporte online activo (16 dígitos hex, sin 0x).
+// Deben coincidir con SUPPORTED_TITLES de status-api.js.
+// Un juego en esta lista no necesita estar en la tabla `titles` de la DB.
+const SUPPORTED_TITLE_IDS = new Set([
+    '0100000000100000', // Super Mario Maker 2
+    '0100152000022000', // Mario Kart 8 Deluxe
+]);
+
 // Middleware: solo procesa si el host es accounts-api-lp1 o citrus-api-lp1
 function isAccountsSubdomain(req) {
     const sub = req.subdomain || '';
@@ -417,14 +425,21 @@ async function accountsApiRoutes(fastify) {
         // padStart(16, '0') normaliza ambos formatos.
         if (titleId) {
             const titleIdPadded = titleId.toLowerCase().padStart(16, '0');
-            const [titleRows] = await db.query(
-                'SELECT compatibility FROM titles WHERE LOWER(title_id) = ?',
-                [titleIdPadded]
-            ).catch(() => [[]]);
 
-            // Si el juego no está en la tabla, devolvemos 400 (sin online)
-            if (!titleRows.length) {
-                return reply.code(400).send('');
+            // Primero: lista estática de juegos soportados (sin tocar la DB)
+            const inStaticList = SUPPORTED_TITLE_IDS.has(titleIdPadded);
+
+            if (!inStaticList) {
+                // Segundo: consultar la DB por si se añadió dinámicamente
+                const [titleRows] = await db.query(
+                    'SELECT compatibility FROM titles WHERE LOWER(title_id) = ?',
+                    [titleIdPadded]
+                ).catch(() => [[]]);
+
+                // Si no está en la lista estática NI en la DB → sin online
+                if (!titleRows.length) {
+                    return reply.code(400).send('');
+                }
             }
         }
 
@@ -1165,12 +1180,12 @@ p{color:#8892a4;font-size:.9rem;line-height:1.5}
         // Todos los campos de texto deben ser strings (no booleans) porque el
         // emulador usa nlohmann::json::get<std::string>() en from_json().
         return reply.send({
-            display_subscription:             plan,        // "Free", "Pro", etc.
-            display_action:                   '',          // texto del botón de acción (vacío = sin botón)
-            url_action:                       '',          // URL del botón de acción
-            enable_set_username:              true,        // bool - puede cambiar su nombre
-            enable_set_profile:               true,        // bool - puede editar su perfil
-            show_subscription_upgrade_notice: false,       // bool - no mostrar aviso de upgrade
+            display_subscription:             plan,
+            display_action:                   '',
+            url_action:                       '',
+            enable_set_username:              true,
+            enable_set_profile:               true,
+            show_subscription_upgrade_notice: false,
         });
     });
 }

@@ -29,10 +29,11 @@
  *  200-299 → PERMANENT_BAN
  */
 
-// Juegos con online activo. Title IDs en hexadecimal (sin 0x).
-// Mario Maker 2: 0100000000100000
+// Juegos con online activo. Title IDs en hexadecimal (16 dígitos, sin 0x).
+// Añade aquí el ID de cada juego que tenga soporte online en NeXoNetwork.
 const SUPPORTED_TITLES = new Set([
     '0100000000100000', // Super Mario Maker 2
+    '0100152000022000', // Mario Kart 8 Deluxe
 ]);
 
 async function statusApiRoutes(fastify) {
