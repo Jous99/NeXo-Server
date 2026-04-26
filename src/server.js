@@ -36,9 +36,10 @@ const chatApiRoutes      = require('./modules/raptor/chat-api');
 const systemRoutes = require('./routes/system');
 
 // ── Juegos ────────────────────────────────────────────────────────────────────
-const smm2Routes   = require('./modules/games/smm2/routes');
-const mk8Routes    = require('./modules/games/mk8/routes');
-const mk8NexRoutes = require('./modules/games/mk8/nex');
+const smm2Routes    = require('./modules/games/smm2/routes');
+const smm2NexRoutes = require('./modules/games/smm2/nex');
+const mk8Routes     = require('./modules/games/mk8/routes');
+const mk8NexRoutes  = require('./modules/games/mk8/nex');
 
 // ── Stubs de servicios Nintendo (Switch real) ─────────────────────────────────
 const nintendoStubs = require('./modules/nintendo/stubs');
@@ -254,8 +255,11 @@ async function buildApp() {
     // bcat-lp1.nexonetwork.space — BCAT (background content)
     fastify.register(bcastRoutes, { prefix: '/' });
 
-    // smm2-lp1.nexonetwork.space — Super Mario Maker 2
+    // smm2-lp1.nexonetwork.space — Super Mario Maker 2 (HTTP API)
     fastify.register(smm2Routes, { prefix: '/' });
+
+    // smm2-lp1.nexonetwork.space — Super Mario Maker 2 (NEX/PRUDP matchmaking + DataStore por WebSocket)
+    fastify.register(smm2NexRoutes, { prefix: '/' });
 
     // mk8-lp1.nexonetwork.space — Mario Kart 8 Deluxe (HTTP API)
     fastify.register(mk8Routes, { prefix: '/' });
@@ -304,8 +308,9 @@ async function start() {
         console.log(`   → bcat-lp1.${BASE_DOMAIN}           (BCAT)`);
         console.log(`   → notification-lp1.${BASE_DOMAIN}   (notificaciones)`);
         console.log(`   → connector-lp1.${BASE_DOMAIN}      (connector)`);
-        console.log(`   → status-lp1.${BASE_DOMAIN}         (estado)`);        console.log(`   -> smm2-lp1.${BASE_DOMAIN}           (Mario Maker 2)`);
-        console.log(`   -> mk8-lp1.${BASE_DOMAIN}            (Mario Kart 8 Deluxe)\n`);
+        console.log(`   → status-lp1.${BASE_DOMAIN}         (estado)`);
+        console.log(`   → smm2-lp1.${BASE_DOMAIN}           (Mario Maker 2 + NEX)`);
+        console.log(`   → mk8-lp1.${BASE_DOMAIN}            (Mario Kart 8 + NEX)\n`);
     } catch (err) {
         app.log.error(err);
         process.exit(1);

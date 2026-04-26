@@ -42,9 +42,9 @@ Funciona con dos tipos de clientes:
 | System updates | `atum.hac.lp1.d4c.nintendo.net` | ✅ Stub (sin actualizaciones) |
 | Title version list | `tagaya.hac.lp1.eshop.nintendo.net` | ✅ Stub |
 | eShop básico | `shogun-lp1.eshop.nintendo.net` | ✅ Stub |
-| Super Mario Maker 2 | `g9s300c4msl.lp1.s.n.srv.nintendo.net` | 🚧 En pruebas |
+| Super Mario Maker 2 | `g9s300c4msl.lp1.s.n.srv.nintendo.net` | ✅ Implementado (HTTP + NEX/DataStore) |
 | Matchmaking genérico | — | 🚧 En desarrollo |
-| Mario Kart 8 Deluxe | — | 📋 Planificado |
+| Mario Kart 8 Deluxe | `g7sfc1xhmc8.lp1.s.n.srv.nintendo.net` | ✅ Implementado (HTTP + NEX/MatchmakeExtension) |
 | NPLN completo (gRPC) | `api.lp1.npln.srv.nintendo.net` | 📋 Planificado |
 
 ---
@@ -77,7 +77,12 @@ NeXo-Server/
 │   │   │   └── stubs.js                 # Stubs de servicios Nintendo (error reporting, updates, eShop)
 │   │   └── games/
 │   │       ├── README.md                # Cómo crear un módulo de juego
-│   │       └── smm2/routes.js           # Super Mario Maker 2
+│   │       ├── smm2/
+│   │       │   ├── routes.js            # Super Mario Maker 2 (HTTP API)
+│   │       │   └── nex.js               # Super Mario Maker 2 (NEX/PRUDP + DataStore)
+│   │       └── mk8/
+│   │           ├── routes.js            # Mario Kart 8 Deluxe (HTTP API)
+│   │           └── nex.js               # Mario Kart 8 Deluxe (NEX/PRUDP matchmaking)
 │   ├── routes/
 │   │   ├── system.js                    # Update desde Forgejo, status, logs
 │   │   ├── auth.js / profile.js / friends.js / admin.js  # Portal web
@@ -167,9 +172,9 @@ echo "NEXO_HTTPS=true" >> .env
 | raptor/bcat | `/api/v1/bcat/*` | BCAT (contenido de fondo) | ✅ Estable |
 | nintendo/stubs | Múltiples rutas Nintendo | Error reporting, updates, eShop stub | ✅ Estable |
 | web | `/` (landing + portal) | Web pública y panel de usuario | ✅ Estable |
-| games/smm2 | `/v1/courses/*` | Super Mario Maker 2 | 🚧 Básico |
+| games/smm2 | `/v1/courses/*` | Super Mario Maker 2 (HTTP API + NEX) | ✅ Estable |
 | games/matchmaking | `/games/rooms/*` | Salas y matchmaking genérico | 🚧 Desarrollo |
-| games/mk8d | `/games/mk8d/*` | Mario Kart 8 Deluxe | 📋 Planificado |
+| games/mk8d | `/games/mk8d/*` | Mario Kart 8 Deluxe (HTTP API + NEX) | ✅ Estable |
 
 ---
 
