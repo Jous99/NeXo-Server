@@ -1863,10 +1863,14 @@ async function loadRoomMessages(room_id) {
 function appendChatMsg(msg, scroll = true) {
   const msgs = document.getElementById('chat-msgs');
   if (!msgs) return;
+  // Deduplicar por ID de mensaje: si ya existe en el DOM, no añadirlo de nuevo.
+  // Esto previene duplicados cuando el mensaje llega tanto por HTTP como por WS.
+  if (msg.id && msgs.querySelector('[data-msg-id="'+msg.id+'"]')) return;
   const isMe = CU && String(msg.sender_id) === String(CU.nexo_id);
   const time  = new Date(msg.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
   const div   = document.createElement('div');
   div.className = 'chat-msg ' + (isMe ? 'mine' : 'theirs');
+  if (msg.id) div.setAttribute('data-msg-id', msg.id);
   div.innerHTML = \`<div class="chat-bubble">\${escHtml(msg.content)}</div>
     <div class="chat-meta">\${isMe ? '' : escHtml(msg.sender_name) + ' · '}\${time}</div>\`;
   msgs.appendChild(div);

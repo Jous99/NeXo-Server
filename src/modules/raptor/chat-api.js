@@ -219,15 +219,17 @@ async function chatApiRoutes(fastify) {
             msgs.splice(0, msgs.length - MAX_MESSAGES_PER_ROOM);
         }
 
-        // Entregar en tiempo real a todos los participantes vía WebSocket de chat
+        // Entregar en tiempo real a todos los participantes vía WebSocket de chat.
+        // IMPORTANTE: no enviar al remitente por WS porque ya recibe el mensaje
+        // en la respuesta HTTP del POST. Si se lo enviamos también por WS,
+        // el mensaje se duplica en el frontend.
         const pushPayload = { type: 'chat_message', room_id, message };
         const [, idA, idB] = room_id.split('_'); // "dm_<idA>_<idB>"
-        pushToUser(idA, pushPayload);
-        pushToUser(idB, pushPayload);
+        const recipientId = idA === nexo_id ? idB : idA;
+        pushToUser(recipientId, pushPayload);
 
         // Si el destinatario no tiene el chat WebSocket abierto, enviarle un
         // toast de notificación a través del WebSocket de notificaciones (tipo 300).
-        const recipientId = idA === nexo_id ? idB : idA;
         const recipientHasChatWs = connections.has(String(recipientId)) &&
                                    connections.get(String(recipientId)).size > 0;
         if (!recipientHasChatWs) {
