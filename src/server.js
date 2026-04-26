@@ -38,8 +38,10 @@ const systemRoutes = require('./routes/system');
 // ── Juegos ────────────────────────────────────────────────────────────────────
 const smm2Routes    = require('./modules/games/smm2/routes');
 const smm2NexRoutes = require('./modules/games/smm2/nex');
+const smm2NexTcp    = require('./modules/games/smm2/nex_tcp');
 const mk8Routes     = require('./modules/games/mk8/routes');
 const mk8NexRoutes  = require('./modules/games/mk8/nex');
+const mk8NexTcp     = require('./modules/games/mk8/nex_tcp');
 
 // ── Stubs de servicios Nintendo (Switch real) ─────────────────────────────────
 const nintendoStubs = require('./modules/nintendo/stubs');
@@ -295,10 +297,28 @@ async function start() {
     const port = parseInt(process.env.PORT || '3000');
     const host = process.env.HOST || '0.0.0.0';
 
+    // ── NEX TCP servers ────────────────────────────────────────────────────────
+    // Switch games connect via raw TCP with PRUDP protocol.
+    // These are SEPARATE from the HTTP server — they listen on their own ports.
+    // The auth ticket inside the game tells it to connect to these ports.
+    const mk8TcpPort  = parseInt(process.env.NEXO_MK8_TCP_PORT  || '29900');
+    const smm2TcpPort = parseInt(process.env.NEXO_SMM2_TCP_PORT || '29901');
+
+    // The NEX host must be the public IP or domain that the game can reach.
+    // For local testing: 127.0.0.1. For production: your server's public IP.
+    const nexHost = process.env.NEXO_TCP_HOST || host;
+
     try {
         await app.listen({ port, host });
+
+        // Start TCP NEX servers for each game
+        mk8NexTcp.startTcpServer(host, mk8TcpPort, nexHost, mk8TcpPort);
+        smm2NexTcp.startTcpServer(host, smm2TcpPort, nexHost, smm2TcpPort, BASE_DOMAIN);
+
         console.log(`\n🎮 NeXoNetwork Server en http://${host}:${port}`);
         console.log(`   Dominio base: ${BASE_DOMAIN}`);
+        console.log(`\n   🏁 MK8 NEX TCP:  ${host}:${mk8TcpPort}`);
+        console.log(`   🍄 SMM2 NEX TCP: ${host}:${smm2TcpPort}`);
         console.log(`\n   Subdominios que debes configurar en aaPanel:`);
         console.log(`   → ${BASE_DOMAIN}                     (web + portal)`);
         console.log(`   → accounts-api-lp1.${BASE_DOMAIN}   (auth emulador)`);
@@ -310,7 +330,10 @@ async function start() {
         console.log(`   → connector-lp1.${BASE_DOMAIN}      (connector)`);
         console.log(`   → status-lp1.${BASE_DOMAIN}         (estado)`);
         console.log(`   → smm2-lp1.${BASE_DOMAIN}           (Mario Maker 2 + NEX)`);
-        console.log(`   → mk8-lp1.${BASE_DOMAIN}            (Mario Kart 8 + NEX)\n`);
+        console.log(`   → mk8-lp1.${BASE_DOMAIN}            (Mario Kart 8 + NEX)`);
+        console.log(`\n   Puertos TCP para NEX (abrir en firewall):`);
+        console.log(`   → ${mk8TcpPort}  (MK8 PRUDP)`);
+        console.log(`   → ${smm2TcpPort}  (SMM2 PRUDP)\n`);
     } catch (err) {
         app.log.error(err);
         process.exit(1);
