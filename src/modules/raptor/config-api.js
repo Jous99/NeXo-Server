@@ -72,6 +72,15 @@ function buildRewrites() {
             source:      'api.lp1.npln.srv.nintendo.net',
             destination: `smm2-lp1.${BASE}`,
         },
+        // ── Mario Kart 8 Deluxe — NEX matchmaking ────────────────────────────
+        {
+            source:      'g7sfc1xhmc8.lp1.s.n.srv.nintendo.net',
+            destination: `mk8-lp1.${BASE}`,
+        },
+        {
+            source:      'api-lp1.np.community.srv.nintendo.net',
+            destination: `mk8-lp1.${BASE}`,
+        },
         // ── BCAT ──────────────────────────────────────────────────────────────
         {
             source:      'bcat-list-lp1.cdn.nintendo.net',
@@ -155,7 +164,6 @@ async function configApiRoutes(fastify) {
         return reply.send({ result: 'Success', titles });
     });
 
-    // ── GET /api/v1/config ────────────────────────────────────────────────────
     fastify.get('/api/v1/config', async (req, reply) => {
         return reply.send({
             result:            'Success',
