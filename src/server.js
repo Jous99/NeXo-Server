@@ -8,7 +8,8 @@ const Fastify    = require('fastify');
 const fjwt       = require('@fastify/jwt');
 const fcors      = require('@fastify/cors');
 const sensible   = require('@fastify/sensible');
-const fwebsocket = require('@fastify/websocket');
+const fwebsocket   = require('@fastify/websocket');
+const fmultipart   = require('@fastify/multipart');
 
 const errorHandler     = require('./plugins/errorHandler');
 const { authenticate } = require('./middleware/auth');
@@ -145,6 +146,8 @@ async function buildApp() {
     });
 
     await fastify.register(sensible);
+    // Multipart — para subida de archivos (avatar de perfil)
+    await fastify.register(fmultipart, { limits: { fileSize: 3 * 1024 * 1024 } });
     // WebSocket — necesario para notification-api.js (el emulador conecta via wss://)
     await fastify.register(fwebsocket);
     await fastify.register(fjwt, {

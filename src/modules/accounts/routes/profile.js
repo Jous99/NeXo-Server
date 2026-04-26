@@ -1,6 +1,16 @@
 'use strict';
 
+const fs      = require('fs');
+const path    = require('path');
+const crypto  = require('crypto');
 const accounts = require('../services/accounts');
+
+// Directorio donde se guardan los avatares
+const AVATARS_DIR = path.join(__dirname, '../../../../..', 'uploads', 'avatars');
+if (!fs.existsSync(AVATARS_DIR)) fs.mkdirSync(AVATARS_DIR, { recursive: true });
+
+const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+const MAX_SIZE     = 3 * 1024 * 1024; // 3 MB
 
 const updateProfileSchema = {
     body: {
@@ -80,6 +90,69 @@ async function profileRoutes(fastify) {
     fastify.put('/me/presence', { schema: presenceSchema }, async (req, reply) => {
         const result = await accounts.updatePresence(req.user.nexo_id, req.body);
         return reply.send({ ok: true, data: result });
+    });
+
+    // POST /profile/me/avatar  — subida de foto de perfil (multipart)
+    fastify.post('/me/avatar', async (req, reply) => {
+        const data = await req.file({ limits: { fileSize: MAX_SIZE } });
+        if (!data) return reply.code(400).send({ ok: false, error: 'No se recibió ningún archivo' });
+
+        if (!ALLOWED_MIME.has(data.mimetype)) {
+            return reply.code(400).send({ ok: false, error: 'Solo se permiten imágenes JPEG, PNG, WebP o GIF' });
+        }
+
+        // Determinar extensión
+        const ext = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }[data.mimetype];
+        const nexo_id  = req.user.nexo_id;
+        const filename = `${nexo_id}.${ext}`;
+        const destPath = path.join(AVATARS_DIR, filename);
+
+        // Borrar avatar anterior del mismo usuario (cualquier extensión)
+        for (const old of fs.readdirSync(AVATARS_DIR)) {
+            if (old.startsWith(`${nexo_id}.`) && old !== filename) {
+                try { fs.unlinkSync(path.join(AVATARS_DIR, old)); } catch {}
+            }
+        }
+
+        // Guardar el archivo
+        const chunks = [];
+        for await (const chunk of data.file) chunks.push(chunk);
+        const buffer = Buffer.concat(chunks);
+
+        if (buffer.length > MAX_SIZE) {
+            return reply.code(413).send({ ok: false, error: 'La imagen supera el límite de 3 MB' });
+        }
+
+        fs.writeFileSync(destPath, buffer);
+
+        // Guardar URL en la base de datos (ruta pública del servidor)
+        const avatar_url = `/avatars/${filename}?v=${Date.now()}`;
+        await accounts.updateProfile(nexo_id, { avatar_url });
+
+        return reply.send({ ok: true, avatar_url });
+    });
+
+    // GET /profile/avatars/:filename  — sirve los archivos de avatar
+    fastify.get('/avatars/:filename', {
+        config: { auth: false },
+        schema: { hide: true },
+    }, async (req, reply) => {
+        // Seguridad: solo nombres de archivo simples, sin path traversal
+        const filename = path.basename(req.params.filename);
+        const filePath = path.join(AVATARS_DIR, filename);
+
+        if (!fs.existsSync(filePath)) {
+            return reply.code(404).send({ ok: false, error: 'Not found' });
+        }
+
+        const ext = path.extname(filename).toLowerCase();
+        const mimeMap = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif' };
+        const mime = mimeMap[ext] || 'application/octet-stream';
+
+        return reply
+            .header('Cache-Control', 'public, max-age=3600')
+            .type(mime)
+            .send(fs.createReadStream(filePath));
     });
 }
 

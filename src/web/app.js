@@ -297,7 +297,14 @@ footer{background:var(--gd);color:rgba(255,255,255,.5);padding:2.5rem 2rem 2rem;
 
 /* PROFILE */
 .ptc{background:white;border-radius:var(--rlg);padding:1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.07);display:flex;align-items:center;gap:1.25rem;margin-bottom:1.25rem;}
-.avlg{width:64px;height:64px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:22px;flex-shrink:0;border:3px solid var(--rs);}
+.avlg{width:72px;height:72px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:22px;flex-shrink:0;border:3px solid var(--rs);overflow:hidden;position:relative;cursor:pointer;transition:filter .15s;}
+.avlg:hover{filter:brightness(.85);}
+.avlg img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.avlg .av-cam{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;border-radius:50%;opacity:0;transition:opacity .15s;font-size:18px;}
+.avlg:hover .av-cam{opacity:1;}
+/* nav avatar pequeño */
+.nav-av-wrap{width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:11px;cursor:pointer;overflow:hidden;flex-shrink:0;}
+.nav-av-wrap img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .pn{font-size:20px;font-weight:900;}
 .pnid{font-size:11px;color:var(--tm);font-weight:700;margin-top:2px;}
 .ponl{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:#16a34a;background:#f0fdf4;padding:2px 9px;border-radius:20px;margin-top:5px;}
@@ -323,7 +330,8 @@ select.inp{cursor:pointer;}
 .fi4:focus{border-color:var(--blu);}
 .fgrd{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:10px;}
 .fcard{background:white;border-radius:var(--rlg);padding:.85rem 1rem;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:9px;}
-.avmd{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:13px;flex-shrink:0;}
+.avmd{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:13px;flex-shrink:0;overflow:hidden;position:relative;}
+.avmd img{width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0;}
 .fn{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .fst{font-size:11px;color:var(--tm);margin-top:1px;}.fst.ig{color:#16a34a;font-weight:700;}
 .bism{padding:4px 8px;border:1.5px solid var(--gm);border-radius:var(--rsm);background:white;font-family:var(--font);font-size:10px;font-weight:800;cursor:pointer;transition:all .15s;color:var(--tx);}
@@ -732,8 +740,8 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
     </div>
 
     <!-- Barra de progreso global -->
-    <p class="gbar-label">Progreso global del proyecto — 52%</p>
-    <div class="gbar-wrap"><div class="gbar" style="width:52%"></div></div>
+    <p class="gbar-label">Progreso global del proyecto — 57%</p>
+    <div class="gbar-wrap"><div class="gbar" style="width:57%"></div></div>
 
     <!-- Leyenda -->
     <div class="rdlegend">
@@ -751,36 +759,38 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdcico red">🔐</div>
           <div><div class="rdctitle">Autenticación & Cuentas</div><div class="rdcsub">Login, tokens, Nintendo auth</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar red" style="width:90%"></div></div>
+        <div class="mbar-wrap"><div class="mbar red" style="width:86%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Login con usuario y contraseña</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Registro de cuenta nueva</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Refresh de token JWT</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Refresh automático de token JWT</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">dauth — device_auth_token (Switch)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">aauth — application_auth_token (Switch)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">BAAS Login — token de usuario NPLN</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo Accounts /connect/1.0.0/api/token</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Planes de suscripción (Free/Pro/Patron)</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">OAuth2 completo (Nintendo accounts)</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">OAuth2 completo para Nintendo accounts</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Verificación de email</span></div>
         </div>
       </div>
 
-      <!-- 👥 Lista de amigos -->
+      <!-- 👥 Social -->
       <div class="rdc">
         <div class="rdchead">
           <div class="rdcico blu">👥</div>
-          <div><div class="rdctitle">Lista de Amigos</div><div class="rdcsub">Emulador + Switch real</div></div>
+          <div><div class="rdctitle">Social</div><div class="rdcsub">Amigos, chat DMs, presencia</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar blu" style="width:70%"></div></div>
+        <div class="mbar-wrap"><div class="mbar blu" style="width:72%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Ver lista de amigos (emulador)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Enviar solicitud de amistad</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Aceptar / rechazar solicitudes</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Presencia online (qué juego juegas)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Estado offline / online / in_game</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Chat DM en tiempo real (WebSocket)</span></div>
           <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Nintendo friends HTTP API (Switch real)</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Invitaciones a partida</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NEX Friends protocol (Switch OS nativa)</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Invitaciones a partida en tiempo real</span></div>
         </div>
       </div>
 
@@ -790,33 +800,36 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdcico grn">🔔</div>
           <div><div class="rdctitle">Notificaciones</div><div class="rdcsub">WebSocket, push, tiempo real</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar grn" style="width:75%"></div></div>
+        <div class="mbar-wrap"><div class="mbar grn" style="width:78%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">WebSocket en tiempo real</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Notificación: amigo conectado</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Notificación: solicitud de amistad</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Notificación: nuevo juego activo</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">BCAT (noticias del juego en Switch)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Toast: amigo conectado</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Toast: solicitud de amistad recibida</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Toast: amigo empieza a jugar</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Toast: nuevo mensaje de chat</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">BCAT — noticias del juego en Switch</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Push notifications nativas Switch</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Historial de notificaciones</span></div>
         </div>
       </div>
 
-      <!-- 🎮 Online de juegos -->
+      <!-- 🎮 Online en juegos -->
       <div class="rdc">
         <div class="rdchead">
           <div class="rdcico red">🎮</div>
           <div><div class="rdctitle">Online en Juegos</div><div class="rdcsub">SMM2, matchmaking, DataStore</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar red" style="width:30%"></div></div>
+        <div class="mbar-wrap"><div class="mbar red" style="width:28%"></div></div>
         <div class="rditems">
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdibadge"></span><span class="rdilabel">Redirección DNS automática (emulador)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Redirección DNS automática (emulador)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">URL rewrites Nintendo → NeXo</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">SMM2 — endpoints REST (subir/bajar niveles)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Estado por título (qué juegos tienen online)</span></div>
           <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">SMM2 DataStore protocolo Nintendo</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NPLN gRPC (online moderno)</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NEX / Rendez-Vous (matchmaking)</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NPLN gRPC (matchmaking moderno)</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NEX / Rendez-Vous (protocolo legado)</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Salas de juego multijugador</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Leaderboards / rankings</span></div>
         </div>
       </div>
 
@@ -826,15 +839,16 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdcico yel">🌐</div>
           <div><div class="rdctitle">Infraestructura</div><div class="rdcsub">Servidor, SSL, base de datos</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar yel" style="width:65%"></div></div>
+        <div class="mbar-wrap"><div class="mbar yel" style="width:55%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Servidor Node.js + Fastify</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Base de datos MySQL</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Routing por subdominio automático</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">nexonetwork.space configurado</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">HTTPS con CA propia (para Switch real)</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Script de generación de certificados SSL</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">nexonetwork.space en producción</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">CA propia + HTTPS compatible Switch</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Generación automática de certificados SSL</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Panel de administración web</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Monitoreo / métricas del servidor</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Sistema de pagos (Stripe/PayPal)</span></div>
         </div>
       </div>
@@ -845,16 +859,17 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdcico pur">🕹️</div>
           <div><div class="rdctitle">Switch Real (CFW)</div><div class="rdcsub">Atmosphere, DNS, certificados</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar pur" style="width:40%"></div></div>
+        <div class="mbar-wrap"><div class="mbar pur" style="width:35%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">dauth / aauth stubs (device & app token)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">BAAS stub (token de usuario NPLN)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo Accounts stub (token exchange)</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">CA raíz propia + cert SSL compatible Switch</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Nintendo friends HTTP API (lista de amigos)</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">DNS personalizado (guía de configuración)</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">CA raíz + certificado SSL compatible Switch</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Nintendo friends HTTP API</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Guía de DNS personalizado (Pi-hole / router)</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NEX Friends protocol completo</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NPLN gRPC completo</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Online en juegos reales (NEX/NPLN)</span></div>
         </div>
       </div>
 
@@ -982,7 +997,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
       <button class="alink" id="sysbtn" style="display:none;" onclick="showP('sistema')">Sistema</button>
     </div>
     <div style="display:flex;align-items:center;gap:9px;">
-      <div style="width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:11px;cursor:pointer;" id="nav-av" onclick="showP('profile')">NX</div>
+      <div class="nav-av-wrap" id="nav-av" onclick="showP('profile')">NX</div>
       <button style="padding:6px 12px;background:white;color:var(--red);border:2px solid var(--red);border-radius:var(--rmd);font-family:var(--font);font-weight:800;font-size:12px;cursor:pointer;" onclick="doLogout()">Salir</button>
     </div>
   </nav>
@@ -1008,15 +1023,25 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
     <!-- PROFILE -->
     <div class="apg" id="apg-profile">
       <div class="jcs"></div>
+      <!-- Input de archivo oculto -->
+      <input type="file" id="av-file-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="onAvatarFileChosen(this)">
+
       <div class="ptc">
-        <div class="avlg" id="pav">NX</div>
-        <div><div class="pn" id="pname">Cargando...</div><div class="pnid" id="pnexoid">NXID-...</div><div class="ponl"><span style="width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;"></span>En línea</div></div>
+        <div class="avlg" id="pav" onclick="document.getElementById('av-file-input').click()" title="Cambiar foto de perfil">
+          <span id="pav-initials">NX</span>
+          <span class="av-cam">📷</span>
+        </div>
+        <div>
+          <div class="pn" id="pname">Cargando...</div>
+          <div class="pnid" id="pnexoid">NXID-...</div>
+          <div class="ponl"><span style="width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;"></span>En línea</div>
+          <div style="font-size:11px;color:var(--tm);margin-top:4px;">Haz clic en la foto para cambiarla</div>
+        </div>
       </div>
       <div class="sbox"><h3>Información de perfil</h3>
         <div class="fr">
           <div class="fg2"><label class="lbl">Apodo</label><input class="inp" id="p-nick" placeholder="Tu apodo"></div>
           <div class="fg2"><label class="lbl">Idioma</label><input class="inp" id="p-lang" placeholder="es"></div>
-          <div class="fg2" style="grid-column:1/-1;"><label class="lbl">URL de avatar</label><input class="inp" id="p-av" placeholder="https://..."></div>
         </div>
         <div class="sr"><button class="bsv" onclick="saveProf()">Guardar cambios</button></div>
       </div>
@@ -1378,7 +1403,18 @@ function enterDash() {
   document.getElementById('app-auth').style.display = 'none';
   document.getElementById('app-nav').style.display  = 'flex';
   document.getElementById('app-cnt').style.display  = 'block';
-  if (CU) document.getElementById('nav-av').textContent = initials(CU.nickname);
+  if (CU) {
+    const navEl = document.getElementById('nav-av');
+    if (CU.avatar_url) {
+      const img = document.createElement('img');
+      img.src = CU.avatar_url;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      navEl.innerHTML = '';
+      navEl.appendChild(img);
+    } else {
+      navEl.textContent = initials(CU.nickname);
+    }
+  }
   showP('status');
   loadProf();
 }
@@ -1478,34 +1514,118 @@ function renderSvc(s, isGame = false) {
 }
 
 // ─── PROFILE ──────────────────────────────────────────────────────────────────
+
+// Aplica una URL de avatar al círculo grande y al nav
+function applyAvatar(url) {
+  const pavEl   = document.getElementById('pav');
+  const navEl   = document.getElementById('nav-av');
+  const initEl  = document.getElementById('pav-initials');
+
+  if (url) {
+    // Crear/actualizar imagen en el avatar grande
+    let img = pavEl.querySelector('img');
+    if (!img) {
+      img = document.createElement('img');
+      img.alt = 'avatar';
+      img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      pavEl.insertBefore(img, pavEl.firstChild);
+    }
+    img.src = url;
+    if (initEl) initEl.style.display = 'none';
+
+    // Nav pequeño
+    let nimg = navEl.querySelector('img');
+    if (!nimg) {
+      nimg = document.createElement('img');
+      nimg.alt = 'av';
+      navEl.innerHTML = '';
+      navEl.appendChild(nimg);
+    }
+    nimg.src = url;
+    nimg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+  } else {
+    // Sin avatar → mostrar iniciales
+    const img = pavEl.querySelector('img');
+    if (img) img.remove();
+    if (initEl) initEl.style.display = '';
+    // Nav: limpiar imagen
+    const nimg = navEl.querySelector('img');
+    if (nimg) nimg.remove();
+  }
+}
+
 async function loadProf() {
   const { ok, data } = await apiFetch('/profile/me');
   if (!ok) return;
   const p = data.data;
-  document.getElementById('pav').textContent    = initials(p.nickname);
-  document.getElementById('nav-av').textContent = initials(p.nickname);
-  document.getElementById('pname').textContent  = p.nickname;
+  const ini = initials(p.nickname);
+  if (document.getElementById('pav-initials')) document.getElementById('pav-initials').textContent = ini;
+  if (!document.getElementById('nav-av').querySelector('img')) document.getElementById('nav-av').textContent = ini;
+  document.getElementById('pname').textContent   = p.nickname;
   document.getElementById('pnexoid').textContent = p.nexo_id;
-  document.getElementById('p-nick').value = p.nickname    || '';
-  document.getElementById('p-lang').value = p.lang        || '';
-  document.getElementById('p-av').value   = p.avatar_url  || '';
+  document.getElementById('p-nick').value = p.nickname || '';
+  document.getElementById('p-lang').value = p.lang     || '';
   if (p.status)     document.getElementById('p-st').value = p.status;
   if (p.game_title) document.getElementById('p-gm').value = p.game_title;
   if (p.is_admin) {
     document.getElementById('admbtn').style.display = 'block';
     document.getElementById('sysbtn').style.display = 'block';
   }
+  // Mostrar avatar si existe
+  applyAvatar(p.avatar_url || '');
 }
+
 async function saveProf() {
   const { ok, data } = await apiFetch('/profile/me', {
     method: 'PATCH',
     body: JSON.stringify({
-      nickname:   document.getElementById('p-nick').value || undefined,
-      lang:       document.getElementById('p-lang').value || undefined,
-      avatar_url: document.getElementById('p-av').value   || undefined,
+      nickname: document.getElementById('p-nick').value || undefined,
+      lang:     document.getElementById('p-lang').value || undefined,
     }),
   });
   ok ? (toast('Perfil actualizado', 'success'), loadProf()) : toast(data.error || 'Error', 'error');
+}
+
+// Cuando el usuario elige un archivo de imagen
+async function onAvatarFileChosen(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const MAX_MB = 3;
+  if (file.size > MAX_MB * 1024 * 1024) {
+    return toast(`La imagen no puede superar ${MAX_MB} MB`, 'error');
+  }
+
+  // Previsualizar inmediatamente con FileReader
+  const reader = new FileReader();
+  reader.onload = e => applyAvatar(e.target.result);
+  reader.readAsDataURL(file);
+
+  // Subir al servidor
+  toast('Subiendo foto...', 'info');
+  const form = new FormData();
+  form.append('file', file);
+
+  const token = localStorage.getItem('nexo_token');
+  try {
+    const res = await fetch('/profile/me/avatar', {
+      method: 'POST',
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+      body: form,
+    });
+    const json = await res.json();
+    if (json.ok) {
+      toast('Foto actualizada ✓', 'success');
+      // Aplicar la URL definitiva del servidor (con cache-buster)
+      applyAvatar(json.avatar_url);
+    } else {
+      toast(json.error || 'No se pudo subir la imagen', 'error');
+    }
+  } catch (e) {
+    toast('Error de red al subir la imagen', 'error');
+  }
+  // Limpiar input para poder elegir la misma imagen otra vez
+  input.value = '';
 }
 async function changePass() {
   const c = document.getElementById('p-cur').value;
@@ -1539,21 +1659,30 @@ async function loadFriends() {
   const pg = document.getElementById('pgrid');
   const fg = document.getElementById('fgrid');
 
+  // Helper: círculo avatar con foto o iniciales
+  function avHtml(f, size = 40) {
+    const cols = ['var(--red)', 'var(--blu)', '#8b5cf6', '#22c55e', '#f59e0b'];
+    const c = cols[(f.nickname || 'A').charCodeAt(0) % cols.length];
+    const s = \`width:\${size}px;height:\${size}px;border-radius:50%;flex-shrink:0;overflow:hidden;\`;
+    if (f.avatar_url) {
+      return \`<div style="\${s}background:\${c};"><img src="\${f.avatar_url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"></div>\`;
+    }
+    return \`<div class="avmd" style="background:\${c};width:\${size}px;height:\${size}px;">\${initials(f.nickname)}</div>\`;
+  }
+
   if (pen.length) {
     ps.style.display = 'block';
     pg.innerHTML = pen.map(f =>
-      \`<div class="fcard"><div class="avmd" style="background:var(--red)">\${initials(f.nickname)}</div><div style="flex:1;min-width:0;"><div class="fn">\${f.nickname}</div><div class="fst">\${f.nexo_id}</div><div style="display:flex;gap:4px;margin-top:4px;"><button class="bism" onclick="respF('\${f.nexo_id}',true)">Aceptar</button><button class="bism" onclick="respF('\${f.nexo_id}',false)">✕</button></div></div></div>\`
+      \`<div class="fcard">\${avHtml(f)}<div style="flex:1;min-width:0;"><div class="fn">\${f.nickname}</div><div class="fst">\${f.nexo_id}</div><div style="display:flex;gap:4px;margin-top:4px;"><button class="bism" onclick="respF('\${f.nexo_id}',true)">Aceptar</button><button class="bism" onclick="respF('\${f.nexo_id}',false)">✕</button></div></div></div>\`
     ).join('');
   }
 
-  const cols = ['var(--red)', 'var(--blu)', '#8b5cf6', '#22c55e', '#f59e0b'];
   fg.innerHTML = acc.length ? acc.map(f => {
     const sl = f.online_status === 'in_game'
       ? \`Jugando: \${f.game_title || '...'}\`
       : f.online_status === 'online' ? 'En línea' : 'Desconectado';
     const sc = f.online_status === 'in_game' ? 'ig' : '';
-    const c  = cols[f.nickname.charCodeAt(0) % cols.length];
-    return \`<div class="fcard"><div class="avmd" style="background:\${c}">\${initials(f.nickname)}</div><div style="flex:1;min-width:0;"><div class="fn">\${f.nickname}</div><div class="fst \${sc}">\${sl}</div><div style="font-size:10px;color:var(--tm);margin-top:1px;">\${f.nexo_id}</div></div><div style="display:flex;gap:4px;"><button class="bism" onclick="chatNewDm('\${f.nexo_id}')" title="Enviar mensaje">💬</button><button class="bism" onclick="rmFriend('\${f.nexo_id}')">✕</button></div></div>\`;
+    return \`<div class="fcard">\${avHtml(f)}<div style="flex:1;min-width:0;"><div class="fn">\${f.nickname}</div><div class="fst \${sc}">\${sl}</div><div style="font-size:10px;color:var(--tm);margin-top:1px;">\${f.nexo_id}</div></div><div style="display:flex;gap:4px;"><button class="bism" onclick="chatNewDm('\${f.nexo_id}')" title="Enviar mensaje">💬</button><button class="bism" onclick="rmFriend('\${f.nexo_id}')">✕</button></div></div>\`;
   }).join('')
   : \`<div class="emp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><p>Sin amigos aún</p></div>\`;
 }
@@ -1810,13 +1939,16 @@ async function showFriendPicker() {
 
   const cols = ['var(--red)', 'var(--blu)', '#8b5cf6', '#22c55e', '#f59e0b'];
   list.innerHTML = acc.map(f => {
-    const c  = cols[f.nickname.charCodeAt(0) % cols.length];
+    const c  = cols[(f.nickname||'A').charCodeAt(0) % cols.length];
     const sl = f.online_status === 'in_game'
       ? \`🎮 \${f.game_title || 'Jugando'}\`
       : f.online_status === 'online' ? '🟢 En línea' : '⚫ Desconectado';
+    const avImg = f.avatar_url
+      ? \`<div style="width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;background:\${c};"><img src="\${f.avatar_url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"></div>\`
+      : \`<div class="avmd" style="background:\${c}">\${initials(f.nickname)}</div>\`;
     return \`<div class="fcard" style="cursor:pointer;transition:background .12s;" onclick="chatNewDm('\${f.nexo_id}')"
          onmouseenter="this.style.background='var(--gb)'" onmouseleave="this.style.background=''">
-      <div class="avmd" style="background:\${c}">\${initials(f.nickname)}</div>
+      \${avImg}
       <div style="flex:1;min-width:0;">
         <div class="fn">\${escHtml(f.nickname)}</div>
         <div class="fst" style="font-size:11px;">\${escHtml(sl)}</div>
