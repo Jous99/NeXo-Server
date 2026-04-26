@@ -37,6 +37,7 @@ const systemRoutes = require('./routes/system');
 
 // ── Juegos ────────────────────────────────────────────────────────────────────
 const smm2Routes = require('./modules/games/smm2/routes');
+const mk8Routes  = require('./modules/games/mk8/routes');
 
 // ── Stubs de servicios Nintendo (Switch real) ─────────────────────────────────
 const nintendoStubs = require('./modules/nintendo/stubs');
@@ -68,6 +69,10 @@ const NINTENDO_HOST_MAP = {
     // ── Juego: Super Mario Maker 2 ───────────────────────────────────────────
     'g9s300c4msl.lp1.s.n.srv.nintendo.net':         'smm2-lp1',
     'api.lp1.npln.srv.nintendo.net':                'smm2-lp1',
+
+    // ── Juego: Mario Kart 8 Deluxe ──────────────────────────────────────────
+    'g7sfc1xhmc8.lp1.s.n.srv.nintendo.net':         'mk8-lp1',
+    'api-lp1.np.community.srv.nintendo.net':         'mk8-lp1',
 
     // ── BCAT ────────────────────────────────────────────────────────────────
     'bcat-list-lp1.cdn.nintendo.net':               'bcat-lp1',
@@ -211,7 +216,7 @@ async function buildApp() {
             'accounts-api-lp1', 'profile-lp1', 'friends-lp1',
             'config-lp1', 'bcat-lp1', 'notification-lp1',
             'connector-lp1', 'status-lp1', 'citrus-api-lp1',
-            'smm2-lp1', 'switch-friends-lp1', 'chat-lp1',
+            'smm2-lp1', 'mk8-lp1', 'switch-friends-lp1', 'chat-lp1',
         ].includes(sub);
 
         if (!isApiSubdomain && req.method === 'GET') {
@@ -250,6 +255,9 @@ async function buildApp() {
 
     // smm2-lp1.nexonetwork.space — Super Mario Maker 2
     fastify.register(smm2Routes, { prefix: '/' });
+
+    // mk8-lp1.nexonetwork.space — Mario Kart 8 Deluxe
+    fastify.register(mk8Routes, { prefix: '/' });
 
     // switch-friends-lp1.nexonetwork.space — Nintendo Switch friends HTTP API
     // La Switch real redirige friends.lp1.s.n.srv.nintendo.net aquí vía DNS.
@@ -292,7 +300,9 @@ async function start() {
         console.log(`   → bcat-lp1.${BASE_DOMAIN}           (BCAT)`);
         console.log(`   → notification-lp1.${BASE_DOMAIN}   (notificaciones)`);
         console.log(`   → connector-lp1.${BASE_DOMAIN}      (connector)`);
-        console.log(`   → status-lp1.${BASE_DOMAIN}         (estado)\n`);
+        console.log(`   → status-lp1.${BASE_DOMAIN}         (estado)`);
+        console.log(`   → smm2-lp1.${BASE_DOMAIN}           (Mario Maker 2)`);
+        console.log(`   → mk8-lp1.${BASE_DOMAIN}            (Mario Kart 8 Deluxe)\n`);
     } catch (err) {
         app.log.error(err);
         process.exit(1);
