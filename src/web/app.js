@@ -1593,7 +1593,7 @@ async function onAvatarFileChosen(input) {
 
   const MAX_MB = 3;
   if (file.size > MAX_MB * 1024 * 1024) {
-    return toast(`La imagen no puede superar ${MAX_MB} MB`, 'error');
+    return toast('La imagen no puede superar ' + MAX_MB + ' MB', 'error');
   }
 
   // Previsualizar inmediatamente con FileReader

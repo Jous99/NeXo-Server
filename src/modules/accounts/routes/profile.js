@@ -6,7 +6,7 @@ const crypto  = require('crypto');
 const accounts = require('../services/accounts');
 
 // Directorio donde se guardan los avatares
-const AVATARS_DIR = path.join(__dirname, '../../../../..', 'uploads', 'avatars');
+const AVATARS_DIR = path.join(__dirname, '../../../..', 'uploads', 'avatars');
 if (!fs.existsSync(AVATARS_DIR)) fs.mkdirSync(AVATARS_DIR, { recursive: true });
 
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
