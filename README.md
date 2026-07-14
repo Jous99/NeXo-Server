@@ -6,12 +6,13 @@
 
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?style=flat-square&logo=node.js)](https://nodejs.org)
 [![Fastify](https://img.shields.io/badge/Fastify-5-000000?style=flat-square&logo=fastify)](https://fastify.dev)
+[![Go](https://img.shields.io/badge/Go-1.23%2B-00ADD8?style=flat-square&logo=go)](https://go.dev)
 [![MySQL](https://img.shields.io/badge/MySQL-8%2B-4479A1?style=flat-square&logo=mysql)](https://mysql.com)
 [![License](https://img.shields.io/badge/License-GPL--2.0-red?style=flat-square)](./LICENSE)
 
 *Reemplazo open source de Nintendo Switch Online — compatible con NeXoEmulator, Switch moddeada con Atmosphere, y el protocolo RaptorCitrus*
 
-[nexonetwork.space](https://nexonetwork.space) · [Documentación](./docs) · [API Reference](./docs/api.md) · [Setup Switch](./docs/switch-setup.md)
+[nexonetwork.space](https://nexonetwork.space) · [Documentación](./docs) · [API Reference](./docs/api.md) · [Setup Switch](./docs/switch-setup.md) · [Servidor NEX (Go)](./nex-server/README.md)
 
 </div>
 
@@ -19,11 +20,11 @@
 
 ## ¿Qué es NeXo-Server?
 
-Un proceso único en **Node.js + Fastify 5** que reemplaza todos los servicios de Nintendo Switch Online. Sirve la web pública, el portal de usuario y toda la API del ecosistema NeXo desde un solo servidor.
+**Node.js + Fastify 5** sirve la web pública, el portal de usuario y toda la API HTTP del ecosistema NeXo desde un solo proceso. Para el protocolo NEX/PRUDP de las consolas reales, el proyecto está migrando progresivamente a **Go**, usando las librerías reales de [Pretendo Network](https://github.com/PretendoNetwork) (`nex-go`, `nex-protocols-go`, `nex-protocols-common-go`) en vez de una reimplementación casera — ver [nex-server/](./nex-server).
 
 Funciona con dos tipos de clientes:
-- **NeXoEmulator** — el emulador conecta vía protocolo RaptorCitrus a los subdominios de `nexonetwork.space`
-- **Nintendo Switch moddeada** — con Atmosphere + archivo hosts, la Switch se conecta directamente a tu servidor en lugar de a Nintendo
+- **NeXoEmulator** — el emulador conecta vía protocolo RaptorCitrus (WebSocket) a los subdominios de `nexonetwork.space`
+- **Nintendo Switch moddeada** — con Atmosphere + archivo hosts, la Switch se conecta directamente a tu servidor en lugar de a Nintendo. El protocolo NEX/PRUDP real (UDP) que esto requiere es lo que se está migrando a Go — ver estado exacto abajo.
 
 ---
 
@@ -42,10 +43,12 @@ Funciona con dos tipos de clientes:
 | System updates | `atum.hac.lp1.d4c.nintendo.net` | ✅ Stub (sin actualizaciones) |
 | Title version list | `tagaya.hac.lp1.eshop.nintendo.net` | ✅ Stub |
 | eShop básico | `shogun-lp1.eshop.nintendo.net` | ✅ Stub |
-| Super Mario Maker 2 | `g9s300c4msl.lp1.s.n.srv.nintendo.net` | ✅ Implementado (HTTP + NEX/DataStore) |
+| Super Mario Maker 2 | `g9s300c4msl.lp1.s.n.srv.nintendo.net` | 🚧 HTTP + NEX/DataStore vía WebSocket casero (emulador). Sin auth NEX real todavía — no migrado a Go |
 | Matchmaking genérico | — | 🚧 En desarrollo |
-| Mario Kart 8 Deluxe | `g7sfc1xhmc8.lp1.s.n.srv.nintendo.net` | ✅ Implementado (HTTP + NEX/MatchmakeExtension) |
+| Mario Kart 8 Deluxe | `g7sfc1xhmc8.lp1.s.n.srv.nintendo.net` | 🚧 Auth NEX real (Go + Kerberos) implementado — ver [nex-server/](./nex-server). Secure/matchmaking sigue en el módulo Node antiguo (TCP, no UDP), pendiente de migrar |
 | NPLN completo (gRPC) | `api.lp1.npln.srv.nintendo.net` | 📋 Planificado |
+
+> **Nota sobre Switch real vs NeXoEmulator:** el emulador habla un protocolo propio (RaptorCitrus) sobre WebSocket y no necesita PRUDP real. Una Switch moddeada sí, y ahí es donde nex-server (Go) entra — ver [nex-server/README.md](./nex-server/README.md) para el alcance exacto y qué falta confirmar antes de que un juego funcione en hardware real.
 
 ---
 
@@ -93,13 +96,21 @@ NeXo-Server/
 ├── docs/
 │   ├── api.md                           # Referencia de la API
 │   ├── deploy.md                        # Guía de despliegue con aaPanel
+│   ├── nex-go-deploy.md                 # Despliegue del proceso Go (aparte del PM2 de Node)
 │   ├── switch-setup.md                  # Cómo conectar la Switch moddeada
 │   ├── modules.md                       # Cómo crear módulos de juego
 │   └── emulator-build.md               # Cómo compilar el emulador
 ├── scripts/
 │   ├── gen-certs.sh                     # Genera CA + certs SSL para Nintendo y NeXo
 │   ├── atmosphere-hosts.txt             # Plantilla hosts para la SD de la Switch
-│   └── update.sh                        # Pull + restart (usado por el panel admin)
+│   ├── update.sh                        # Pull + restart (usado por el panel admin)
+│   ├── migrate-nex-password.sql         # Migración: columna nex_password (instalaciones existentes)
+│   └── backfill-nex-password.js         # Rellena nex_password en cuentas creadas antes de esta columna
+├── nex-server/                          # Servidor NEX/PRUDP real en Go (Pretendo nex-go) — módulo aparte
+│   ├── cmd/mk8-auth/main.go             # Auth NEX real (Kerberos) para Mario Kart 8 Deluxe, sobre UDP
+│   ├── internal/accounts/               # Cuentas NEX contra la misma MySQL (pid = users.id, nex_password)
+│   ├── internal/authserver/             # ValidateAndRequestTicketWithParam (NEX4+/Switch)
+│   └── README.md                        # Alcance, qué falta confirmar, cómo verificar
 ├── schema.sql                           # Esquema de la base de datos
 ├── package.json
 └── .env.example
@@ -125,8 +136,8 @@ Host: atum.hac.lp1.d4c.nintendo.net      → módulo nintendo-stubs (system upda
 ## Setup rápido
 
 ```bash
-git clone https://github.com/Jous99/NeXo-Server.git
-cd NeXo-Server
+git clone https://git.joustech.space/NeXo/Nexo-Server.git
+cd Nexo-Server
 npm install
 cp .env.example .env        # edita con tus credenciales
 mysql -u root -p < schema.sql
@@ -136,6 +147,16 @@ npm run dev
 Para despliegue en producción con aaPanel: [`docs/deploy.md`](./docs/deploy.md)
 
 Para conectar tu Switch moddeada: [`docs/switch-setup.md`](./docs/switch-setup.md)
+
+Si además vas a levantar el servidor de auth NEX en Go (necesario para Mario Kart 8 Deluxe en hardware real, no para el emulador):
+
+```bash
+cd nex-server
+go build -o mk8-auth ./cmd/mk8-auth
+./mk8-auth
+```
+
+Requiere completar las variables `NEXO_MK8_*` del `.env` — ver [`nex-server/README.md`](./nex-server/README.md) para qué falta confirmar antes de que funcione contra hardware real, y [`docs/nex-go-deploy.md`](./docs/nex-go-deploy.md) para desplegarlo en producción junto al proceso Node.
 
 ---
 
@@ -172,9 +193,10 @@ echo "NEXO_HTTPS=true" >> .env
 | raptor/bcat | `/api/v1/bcat/*` | BCAT (contenido de fondo) | ✅ Estable |
 | nintendo/stubs | Múltiples rutas Nintendo | Error reporting, updates, eShop stub | ✅ Estable |
 | web | `/` (landing + portal) | Web pública y panel de usuario | ✅ Estable |
-| games/smm2 | `/v1/courses/*` | Super Mario Maker 2 (HTTP API + NEX) | ✅ Estable |
+| games/smm2 | `/v1/courses/*` | Super Mario Maker 2 — HTTP API + NEX/WS casero (emulador) | ✅ Estable (emulador) |
 | games/matchmaking | `/games/rooms/*` | Salas y matchmaking genérico | 🚧 Desarrollo |
-| games/mk8d | `/games/mk8d/*` | Mario Kart 8 Deluxe (HTTP API + NEX) | ✅ Estable |
+| games/mk8d | `/games/mk8d/*` | Mario Kart 8 Deluxe — HTTP API + NEX/TCP casero (emulador) | ✅ Estable (emulador) |
+| nex-server/mk8-auth | UDP `NEXO_MK8_AUTH_UDP_PORT` | Auth NEX real (Go) para MK8D — reemplaza el ticket hardcodeado del módulo Node | 🚧 Ticket-granting real listo; falta AccessKey/versión NEX confirmados y migrar secure/matchmaking a UDP |
 
 ---
 
@@ -182,8 +204,16 @@ echo "NEXO_HTTPS=true" >> .env
 
 | Proyecto | Repositorio |
 |----------|-------------|
-| NeXo-Emu | [github.com/Jous99/NeXo-Emu](https://github.com/Jous99/NeXo-Emu) |
+| NeXo-Emu | [git.joustech.space/NeXo/NeXo-emu](https://git.joustech.space/NeXo/NeXo-emu) |
 | RaptorNetwork Backup | [github.com/Jous99/RaptorNetworkBackup](https://github.com/Jous99/RaptorNetworkBackup) |
+
+### Librerías de terceros usadas en `nex-server/`
+
+| Librería | Uso |
+|----------|-----|
+| [nex-go](https://github.com/PretendoNetwork/nex-go) | Transporte PRUDP/NEX de bajo nivel (UDP, Kerberos) |
+| [nex-protocols-go](https://github.com/PretendoNetwork/nex-protocols-go) | Definiciones de protocolo RMC (Ticket Granting, DataStore, etc.) |
+| [nex-protocols-common-go](https://github.com/PretendoNetwork/nex-protocols-common-go) | Handlers ya hechos para protocolos comunes |
 
 ---
 

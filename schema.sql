@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
     is_banned     BOOLEAN      DEFAULT FALSE,
     ban_reason    TEXT         DEFAULT NULL,
     is_admin      BOOLEAN      DEFAULT FALSE,
+    nex_password  VARCHAR(64)  DEFAULT NULL,             -- secreto NEX (clave Kerberos), 32 bytes hex
     created_at    DATETIME     DEFAULT CURRENT_TIMESTAMP,
     updated_at    DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -27,6 +28,11 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_email     (email),
     INDEX idx_nexo_id   (nexo_id)
 ) ENGINE=InnoDB;
+
+-- NOTA: el PID de NEX (nex-server/) es directamente `id` — no hace falta una
+-- columna espejo. (Se probó un trigger pid=id: BEFORE INSERT no ve el id
+-- AUTO_INCREMENT real todavía, y un AFTER INSERT no puede hacer UPDATE sobre
+-- la misma tabla que lo disparó. Más simple usar `id` tal cual.)
 
 -- ─────────────────────────────────────────
 --  SESSIONS  (refresh token store)

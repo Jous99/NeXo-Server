@@ -28,4 +28,13 @@ function hashToken(token) {
     return crypto.createHash('sha256').update(token).digest('hex');
 }
 
-module.exports = { generateNexoId, generateRefreshToken, hashToken };
+/**
+ * Generates a 32-byte cryptographically random NEX password (hex, 64 chars).
+ * Usado como material de clave Kerberos por el servidor NEX (Go) — distinto
+ * de password_hash (bcrypt, no reversible, inútil para derivar una clave).
+ */
+function generateNexPassword() {
+    return crypto.randomBytes(32).toString('hex');
+}
+
+module.exports = { generateNexoId, generateRefreshToken, hashToken, generateNexPassword };

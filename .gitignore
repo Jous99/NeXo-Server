@@ -48,3 +48,9 @@ coverage/
 # Otros
 *.seed
 *.pid
+
+# nex-server (Go) — binarios compilados y logs en tiempo de ejecución
+nex-server/mk8-auth
+nex-server/mk8-auth.exe
+nex-server/*.exe
+nex-server/log/

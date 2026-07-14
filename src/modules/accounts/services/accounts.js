@@ -2,7 +2,7 @@
 
 const bcrypt   = require('bcryptjs');
 const db       = require('../../../db');
-const { generateNexoId, generateRefreshToken, hashToken } = require('../../../utils');
+const { generateNexoId, generateRefreshToken, hashToken, generateNexPassword } = require('../../../utils');
 
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12');
 
@@ -39,12 +39,13 @@ async function register({ username, email, password, nickname, lang, region }) {
 
     const nexo_id     = generateNexoId();
     const password_hash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    const nex_password = generateNexPassword();
     const nick        = nickname || username;
 
     await db.query(
-        `INSERT INTO users (nexo_id, username, email, password_hash, nickname, lang, region)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [nexo_id, username, email, password_hash, nick, lang || 'en', region || null]
+        `INSERT INTO users (nexo_id, username, email, password_hash, nickname, lang, region, nex_password)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [nexo_id, username, email, password_hash, nick, lang || 'en', region || null, nex_password]
     );
 
     // Init presence row
