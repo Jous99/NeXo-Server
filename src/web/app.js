@@ -192,10 +192,6 @@ section{padding:4.5rem 2rem;}
 .rdhead .rtag{font-size:10px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:2px;margin-bottom:.6rem;}
 .rdhead h2{font-size:clamp(24px,4vw,38px);font-weight:900;letter-spacing:-.5px;margin-bottom:.75rem;}
 .rdhead p{font-size:14px;color:var(--tm);max-width:520px;margin:0 auto;line-height:1.6;}
-/* progress bar global */
-.gbar-wrap{background:var(--gb);border-radius:8px;height:10px;margin-bottom:2.5rem;overflow:hidden;}
-.gbar{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--red),var(--blu));transition:width .8s ease;}
-.gbar-label{text-align:center;font-size:12px;font-weight:800;color:var(--tm);margin-bottom:.5rem;}
 /* category grid */
 .rdgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem;}
 .rdc{background:var(--gb);border-radius:var(--rlg);padding:1.5rem;border:2px solid transparent;transition:border-color .2s;}
@@ -210,14 +206,6 @@ section{padding:4.5rem 2rem;}
 .rdcico.gry{background:var(--gb);}
 .rdctitle{font-size:14px;font-weight:900;}
 .rdcsub{font-size:11px;color:var(--tm);font-weight:600;}
-/* mini progress bar per category */
-.mbar-wrap{background:white;border-radius:4px;height:6px;margin-bottom:1rem;overflow:hidden;}
-.mbar{height:100%;border-radius:4px;transition:width .6s ease;}
-.mbar.red{background:var(--red);}
-.mbar.blu{background:var(--blu);}
-.mbar.grn{background:#22c55e;}
-.mbar.pur{background:#a855f7;}
-.mbar.yel{background:#f59e0b;}
 /* item list */
 .rditems{display:flex;flex-direction:column;gap:6px;}
 .rdi{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.45;}
@@ -631,10 +619,6 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
       <p>Seguimiento en tiempo real de todo lo que está implementado, en desarrollo o pendiente — tanto para el emulador como para la Switch real.</p>
     </div>
 
-    <!-- Barra de progreso global -->
-    <p class="gbar-label">Progreso global del proyecto — 57%</p>
-    <div class="gbar-wrap"><div class="gbar" style="width:57%"></div></div>
-
     <!-- Leyenda -->
     <div class="rdlegend">
       <span><span class="ll done"></span>Implementado</span>
@@ -651,7 +635,6 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdcico red">🔐</div>
           <div><div class="rdctitle">Autenticación & Cuentas</div><div class="rdcsub">Login, tokens, Nintendo auth</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar red" style="width:83%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Login con usuario y contraseña</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Registro de cuenta nueva</span></div>
@@ -660,7 +643,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">aauth — application_auth_token (Switch)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">BAAS Login — token de usuario NPLN</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo Accounts /connect/1.0.0/api/token</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">OAuth2 completo para Nintendo accounts</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">OAuth2 — vincular cuenta desde el menú HOME</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Verificación de email</span></div>
         </div>
       </div>
@@ -671,7 +654,6 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdcico blu">👥</div>
           <div><div class="rdctitle">Social</div><div class="rdcsub">Amigos, chat DMs, presencia</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar blu" style="width:72%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Ver lista de amigos (emulador)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Enviar solicitud de amistad</span></div>
@@ -679,7 +661,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Presencia online (qué juego juegas)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Estado offline / online / in_game</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Chat DM en tiempo real (WebSocket)</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Nintendo friends HTTP API (Switch real)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo friends HTTP API (Switch real)</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Invitaciones a partida</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NEX Friends protocol (Switch OS nativa)</span></div>
         </div>
@@ -691,14 +673,13 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdcico grn">🔔</div>
           <div><div class="rdctitle">Notificaciones</div><div class="rdcsub">WebSocket, push, tiempo real</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar grn" style="width:78%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">WebSocket en tiempo real</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Toast: amigo conectado</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Toast: solicitud de amistad recibida</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Toast: amigo empieza a jugar</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Toast: nuevo mensaje de chat</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">BCAT — noticias del juego en Switch</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">BCAT — responde vacío, sin contenido real todavía</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Push notifications nativas Switch</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Historial de notificaciones</span></div>
         </div>
@@ -708,19 +689,20 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
       <div class="rdc">
         <div class="rdchead">
           <div class="rdcico red">🎮</div>
-          <div><div class="rdctitle">Online en Juegos</div><div class="rdcsub">SMM2, matchmaking, DataStore</div></div>
+          <div><div class="rdctitle">Online en Juegos</div><div class="rdcsub">SMM2, MK8D, matchmaking, DataStore</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar red" style="width:28%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Redirección DNS automática (emulador)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">URL rewrites Nintendo → NeXo</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">SMM2 — endpoints REST (subir/bajar niveles)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Estado por título (qué juegos tienen online)</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">SMM2 DataStore protocolo Nintendo</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">SMM2 — subir/bajar/valorar/comentar cursos (REST)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">SMM2 — modo Endless, Super Worlds, bookmarks (REST)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">MK8D — salas, resultados, tiempos de vuelta (REST)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">MK8D — torneos y rankings (REST)</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">SMM2 DataStore vía NEX/PRUDP — funciona con el emulador, no con hardware real</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Auth NEX real (Kerberos) para MK8D — nex-server en Go</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NPLN gRPC (matchmaking moderno)</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NEX / Rendez-Vous (protocolo legado)</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Salas de juego multijugador</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Leaderboards / rankings</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">SecureConnection/matchmaking MK8D sobre UDP real</span></div>
         </div>
       </div>
 
@@ -730,16 +712,15 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdcico yel">🌐</div>
           <div><div class="rdctitle">Infraestructura</div><div class="rdcsub">Servidor, SSL, base de datos</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar yel" style="width:63%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Servidor Node.js + Fastify</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Base de datos MySQL</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Routing por subdominio automático</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">nexonetwork.space en producción</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">CA propia + HTTPS compatible Switch</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Generación automática de certificados SSL</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Panel de administración web</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Monitoreo / métricas del servidor</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Certificados SSL propios (CA + servidor) automáticos</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Panel de administración web</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Monitoreo básico (uptime, memoria, versión) — sin gráficas ni alertas</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Métricas avanzadas / alertas</span></div>
         </div>
       </div>
 
@@ -747,19 +728,19 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
       <div class="rdc">
         <div class="rdchead">
           <div class="rdcico pur">🕹️</div>
-          <div><div class="rdctitle">Switch Real (CFW)</div><div class="rdcsub">Atmosphere, DNS, certificados</div></div>
+          <div><div class="rdctitle">Switch Real (CFW)</div><div class="rdcsub">Atmosphere, hosts, certificados</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar pur" style="width:35%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">dauth / aauth stubs (device & app token)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">BAAS stub (token de usuario NPLN)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo Accounts stub (token exchange)</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">CA raíz + certificado SSL compatible Switch</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Nintendo friends HTTP API</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Guía de DNS personalizado (Pi-hole / router)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Certificado SSL propio compatible Switch</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Guía de hosts personalizados (Atmosphere)</span></div>
+          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo friends HTTP API</span></div>
+          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Auth NEX real (Kerberos) para MK8D — AccessKey sin confirmar</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NEX Friends protocol completo</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NPLN gRPC completo</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Online en juegos reales (NEX/NPLN)</span></div>
+          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Secure/matchmaking NEX sobre UDP real (resto de MK8D, y SMM2)</span></div>
         </div>
       </div>
 
@@ -778,15 +759,15 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
         </div>
         <div class="sw-step">
           <div class="snum">2</div>
-          <span class="stag wip">En progreso</span>
+          <span class="stag done">Disponible</span>
           <h4>Certificado SSL propio</h4>
-          <p>Generar una CA raíz y un certificado que cubra <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">*.nintendo.net</code> y <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">*.nexonetwork.space</code>. Instalar en <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">SD:/atmosphere/config/ssl/</code></p>
+          <p><code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">scripts/gen-certs.sh</code> genera la CA raíz y el certificado que cubre <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">*.nintendo.net</code> y <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">*.nexonetwork.space</code>. Instalar en <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">SD:/atmosphere/config/ssl/</code></p>
         </div>
         <div class="sw-step">
           <div class="snum">3</div>
-          <span class="stag todo">Pendiente guía</span>
-          <h4>DNS personalizado</h4>
-          <p>Configurar el router o usar Pi-hole para redirigir los dominios de Nintendo a la IP de nexonetwork.space.</p>
+          <span class="stag done">Disponible</span>
+          <h4>Hosts personalizados</h4>
+          <p>No hace falta DNS/Pi-hole: <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">scripts/atmosphere-hosts.txt</code> redirige los dominios de Nintendo directo desde la SD de la Switch — ver <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">docs/switch-setup.md</code>.</p>
         </div>
         <div class="sw-step">
           <div class="snum">4</div>
@@ -796,15 +777,15 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
         </div>
         <div class="sw-step">
           <div class="snum">5</div>
-          <span class="stag wip">En progreso</span>
+          <span class="stag done">Disponible</span>
           <h4>Lista de amigos</h4>
-          <p>Implementando la Nintendo friends HTTP API para que la lista de amigos funcione en la Switch real.</p>
+          <p>La Nintendo friends HTTP API ya funciona contra la base de datos real — lista, solicitudes y presencia.</p>
         </div>
         <div class="sw-step">
           <div class="snum">6</div>
-          <span class="stag todo">Futuro</span>
+          <span class="stag wip">En progreso</span>
           <h4>Online en juegos</h4>
-          <p>Requiere NEX/Rendez-Vous y NPLN gRPC. Son los protocolos más complejos del ecosistema Switch.</p>
+          <p>El auth NEX real (Kerberos) para Mario Kart 8 Deluxe ya existe en Go — falta confirmar el AccessKey del juego y migrar el resto del protocolo (matchmaking) a UDP real. Ver <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">nex-server/README.md</code>.</p>
         </div>
       </div>
     </div>
@@ -902,7 +883,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
       <div class="sgrid">
         <div class="sc"><div class="scl">Online ahora</div><div class="scv" id="s-on">—</div><div class="scs">jugadores</div></div>
         <div class="sc b"><div class="scl">Total cuentas</div><div class="scv" id="s-tot">—</div><div class="scs">registradas</div></div>
-        <div class="sc g"><div class="scl">Servicios activos</div><div class="scv" id="s-up">—</div><div class="scs" id="s-total">de 9</div></div>
+        <div class="sc g"><div class="scl">Servicios activos</div><div class="scv" id="s-up">—</div><div class="scs" id="s-total">de 8</div></div>
         <div class="sc a"><div class="scl">Latencia media</div><div class="scv" id="s-lat">—</div><div class="scs">ms</div></div>
       </div>
       <div class="ph" style="font-size:16px;margin-bottom:.9rem;">Servicios</div>
@@ -1352,7 +1333,8 @@ const SVCS = [
   { name: 'Notifications',      ep: '/api/v1/notification',   icon: '🔔', desc: 'WebSocket notificaciones' },
   { name: 'Config / Rewrites',  ep: '/api/v1/rewrites',       icon: '⚙️', desc: 'Configuración del emulador' },
   { name: 'BCAT',               ep: '/api/v1/bcat',           icon: '📦', desc: 'Entrega de contenido' },
-  { name: 'Mario Maker 2 ⭐',   ep: '/api/v1/smm2/rankings', icon: '🍄', desc: 'Módulo juego SMM2', game: true },
+  // Mario Maker 2 (games:true) se quita de esta lista a propósito por ahora
+  // — no está listo para mostrarse como servicio monitoreado.
 ];
 async function loadStatus() {
   const g = document.getElementById('svgrid'); g.innerHTML = '';
