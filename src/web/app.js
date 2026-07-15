@@ -186,55 +186,6 @@ section{padding:4.5rem 2rem;}
 .fqi h4{font-size:13px;font-weight:800;margin-bottom:.4rem;}
 .fqi p{font-size:12px;color:var(--tm);line-height:1.6;}
 
-/* ══ ROADMAP ══ */
-#roadmap{background:white;}
-.rdhead{text-align:center;margin-bottom:2.5rem;}
-.rdhead .rtag{font-size:10px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:2px;margin-bottom:.6rem;}
-.rdhead h2{font-size:clamp(24px,4vw,38px);font-weight:900;letter-spacing:-.5px;margin-bottom:.75rem;}
-.rdhead p{font-size:14px;color:var(--tm);max-width:520px;margin:0 auto;line-height:1.6;}
-/* category grid */
-.rdgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem;}
-.rdc{background:var(--gb);border-radius:var(--rlg);padding:1.5rem;border:2px solid transparent;transition:border-color .2s;}
-.rdc:hover{border-color:var(--gm);}
-.rdchead{display:flex;align-items:center;gap:10px;margin-bottom:1.1rem;}
-.rdcico{width:36px;height:36px;border-radius:var(--rmd);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
-.rdcico.red{background:var(--rs);}
-.rdcico.blu{background:var(--bs);}
-.rdcico.grn{background:rgba(34,197,94,.12);}
-.rdcico.pur{background:rgba(168,85,247,.1);}
-.rdcico.yel{background:rgba(251,191,36,.12);}
-.rdcico.gry{background:var(--gb);}
-.rdctitle{font-size:14px;font-weight:900;}
-.rdcsub{font-size:11px;color:var(--tm);font-weight:600;}
-/* item list */
-.rditems{display:flex;flex-direction:column;gap:6px;}
-.rdi{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.45;}
-.rdibadge{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:1px;}
-.rdibadge.done{background:rgba(34,197,94,.15);color:#16a34a;}
-.rdibadge.wip{background:rgba(251,191,36,.2);color:#d97706;}
-.rdibadge.todo{background:var(--gb);color:var(--gm);}
-.rdilabel{color:var(--tx);}
-.rdilabel.dim{color:var(--tm);}
-/* legend */
-.rdlegend{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;margin-bottom:2rem;font-size:12px;color:var(--tm);}
-.rdlegend span{display:flex;align-items:center;gap:5px;font-weight:700;}
-.ll{width:14px;height:14px;border-radius:3px;display:inline-block;}
-.ll.done{background:rgba(34,197,94,.2);border:1px solid #22c55e;}
-.ll.wip{background:rgba(251,191,36,.2);border:1px solid #f59e0b;}
-.ll.todo{background:var(--gb);border:1px solid var(--gm);}
-/* version badge */
-.vbadge{display:inline-flex;align-items:center;gap:6px;background:var(--rs);border:1.5px solid rgba(228,0,15,.2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:800;color:var(--red);letter-spacing:.3px;margin-bottom:1rem;}
-/* switch section */
-.sw-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:1.5rem;}
-.sw-step{background:var(--gb);border-radius:var(--rmd);padding:1.1rem;position:relative;}
-.sw-step .snum{width:26px;height:26px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-bottom:.6rem;}
-.sw-step h4{font-size:13px;font-weight:800;margin-bottom:.3rem;}
-.sw-step p{font-size:12px;color:var(--tm);line-height:1.5;}
-.sw-step .stag{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;margin-bottom:.5rem;text-transform:uppercase;}
-.stag.done{background:rgba(34,197,94,.15);color:#16a34a;}
-.stag.wip{background:rgba(251,191,36,.2);color:#d97706;}
-.stag.todo{background:var(--gb);color:var(--tm);}
-
 /* FOOTER */
 footer{background:var(--gd);color:rgba(255,255,255,.5);padding:2.5rem 2rem 2rem;}
 .fi2{max-width:1080px;margin:0 auto;}
@@ -450,7 +401,6 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
     <a class="nla" href="#api2">API</a>
     <a class="nla" href="#compat">Compatibilidad</a>
     <a class="nla" href="#plans">Gratis</a>
-    <a class="nla" href="#roadmap">Progreso</a>
     <a class="nla" href="/emulator" target="_blank">Emulador</a>
   </div>
   <button class="ncta" onclick="openApp()">Portal →</button>
@@ -610,188 +560,12 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
 </section>
 
 <!-- ══ ROADMAP / PROGRESO ══ -->
-<section id="roadmap">
-  <div class="cnt">
-    <div class="rdhead">
-      <p class="rtag">Estado del desarrollo</p>
-      <div class="vbadge"><span>●</span> v0.8.0-alpha — En desarrollo activo</div>
-      <h2>Progreso de <span style="color:var(--red)">NeXo Network</span></h2>
-      <p>Seguimiento en tiempo real de todo lo que está implementado, en desarrollo o pendiente — tanto para el emulador como para la Switch real.</p>
-    </div>
-
-    <!-- Leyenda -->
-    <div class="rdlegend">
-      <span><span class="ll done"></span>Implementado</span>
-      <span><span class="ll wip"></span>En progreso</span>
-      <span><span class="ll todo"></span>Pendiente</span>
-    </div>
-
-    <!-- Grid de categorías -->
-    <div class="rdgrid">
-
-      <!-- 🔐 Autenticación -->
-      <div class="rdc">
-        <div class="rdchead">
-          <div class="rdcico red">🔐</div>
-          <div><div class="rdctitle">Autenticación & Cuentas</div><div class="rdcsub">Login, tokens, Nintendo auth</div></div>
-        </div>
-        <div class="rditems">
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Login con usuario y contraseña</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Registro de cuenta nueva</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Refresh automático de token JWT</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">dauth — device_auth_token (Switch)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">aauth — application_auth_token (Switch)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">BAAS Login — token de usuario NPLN</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo Accounts /connect/1.0.0/api/token</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">OAuth2 — vincular cuenta desde el menú HOME</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Verificación de email</span></div>
-        </div>
-      </div>
-
-      <!-- 👥 Social -->
-      <div class="rdc">
-        <div class="rdchead">
-          <div class="rdcico blu">👥</div>
-          <div><div class="rdctitle">Social</div><div class="rdcsub">Amigos, chat DMs, presencia</div></div>
-        </div>
-        <div class="rditems">
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Ver lista de amigos (emulador)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Enviar solicitud de amistad</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Aceptar / rechazar solicitudes</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Presencia online (qué juego juegas)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Estado offline / online / in_game</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Chat DM en tiempo real (WebSocket)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo friends HTTP API (Switch real)</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Invitaciones a partida</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NEX Friends protocol (Switch OS nativa)</span></div>
-        </div>
-      </div>
-
-      <!-- 🔔 Notificaciones -->
-      <div class="rdc">
-        <div class="rdchead">
-          <div class="rdcico grn">🔔</div>
-          <div><div class="rdctitle">Notificaciones</div><div class="rdcsub">WebSocket, push, tiempo real</div></div>
-        </div>
-        <div class="rditems">
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">WebSocket en tiempo real</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Toast: amigo conectado</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Toast: solicitud de amistad recibida</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Toast: amigo empieza a jugar</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Toast: nuevo mensaje de chat</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">BCAT — responde vacío, sin contenido real todavía</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Push notifications nativas Switch</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Historial de notificaciones</span></div>
-        </div>
-      </div>
-
-      <!-- 🎮 Online en juegos -->
-      <div class="rdc">
-        <div class="rdchead">
-          <div class="rdcico red">🎮</div>
-          <div><div class="rdctitle">Online en Juegos</div><div class="rdcsub">SMM2, MK8D, matchmaking, DataStore</div></div>
-        </div>
-        <div class="rditems">
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Redirección DNS automática (emulador)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">URL rewrites Nintendo → NeXo</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Estado por título (qué juegos tienen online)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">SMM2 — subir/bajar/valorar/comentar cursos (REST)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">SMM2 — modo Endless, Super Worlds, bookmarks (REST)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">MK8D — salas, resultados, tiempos de vuelta (REST)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">MK8D — torneos y rankings (REST)</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">SMM2 DataStore vía NEX/PRUDP — funciona con el emulador, no con hardware real</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Auth NEX real (Kerberos) para MK8D — nex-server en Go</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NPLN gRPC (matchmaking moderno)</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">SecureConnection/matchmaking MK8D sobre UDP real</span></div>
-        </div>
-      </div>
-
-      <!-- 🌐 Infraestructura -->
-      <div class="rdc">
-        <div class="rdchead">
-          <div class="rdcico yel">🌐</div>
-          <div><div class="rdctitle">Infraestructura</div><div class="rdcsub">Servidor, SSL, base de datos</div></div>
-        </div>
-        <div class="rditems">
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Servidor Node.js + Fastify</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Base de datos MySQL</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Routing por subdominio automático</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">nexonetwork.space en producción</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Certificados SSL propios (CA + servidor) automáticos</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Panel de administración web</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Monitoreo básico (uptime, memoria, versión) — sin gráficas ni alertas</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Métricas avanzadas / alertas</span></div>
-        </div>
-      </div>
-
-      <!-- 🕹️ Switch Real -->
-      <div class="rdc">
-        <div class="rdchead">
-          <div class="rdcico pur">🕹️</div>
-          <div><div class="rdctitle">Switch Real (CFW)</div><div class="rdcsub">Atmosphere, hosts, certificados</div></div>
-        </div>
-        <div class="rditems">
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">dauth / aauth stubs (device & app token)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">BAAS stub (token de usuario NPLN)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo Accounts stub (token exchange)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Certificado SSL propio compatible Switch</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Guía de hosts personalizados (Atmosphere)</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo friends HTTP API</span></div>
-          <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Auth NEX real (Kerberos) para MK8D — AccessKey sin confirmar</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NEX Friends protocol completo</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">NPLN gRPC completo</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Secure/matchmaking NEX sobre UDP real (resto de MK8D, y SMM2)</span></div>
-        </div>
-      </div>
-
-    </div><!-- /rdgrid -->
-
-    <!-- Guía de conexión Switch real -->
-    <div style="margin-top:3rem;background:var(--gb);border-radius:var(--rlg);padding:2rem;">
-      <h3 style="font-size:18px;font-weight:900;margin-bottom:.5rem;">🕹️ Cómo conectar tu Switch modificada</h3>
-      <p style="font-size:13px;color:var(--tm);margin-bottom:1.5rem;">Pasos necesarios para que una Switch con Atmosphere se conecte a nexonetwork.space</p>
-      <div class="sw-steps">
-        <div class="sw-step">
-          <div class="snum">1</div>
-          <span class="stag done">Disponible</span>
-          <h4>Instalar CFW</h4>
-          <p>Atmosphere 1.x en tu Switch. Necesario para instalar certificados personalizados y redirigir el tráfico SSL.</p>
-        </div>
-        <div class="sw-step">
-          <div class="snum">2</div>
-          <span class="stag done">Disponible</span>
-          <h4>Certificado SSL propio</h4>
-          <p><code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">scripts/gen-certs.sh</code> genera la CA raíz y el certificado que cubre <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">*.nintendo.net</code> y <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">*.nexonetwork.space</code>. Instalar en <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">SD:/atmosphere/config/ssl/</code></p>
-        </div>
-        <div class="sw-step">
-          <div class="snum">3</div>
-          <span class="stag done">Disponible</span>
-          <h4>Hosts personalizados</h4>
-          <p>No hace falta DNS/Pi-hole: <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">scripts/atmosphere-hosts.txt</code> redirige los dominios de Nintendo directo desde la SD de la Switch — ver <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">docs/switch-setup.md</code>.</p>
-        </div>
-        <div class="sw-step">
-          <div class="snum">4</div>
-          <span class="stag done">Implementado</span>
-          <h4>Auth completa</h4>
-          <p>dauth, aauth y BAAS ya están implementados. Tu Switch puede obtener todos los tokens necesarios para el online.</p>
-        </div>
-        <div class="sw-step">
-          <div class="snum">5</div>
-          <span class="stag done">Disponible</span>
-          <h4>Lista de amigos</h4>
-          <p>La Nintendo friends HTTP API ya funciona contra la base de datos real — lista, solicitudes y presencia.</p>
-        </div>
-        <div class="sw-step">
-          <div class="snum">6</div>
-          <span class="stag wip">En progreso</span>
-          <h4>Online en juegos</h4>
-          <p>El auth NEX real (Kerberos) para Mario Kart 8 Deluxe ya existe en Go — falta confirmar el AccessKey del juego y migrar el resto del protocolo (matchmaking) a UDP real. Ver <code style="font-size:10px;background:white;padding:1px 4px;border-radius:3px;">nex-server/README.md</code>.</p>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</section>
+<!--
+  Quitado a propósito (empezamos desde cero): el roadmap anterior daba por
+  hecho cosas de los juegos (SMM2/MK8D) que en realidad son muy básicas o
+  sin verificar. Se irá rellenando ítem por ítem, solo con lo que esté
+  comprobado de verdad, en vez de reconstruir toda la lista de golpe otra vez.
+-->
 
 <!-- CTA -->
 <section class="ctas">
