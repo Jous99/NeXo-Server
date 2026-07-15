@@ -1,26 +1,30 @@
 # ══════════════════════════════════════════════════════════════════════════════
 #  NeXoNetwork — Archivo de hosts para Atmosphere CFW
-#  Dominio: nexonetwork.space
 #
 #  CÓMO INSTALAR:
-#    1. Copia este archivo a la tarjeta SD de tu Switch:
+#    1. Reemplaza TU_IP_AQUI (todas las líneas) por la IP de tu servidor:
+#       - Si la Switch está en la misma red local que el servidor: usa su
+#         IP local (ej: 192.168.0.154). Es más fiable — muchos routers no
+#         soportan NAT loopback, así que un dominio/IP pública podría no
+#         resolver bien estando en la misma LAN.
+#       - Si están en redes distintas: usa la IP pública del servidor.
+#    2. Copia este archivo a la tarjeta SD de tu Switch:
 #       /atmosphere/hosts/default.txt
-#    2. Reinicia la Switch con Atmosphere
+#    3. Reinicia la Switch con Atmosphere
 #
-#  CÓMO FUNCIONA (importante):
+#  FORMATO (importante — es un hosts file estándar, IP primero):
+#    IP_DEL_SERVIDOR   dominio.de.nintendo.net
+#    NO al revés. Un dominio (como nexonetwork.space) como primer campo
+#    NO funciona — Atmosphere solo resuelve IPs literales aquí, igual que
+#    /etc/hosts. Ver docs/features/dns_mitm.md del propio Atmosphere.
+#
+#  CÓMO FUNCIONA:
 #    Este archivo NO conecta a Nintendo — hace exactamente lo contrario.
 #    Atmosphere intercepta el DNS internamente. Cuando la Switch intenta
-#    resolver "dauth-lp1.ndas.srv.nintendo.net", Atmosphere devuelve
-#    la IP de nexonetwork.space en su lugar.
-#    Nintendo nunca ve tu consola → sin detección de CFW → sin ban.
-#    Es el mismo principio que 90DNS, pero en vez de bloquear, redirige
-#    a tu servidor que responde con datos válidos.
-#
-#  NOTA SOBRE EL FORMATO:
-#    Atmosphere soporta dominios además de IPs en este archivo.
-#    Si algo no funciona, reemplaza "nexonetwork.space" por la IP
-#    directa del servidor (ej: 185.123.45.67).
-#    Puedes encontrar la IP con: ping nexonetwork.space
+#    resolver "dauth-lp1.ndas.srv.nintendo.net", Atmosphere devuelve la IP
+#    de tu servidor en su lugar. Nintendo nunca ve tu consola → sin
+#    detección de CFW → sin ban. Mismo principio que 90DNS, pero en vez
+#    de bloquear, redirige a tu servidor que responde con datos válidos.
 # ══════════════════════════════════════════════════════════════════════════════
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
@@ -28,24 +32,24 @@
 # ║  Cadena de autenticación antes de cualquier servicio online.             ║
 # ║  Sin estos, los juegos no pueden empezar a conectarse.                   ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
-nexonetwork.space dauth-lp1.ndas.srv.nintendo.net
-nexonetwork.space aauth-lp1.ndas.srv.nintendo.net
-nexonetwork.space accounts.nintendo.com
-nexonetwork.space api.accounts.nintendo.com
+TU_IP_AQUI dauth-lp1.ndas.srv.nintendo.net
+TU_IP_AQUI aauth-lp1.ndas.srv.nintendo.net
+TU_IP_AQUI accounts.nintendo.com
+TU_IP_AQUI api.accounts.nintendo.com
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  BLOQUE 2: BAAS (token de usuario por juego)                             ║
 # ║  Cada juego usa un subdominio BAAS distinto.                             ║
 # ║  Si un juego no conecta, busca su subdominio BAAS y añádelo aquí.        ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
-nexonetwork.space e97b8a9d672e4ce4845b-sb.baas.nintendo.com    # Splatoon 3
-nexonetwork.space d78dbb08cf698e042d54-sb.baas.nintendo.com    # Super Mario Maker 2
-nexonetwork.space ed9e2f05d286b7b8ceda-sb.baas.nintendo.com    # Mario Kart 8 Deluxe
-nexonetwork.space a9e5b722a406f9cee4ea-sb.baas.nintendo.com    # Animal Crossing: NH
-nexonetwork.space e1c218b5657e4e03b6e0-sb.baas.nintendo.com    # Pokémon Scarlet/Violet
-nexonetwork.space 7fbcac5a1e52b070d5a2-sb.baas.nintendo.com    # Pokémon Sword/Shield
-nexonetwork.space 9dc9e6e4765c77a5d4d1-sb.baas.nintendo.com    # ARMS
-nexonetwork.space f4a0f589eca62d8e8f79-sb.baas.nintendo.com    # Smash Bros Ultimate
+TU_IP_AQUI e97b8a9d672e4ce4845b-sb.baas.nintendo.com    # Splatoon 3
+TU_IP_AQUI d78dbb08cf698e042d54-sb.baas.nintendo.com    # Super Mario Maker 2
+TU_IP_AQUI ed9e2f05d286b7b8ceda-sb.baas.nintendo.com    # Mario Kart 8 Deluxe
+TU_IP_AQUI a9e5b722a406f9cee4ea-sb.baas.nintendo.com    # Animal Crossing: NH
+TU_IP_AQUI e1c218b5657e4e03b6e0-sb.baas.nintendo.com    # Pokémon Scarlet/Violet
+TU_IP_AQUI 7fbcac5a1e52b070d5a2-sb.baas.nintendo.com    # Pokémon Sword/Shield
+TU_IP_AQUI 9dc9e6e4765c77a5d4d1-sb.baas.nintendo.com    # ARMS
+TU_IP_AQUI f4a0f589eca62d8e8f79-sb.baas.nintendo.com    # Smash Bros Ultimate
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  BLOQUE 3: TELEMETRÍA Y REPORTES (anti-ban crítico)                      ║
@@ -53,62 +57,62 @@ nexonetwork.space f4a0f589eca62d8e8f79-sb.baas.nintendo.com    # Smash Bros Ulti
 # ║  Redirigir es mejor que bloquear: nuestro servidor responde 204 OK       ║
 # ║  y la Switch deja de reintentar en lugar de llenar logs de error.        ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
-nexonetwork.space receive-lp1.er.srv.nintendo.net
-nexonetwork.space receive-lp1.dg.srv.nintendo.net
-nexonetwork.space pushmo.hac.lp1.er.nintendo.net
+TU_IP_AQUI receive-lp1.er.srv.nintendo.net
+TU_IP_AQUI receive-lp1.dg.srv.nintendo.net
+TU_IP_AQUI pushmo.hac.lp1.er.nintendo.net
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  BLOQUE 4: SYSTEM UPDATES (anti-ban + comodidad)                         ║
 # ║  Sin estos, Nintendo podría forzar una actualización antes de dejar      ║
 # ║  jugar online, o detectar tu firmware modificado.                        ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
-nexonetwork.space atum.hac.lp1.d4c.nintendo.net
-nexonetwork.space sun.hac.lp1.d4c.nintendo.net
-nexonetwork.space aqua.hac.lp1.d4c.nintendo.net
+TU_IP_AQUI atum.hac.lp1.d4c.nintendo.net
+TU_IP_AQUI sun.hac.lp1.d4c.nintendo.net
+TU_IP_AQUI aqua.hac.lp1.d4c.nintendo.net
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  BLOQUE 5: ESHOP Y VERIFICACIÓN DE TÍTULOS                               ║
 # ║  Nintendo puede detectar juegos sin licencia a través de estos.          ║
 # ║  Los redirigimos para evitar esa verificación.                           ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
-nexonetwork.space tagaya.hac.lp1.eshop.nintendo.net
-nexonetwork.space shogun-lp1.eshop.nintendo.net
-nexonetwork.space beach.hac.lp1.eshop.nintendo.net
-nexonetwork.space api.hac.lp1.eshop.nintendo.net
-nexonetwork.space bugyo.hac.lp1.eshop.nintendo.net
-nexonetwork.space moon.hac.lp1.eshop.nintendo.net
-nexonetwork.space sea.hac.lp1.eshop.nintendo.net
-nexonetwork.space gw.lp1.eshop.nintendo.net
-nexonetwork.space albatross.lp1.eshop.nintendo.net
-nexonetwork.space tiger.hac.lp1.eshop.nintendo.net
-nexonetwork.space api-lp1.pctl.srv.nintendo.net
+TU_IP_AQUI tagaya.hac.lp1.eshop.nintendo.net
+TU_IP_AQUI shogun-lp1.eshop.nintendo.net
+TU_IP_AQUI beach.hac.lp1.eshop.nintendo.net
+TU_IP_AQUI api.hac.lp1.eshop.nintendo.net
+TU_IP_AQUI bugyo.hac.lp1.eshop.nintendo.net
+TU_IP_AQUI moon.hac.lp1.eshop.nintendo.net
+TU_IP_AQUI sea.hac.lp1.eshop.nintendo.net
+TU_IP_AQUI gw.lp1.eshop.nintendo.net
+TU_IP_AQUI albatross.lp1.eshop.nintendo.net
+TU_IP_AQUI tiger.hac.lp1.eshop.nintendo.net
+TU_IP_AQUI api-lp1.pctl.srv.nintendo.net
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  BLOQUE 6: CONECTIVIDAD / NIFM                                           ║
 # ║  La Switch prueba la conexión con estos dominios. Nuestro servidor       ║
 # ║  responde 200/204 OK para que no bloquee los juegos (error 2038-2306).   ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
-nexonetwork.space ctest.cdn.nintendo.net
-nexonetwork.space nasc.nintendowifi.net
-nexonetwork.space pptest.nintendo.net
+TU_IP_AQUI ctest.cdn.nintendo.net
+TU_IP_AQUI nasc.nintendowifi.net
+TU_IP_AQUI pptest.nintendo.net
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  BLOQUE 7: AMIGOS Y PRESENCIA                                            ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
-nexonetwork.space friends.lp1.s.n.srv.nintendo.net
-nexonetwork.space friends-lp1.s.n.srv.nintendo.net
+TU_IP_AQUI friends.lp1.s.n.srv.nintendo.net
+TU_IP_AQUI friends-lp1.s.n.srv.nintendo.net
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  BLOQUE 8: BCAT (contenido de fondo de juegos)                           ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
-nexonetwork.space bcat-list-lp1.cdn.nintendo.net
-nexonetwork.space bcat-dl-lp1.cdn.nintendo.net
+TU_IP_AQUI bcat-list-lp1.cdn.nintendo.net
+TU_IP_AQUI bcat-dl-lp1.cdn.nintendo.net
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  BLOQUE 9: SERVIDORES DE JUEGOS                                          ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
-nexonetwork.space g9s300c4msl.lp1.s.n.srv.nintendo.net
-nexonetwork.space api.lp1.npln.srv.nintendo.net
+TU_IP_AQUI g9s300c4msl.lp1.s.n.srv.nintendo.net
+TU_IP_AQUI api.lp1.npln.srv.nintendo.net
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  DOMINIOS NO REDIRIGIDOS (y por qué)

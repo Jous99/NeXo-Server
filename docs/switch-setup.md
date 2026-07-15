@@ -41,36 +41,43 @@ pm2 restart nexo --update-env
 
 ---
 
-## Paso 2 — Instalar el certificado CA en la Switch
+## Paso 2 — Desactivar la verificación de certificados en la Switch
 
-La Switch tiene sus propios certificados de confianza y no aceptará los nuestros
-a menos que instalemos nuestra CA raíz.
+**Corrección (verificado investigando el ecosistema real de Atmosphere):**
+No existe ninguna app "NX-CA-Installer" ni una carpeta `/atmosphere/config/ssl/`
+que instale una CA personalizada — eso no es real. El método real y usado por
+la comunidad es instalar los parches `exefs_patches` que desactivan la
+verificación de certificados por completo, para que la Switch acepte el
+certificado autofirmado que genera `gen-certs.sh` sin necesitar una CA de
+confianza.
 
-### Descargar el certificado del servidor
+### Descargar los parches
 
-```bash
-# En tu PC (Windows PowerShell o macOS/Linux terminal):
-scp root@nexonetwork.space:/ruta/al/servidor/certs/nexo-ca.crt .
-```
+1. Busca en [misson20000/exefs_patches](https://github.com/misson20000/exefs_patches)
+   (o forks/PRs activos si tu firmware es muy reciente) las carpetas
+   `disable_ca_verification` y `disable_browser_ca_verification`.
+2. Descarga el repo/fork completo como ZIP (botón "Code" → "Download ZIP") —
+   más fiable que copiar nombres de archivo en hexadecimal a mano.
+3. **Verifica compatibilidad con tu firmware exacto** antes de instalar —
+   estos parches son específicos de firmware. Si tu firmware es muy reciente
+   y no aparece cubierto en el repo principal, revisa si hay un PR abierto
+   portando el parche a tu versión, o pregunta en la comunidad (GBAtemp,
+   Discord de ReSwitched) antes de instalar.
 
-O descárgalo con WinSCP / FileZilla conectándote al VPS.
-
-### Instalar la CA en la Switch (método recomendado)
-
-Atmosphere 1.5+ soporta CAs personalizadas. Copia el archivo a la SD:
+### Instalar en la SD
 
 ```
 SD:/
  └── atmosphere/
-      └── config/
-           └── ssl/                    ← crea esta carpeta si no existe
-                └── nexo-ca.crt       ← pega el archivo aquí
+      ├── exefs_patches/
+      │    └── disable_ca_verification/       ← copia aquí los .ips de esa carpeta
+      └── nro_patches/
+           └── disable_browser_ca_verification/  ← copia aquí los .ips de esa carpeta
 ```
 
-> **Nota**: El nombre del archivo no importa, lo que importa es que esté
-> en `/atmosphere/config/ssl/` con extensión `.crt`.
-
-Reinicia la Switch con Atmosphere para que cargue el certificado.
+No hace falta identificar el archivo "correcto" a mano — Atmosphere solo
+aplica el `.ips` cuyo hash coincide con el módulo real que tienes cargado,
+e ignora los demás sin fallar. Reinicia la Switch con Atmosphere.
 
 ---
 
@@ -81,17 +88,22 @@ redirigen los dominios de Nintendo a tu servidor en lugar de a los de Nintendo.
 
 ### Editar el archivo de hosts
 
-Abre `scripts/atmosphere-hosts.txt` y reemplaza `TU_IP_AQUI` con la IP de tu VPS:
+**Corrección de formato:** el formato real de Atmosphere es **IP primero,
+dominio después** (como un hosts file normal) — no soporta un dominio como
+destino, solo IPs literales. Abre `scripts/atmosphere-hosts.txt` y reemplaza
+`TU_IP_AQUI` con la IP de tu servidor:
 
 ```
 # Antes:
-dauth-lp1.ndas.srv.nintendo.net TU_IP_AQUI
+TU_IP_AQUI dauth-lp1.ndas.srv.nintendo.net
 
 # Después (ejemplo):
-dauth-lp1.ndas.srv.nintendo.net 185.123.45.67
+185.123.45.67 dauth-lp1.ndas.srv.nintendo.net
 ```
 
-> Puedes usar la IP o el dominio `nexonetwork.space` directamente.
+> Si la Switch está en la misma red local que tu servidor, usa su IP local
+> (ej: `192.168.0.154`) en vez de la IP pública o el dominio — muchos
+> routers no soportan NAT loopback y la conexión fallaría en la misma LAN.
 
 ### Copiar a la SD
 
@@ -166,7 +178,7 @@ Reinicia la Switch con Atmosphere y comprueba:
 | Síntoma | Causa probable | Solución |
 |---------|---------------|----------|
 | Switch no conecta | Hosts no copiados o IP incorrecta | Revisa `/atmosphere/hosts/default.txt` |
-| Error SSL / certificado | CA no instalada | Revisa `/atmosphere/config/ssl/nexo-ca.crt` |
+| Error SSL / certificado | Parches `disable_ca_verification` no instalados o no compatibles con tu firmware | Revisa `/atmosphere/exefs_patches/disable_ca_verification/` y `/atmosphere/nro_patches/disable_browser_ca_verification/` |
 | Página de login no carga | HTTPS no activado en servidor | Ejecuta `setup-https.sh` |
 | Login falla con "Error de auth" | Usuario o contraseña incorrectos | Prueba crear cuenta nueva |
 | Juego no conecta en online | Juego no en lista de títulos compatibles | Añade el title_id en `scripts/migrate.sql` |
@@ -188,11 +200,12 @@ También puedes crear tu cuenta desde el panel web antes de usar la Switch:
 ```
 SD:/
  ├── atmosphere/
- │    ├── config/
- │    │    └── ssl/
- │    │         └── nexo-ca.crt         ← certificado CA de NeXo
+ │    ├── exefs_patches/
+ │    │    └── disable_ca_verification/       ← desactiva verificación SSL (sysmodules)
+ │    ├── nro_patches/
+ │    │    └── disable_browser_ca_verification/ ← desactiva verificación SSL (browser)
  │    └── hosts/
- │         └── default.txt              ← redirección de dominios Nintendo
+ │         └── default.txt                    ← redirección de dominios Nintendo (IP primero)
  └── ...
 ```
 
