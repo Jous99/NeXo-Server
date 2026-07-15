@@ -1140,47 +1140,25 @@ p{color:#8892a4;font-size:.9rem;line-height:1.5}
     // GET /api/v1/client/subscription
     // online_initiator.cpp → LoadSubscriptionInfo()
     //
-    // IMPORTANTE: El struct C++ OnlineSubscriptionInfo tiene display_subscription como
-    // std::string. Si mandamos un booleano false, nlohmann::json lanza type_error y la
-    // info nunca se carga. Todos los campos de texto DEBEN ser strings, no booleans.
-    //
-    // Planes de suscripción:
-    //   "Free"  — plan gratuito (por defecto para todos los usuarios)
-    //   "Pro"   — reservado para planes de pago futuros
+    // NeXo Network es gratis para todas las cuentas, sin planes de pago —
+    // esta respuesta es fija. El campo display_subscription sigue existiendo
+    // porque el struct C++ OnlineSubscriptionInfo del emulador lo espera como
+    // std::string (nlohmann::json::get<std::string>() en from_json() — un
+    // booleano ahí lanza type_error y la info nunca se carga).
     fastify.get('/api/v1/client/subscription', async (req, reply) => {
         if (!isAccountsSubdomain(req)) return reply.code(404).send({ error: 'not found' });
 
         const bearer = (req.headers['authorization'] || '').replace('Bearer ', '');
         if (!bearer) return reply.code(401).send({ error: 'Unauthorized' });
 
-        let payload;
         try {
-            payload = fastify.jwt.verify(bearer);
+            fastify.jwt.verify(bearer);
         } catch {
             return reply.code(401).send({ error: 'Unauthorized' });
         }
 
-        // Obtener el plan del usuario desde la base de datos.
-        // Si no tiene plan asignado → Free por defecto.
-        const db = require('../../db');
-        let plan = 'Free';
-        try {
-            const [rows] = await db.query(
-                'SELECT subscription_plan FROM users WHERE nexo_id = ?',
-                [payload.nexo_id]
-            );
-            if (rows.length && rows[0].subscription_plan) {
-                plan = rows[0].subscription_plan;
-            }
-        } catch {
-            // Si la columna no existe aún en la DB, usamos Free como fallback.
-            plan = 'Free';
-        }
-
-        // Todos los campos de texto deben ser strings (no booleans) porque el
-        // emulador usa nlohmann::json::get<std::string>() en from_json().
         return reply.send({
-            display_subscription:             plan,
+            display_subscription:             'Free',
             display_action:                   '',
             url_action:                       '',
             enable_set_username:              true,

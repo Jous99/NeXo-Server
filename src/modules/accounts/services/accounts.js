@@ -166,7 +166,6 @@ async function getProfile(nexoId) {
     const [rows] = await db.query(
         `SELECT u.nexo_id, u.username, u.nickname, u.avatar_url, u.lang, u.region,
                 u.created_at, u.is_admin,
-                COALESCE(u.subscription_plan, 'Free') AS subscription_plan,
                 p.status, p.game_title, p.last_seen
          FROM users u
          LEFT JOIN presence p ON p.user_id = u.id

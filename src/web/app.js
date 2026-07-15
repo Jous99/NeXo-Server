@@ -461,7 +461,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
     <a class="nla" href="#feat">Características</a>
     <a class="nla" href="#api2">API</a>
     <a class="nla" href="#compat">Compatibilidad</a>
-    <a class="nla" href="#plans">Planes</a>
+    <a class="nla" href="#plans">Gratis</a>
     <a class="nla" href="#roadmap">Progreso</a>
     <a class="nla" href="/emulator" target="_blank">Emulador</a>
   </div>
@@ -573,38 +573,25 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
   </div>
 </section>
 
-<!-- ══ PLANES ══ -->
+<!-- ══ GRATIS PARA SIEMPRE ══ -->
 <section id="plans">
   <div class="cnt">
     <div class="plans-head">
-      <p class="ptag">Planes & Precios</p>
-      <h2>Elige tu plan de <span style="color:var(--red)">NeXo Network</span></h2>
-      <p>Empieza gratis y actualiza cuando quieras. Todos los planes incluyen acceso al emulador y a los servidores online de nexonetwork.space.</p>
+      <p class="ptag">Sin planes, sin precios</p>
+      <h2>NeXo Network es <span style="color:var(--red)">100% gratis, para siempre</span></h2>
+      <p>Ninguna función está detrás de un muro de pago. Ni ahora ni en el futuro. Todo el mundo tiene acceso a exactamente lo mismo.</p>
     </div>
 
-    <!-- Toggle mensual/anual -->
-    <div class="pbill">
-      <span>Mensual</span>
-      <button class="ptog" id="ptog" onclick="togglePBill()"><div class="ptogk"></div></button>
-      <span>Anual <span class="psave">Ahorra 20%</span></span>
-    </div>
-
-    <!-- Tarjetas -->
-    <div class="pgrid" id="pgrid">
-
-      <!-- FREE -->
+    <!-- Tarjeta única -->
+    <div class="pgrid" id="pgrid" style="grid-template-columns:minmax(0,480px);justify-content:center;">
       <div class="pc">
-        <div class="pico">⭐</div>
-        <div class="pname" style="color:var(--blu)">Free</div>
-        <p class="ptag2">Todo lo que necesitas para jugar online.<br>Sin tarjeta de crédito.</p>
+        <div class="pico">🎮</div>
+        <div class="pname" style="color:var(--blu)">Acceso completo</div>
+        <p class="ptag2">Todo lo que ofrece NeXo Network, sin excepciones ni límites de tiempo.<br>Sin tarjeta de crédito, nunca.</p>
         <div class="pprice">
           <div class="pmo">
-            <span class="cur">€</span><span class="amount">0</span>
-            <p class="per">Para siempre gratis</p>
-          </div>
-          <div class="pyr">
-            <span class="cur">€</span><span class="amount">0</span>
-            <p class="per">Para siempre gratis</p>
+            <span class="amount">Gratis</span>
+            <p class="per">Para siempre</p>
           </div>
         </div>
         <div class="pdiv"></div>
@@ -614,115 +601,20 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <li><span class="pchk y">✓</span><span class="pl">Notificaciones en tiempo real</span></li>
           <li><span class="pchk y">✓</span><span class="pl">Todos los juegos compatibles con NeXo</span></li>
           <li><span class="pchk y">✓</span><span class="pl">Estadísticas de partidas</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Badge ⭐ Free en el perfil</span></li>
+          <li><span class="pchk y">✓</span><span class="pl">Sin anuncios, sin muros de pago, sin sorpresas</span></li>
         </ul>
         <button class="pcta" onclick="openApp()">Crear cuenta gratis</button>
-        <p class="pnote">Sin límite de tiempo</p>
+        <p class="pnote">Sin límite de tiempo, sin letra pequeña</p>
       </div>
-
-      <!-- PRO -->
-      <div class="pc hot">
-        <div class="pop-tag">⚡ Más popular</div>
-        <div class="pico">💎</div>
-        <div class="pname" style="color:var(--red)">Pro</div>
-        <p class="ptag2">Todo lo de Free más extras exclusivos que no afectan al juego.</p>
-        <div class="pprice">
-          <div class="pmo">
-            <span class="cur">€</span><span class="amount" style="color:var(--red)">4<span style="font-size:24px">.99</span></span>
-            <p class="per">por mes, facturado mensualmente</p>
-          </div>
-          <div class="pyr">
-            <span class="cur">€</span><span class="amount" style="color:var(--red)">3<span style="font-size:24px">.99</span></span>
-            <p class="per">por mes · <strong style="color:#16a34a">€47.88/año</strong> (ahorra €12)</p>
-          </div>
-        </div>
-        <div class="pdiv"></div>
-        <ul class="pfl">
-          <li><span class="pchk y">✓</span><span class="pl">Todo lo del plan Free</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Badge 💎 Pro exclusivo en el perfil</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Acceso anticipado a betas de nuevos juegos</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Color de nombre personalizado en el perfil</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Canal VIP exclusivo en Discord</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Soporte por email prioritario</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Tu nombre en la sección Supporters de la web</span></li>
-        </ul>
-        <button class="pcta red" onclick="alert('Próximamente — sistema de pago en desarrollo')">Obtener Pro</button>
-        <p class="pnote">Cancela cuando quieras</p>
-      </div>
-
-      <!-- PATRON -->
-      <div class="pc">
-        <div class="pico">👑</div>
-        <div class="pname" style="color:#a855f7">Patron</div>
-        <p class="ptag2">Para quienes quieren apoyar el proyecto y dejar huella en NeXo Network.</p>
-        <div class="pprice">
-          <div class="pmo">
-            <span class="cur">€</span><span class="amount" style="color:#a855f7">9<span style="font-size:24px">.99</span></span>
-            <p class="per">por mes, facturado mensualmente</p>
-          </div>
-          <div class="pyr">
-            <span class="cur">€</span><span class="amount" style="color:#a855f7">7<span style="font-size:24px">.99</span></span>
-            <p class="per">por mes · <strong style="color:#16a34a">€95.88/año</strong> (ahorra €24)</p>
-          </div>
-        </div>
-        <div class="pdiv"></div>
-        <ul class="pfl">
-          <li><span class="pchk y">✓</span><span class="pl">Todo lo del plan Pro</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Badge 👑 Patron animado en el perfil</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Tu nombre en los créditos del proyecto</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Voto en nuevas características del servidor</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Acceso a canales privados del equipo</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Mención en changelogs y actualizaciones</span></li>
-          <li><span class="pchk y">✓</span><span class="pl">Apoyas directamente el servidor ❤️</span></li>
-        </ul>
-        <button class="pcta" style="border-color:#a855f7;color:#a855f7;" onclick="alert('Próximamente — contacta por Discord')">Ser Patron</button>
-        <p class="pnote">Gracias por apoyar el proyecto</p>
-      </div>
-
     </div><!-- /pgrid -->
-
-    <!-- Tabla comparativa -->
-    <div class="ctbl-wrap">
-      <h3>Comparativa de planes</h3>
-      <table class="ctbl">
-        <thead>
-          <tr>
-            <th>Característica</th>
-            <th style="color:var(--blu)">⭐ Free</th>
-            <th style="color:var(--red)">💎 Pro</th>
-            <th style="color:#a855f7">👑 Patron</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Acceso online al emulador</td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Amigos ilimitados</td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Notificaciones en tiempo real</td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Todos los juegos compatibles</td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Estadísticas de partidas</td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Badge en el perfil</td><td>⭐ Free</td><td>💎 Pro</td><td>👑 Patron</td></tr>
-          <tr><td>Acceso anticipado a betas</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Color de nombre personalizado</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Canal VIP en Discord</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Nombre en Supporters</td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Nombre en créditos del proyecto</td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Voto en nuevas características</td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Canales privados del equipo</td><td><span class="cx">✗</span></td><td><span class="cx">✗</span></td><td><span class="ck">✓</span></td></tr>
-          <tr><td>Soporte</td><td>Comunidad</td><td>Email prioritario</td><td>Equipo directo</td></tr>
-          <tr><td><strong>Precio mensual</strong></td><td><strong style="color:var(--blu)">Gratis</strong></td><td><strong style="color:var(--red)">€4.99/mes</strong></td><td><strong style="color:#a855f7">€9.99/mes</strong></td></tr>
-        </tbody>
-      </table>
-    </div>
 
     <!-- FAQ -->
     <div class="pfaq">
       <h3>Preguntas frecuentes</h3>
       <div class="fqg">
-        <div class="fqi"><h4>¿El plan Free incluye todo el online?</h4><p>Sí. El plan Free tiene acceso completo al emulador online: amigos ilimitados, todos los juegos, notificaciones y estadísticas. Sin restricciones de juego.</p></div>
-        <div class="fqi"><h4>¿Qué diferencia al Pro del Free?</h4><p>El Pro añade extras exclusivos que no afectan al juego: badge Pro, acceso a betas, color de nombre personalizado, canal VIP en Discord y soporte prioritario.</p></div>
-        <div class="fqi"><h4>¿Cómo cancelo mi suscripción?</h4><p>Puedes cancelar en cualquier momento desde tu panel de usuario. Seguirás teniendo acceso hasta el final del período facturado.</p></div>
-        <div class="fqi"><h4>¿Cómo se actualiza mi badge en el emulador?</h4><p>El badge se actualiza al reconectar. Si lo cambiaste hace poco, cierra sesión en NexoEmu y vuelve a conectar.</p></div>
-        <div class="fqi"><h4>¿Qué métodos de pago aceptáis?</h4><p>Próximamente tarjeta de crédito/débito y PayPal. El sistema de pagos está en desarrollo activo.</p></div>
-        <div class="fqi"><h4>¿Qué es el plan Patron?</h4><p>Es para quienes quieren apoyar directamente el proyecto. Obtienes el badge 👑, nombre en créditos, voto en nuevas funciones y acceso a canales privados del equipo.</p></div>
+        <div class="fqi"><h4>¿Tengo que pagar en algún momento?</h4><p>No. NeXo Network es y será siempre gratis. No hay planes de pago, suscripciones ni versiones "premium" — todo el mundo tiene acceso a lo mismo.</p></div>
+        <div class="fqi"><h4>¿Incluye todo el online?</h4><p>Sí. Acceso completo al emulador online: amigos ilimitados, todos los juegos compatibles, notificaciones y estadísticas. Sin restricciones.</p></div>
+        <div class="fqi"><h4>¿Por qué es gratis?</h4><p>Es un proyecto educativo sin ánimo de lucro, no afiliado con Nintendo. No buscamos monetizarlo.</p></div>
       </div>
     </div>
 
@@ -759,7 +651,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdcico red">🔐</div>
           <div><div class="rdctitle">Autenticación & Cuentas</div><div class="rdcsub">Login, tokens, Nintendo auth</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar red" style="width:86%"></div></div>
+        <div class="mbar-wrap"><div class="mbar red" style="width:83%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Login con usuario y contraseña</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Registro de cuenta nueva</span></div>
@@ -768,7 +660,6 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">aauth — application_auth_token (Switch)</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">BAAS Login — token de usuario NPLN</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Nintendo Accounts /connect/1.0.0/api/token</span></div>
-          <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Planes de suscripción (Free/Pro/Patron)</span></div>
           <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">OAuth2 completo para Nintendo accounts</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Verificación de email</span></div>
         </div>
@@ -839,7 +730,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdcico yel">🌐</div>
           <div><div class="rdctitle">Infraestructura</div><div class="rdcsub">Servidor, SSL, base de datos</div></div>
         </div>
-        <div class="mbar-wrap"><div class="mbar yel" style="width:55%"></div></div>
+        <div class="mbar-wrap"><div class="mbar yel" style="width:63%"></div></div>
         <div class="rditems">
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Servidor Node.js + Fastify</span></div>
           <div class="rdi"><span class="rdibadge done">✓</span><span class="rdilabel">Base de datos MySQL</span></div>
@@ -849,7 +740,6 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
           <div class="rdi"><span class="rdibadge wip">⚡</span><span class="rdilabel">Generación automática de certificados SSL</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Panel de administración web</span></div>
           <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Monitoreo / métricas del servidor</span></div>
-          <div class="rdi"><span class="rdibadge todo">·</span><span class="rdilabel dim">Sistema de pagos (Stripe/PayPal)</span></div>
         </div>
       </div>
 
@@ -938,7 +828,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
     <div class="ft">
       <div class="fb"><h4>NeXoNetwork</h4><p style="font-size:12px;margin-top:.4rem;line-height:1.6;">Infraestructura open source para el ecosistema NeXo. Proyecto educativo, no afiliado con Nintendo.</p></div>
       <div class="fl"><h4>Proyecto</h4><a href="https://github.com/Jous99/NeXo-Server" target="_blank">NeXo-Server</a><a href="https://github.com/Jous99/NeXo-Emu" target="_blank">NeXo-Emu</a><a href="https://forgejo.joustech.space/NeXo/NeXoNetwork-Server" target="_blank">Forgejo</a></div>
-      <div class="fl"><h4>Portal</h4><a href="#" onclick="openApp();return false;">Crear cuenta</a><a href="#" onclick="openApp();return false;">Iniciar sesión</a><a href="#plans">Planes</a><a href="#" onclick="openApp();return false;">Estado servidores</a></div>
+      <div class="fl"><h4>Portal</h4><a href="#" onclick="openApp();return false;">Crear cuenta</a><a href="#" onclick="openApp();return false;">Iniciar sesión</a><a href="#plans">Gratis para siempre</a><a href="#" onclick="openApp();return false;">Estado servidores</a></div>
     </div>
     <div class="fb2"><p style="font-size:11px;">© 2026 NeXo Team · GPL-2.0 · Proyecto educativo · No afiliado con Nintendo</p><div style="display:flex;gap:10px;"><a href="https://github.com/Jous99/NeXo-Server" target="_blank" style="color:rgba(255,255,255,.35);font-size:11px;font-weight:700;text-decoration:none;">GitHub</a><a href="https://forgejo.joustech.space" target="_blank" style="color:rgba(255,255,255,.35);font-size:11px;font-weight:700;text-decoration:none;">Forgejo</a></div></div>
   </div>
@@ -1991,14 +1881,6 @@ function connectChatWs() {
     chatWs.onclose  = () => { chatWs = null; if (AT) setTimeout(connectChatWs, 5000); };
     chatWs.onerror  = () => {};
   } catch (_) {}
-}
-
-// ─── PLANES TOGGLE ────────────────────────────────────────────────────────────
-let pBillYearly = false;
-function togglePBill() {
-  pBillYearly = !pBillYearly;
-  document.getElementById('ptog').classList.toggle('on', pBillYearly);
-  document.getElementById('pgrid').classList.toggle('yearly', pBillYearly);
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
