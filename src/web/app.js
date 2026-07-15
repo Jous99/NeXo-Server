@@ -827,10 +827,10 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
   <div class="fi2">
     <div class="ft">
       <div class="fb"><h4>NeXoNetwork</h4><p style="font-size:12px;margin-top:.4rem;line-height:1.6;">Infraestructura open source para el ecosistema NeXo. Proyecto educativo, no afiliado con Nintendo.</p></div>
-      <div class="fl"><h4>Proyecto</h4><a href="https://github.com/Jous99/NeXo-Server" target="_blank">NeXo-Server</a><a href="https://github.com/Jous99/NeXo-Emu" target="_blank">NeXo-Emu</a><a href="https://forgejo.joustech.space/NeXo/NeXoNetwork-Server" target="_blank">Forgejo</a></div>
+      <div class="fl"><h4>Proyecto</h4><a href="https://github.com/Jous99/NeXo-Server" target="_blank">NeXo-Server</a><a href="https://github.com/Jous99/NeXo-Emu" target="_blank">NeXo-Emu</a><a href="https://git.joustech.space/NeXo/Nexo-Server" target="_blank">Forgejo</a></div>
       <div class="fl"><h4>Portal</h4><a href="#" onclick="openApp();return false;">Crear cuenta</a><a href="#" onclick="openApp();return false;">Iniciar sesión</a><a href="#plans">Gratis para siempre</a><a href="#" onclick="openApp();return false;">Estado servidores</a></div>
     </div>
-    <div class="fb2"><p style="font-size:11px;">© 2026 NeXo Team · GPL-2.0 · Proyecto educativo · No afiliado con Nintendo</p><div style="display:flex;gap:10px;"><a href="https://github.com/Jous99/NeXo-Server" target="_blank" style="color:rgba(255,255,255,.35);font-size:11px;font-weight:700;text-decoration:none;">GitHub</a><a href="https://forgejo.joustech.space" target="_blank" style="color:rgba(255,255,255,.35);font-size:11px;font-weight:700;text-decoration:none;">Forgejo</a></div></div>
+    <div class="fb2"><p style="font-size:11px;">© 2026 NeXo Team · GPL-2.0 · Proyecto educativo · No afiliado con Nintendo</p><div style="display:flex;gap:10px;"><a href="https://github.com/Jous99/NeXo-Server" target="_blank" style="color:rgba(255,255,255,.35);font-size:11px;font-weight:700;text-decoration:none;">GitHub</a><a href="https://git.joustech.space/NeXo" target="_blank" style="color:rgba(255,255,255,.35);font-size:11px;font-weight:700;text-decoration:none;">Forgejo</a></div></div>
   </div>
 </footer>
 
@@ -1144,7 +1144,7 @@ async function loadPublicStatus() {
 
   const up = results.filter(r => r.ok).length;
   document.getElementById('pub-lcheck').textContent =
-    \`\${up}/\${SVCS.length} servicios activos · Verificado: \${new Date().toLocaleTimeString('es-ES')}\`;
+    \`\${up}/\${SVCS.length} servicios activos · Verificado: \${new Date().toLocaleTimeString('es-ES')} · auto\`;
 
   // Actualizar badge del hero
   const badge = document.getElementById('hero-badge');
@@ -1161,8 +1161,16 @@ async function loadPublicStatus() {
   }
 }
 
-// Cargar estado público al arrancar (sin esperar login)
+// Cargar estado público al arrancar (sin esperar login) y refrescar solo
+// mientras la pestaña del navegador esté visible (evita gastar red en segundo plano).
+const PUBLIC_STATUS_POLL_MS = 15000;
 loadPublicStatus();
+let publicStatusTimer = setInterval(() => {
+  if (document.visibilityState === 'visible') loadPublicStatus();
+}, PUBLIC_STATUS_POLL_MS);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') loadPublicStatus();
+});
 
 function saveApi() {
   API = document.getElementById('api-url').value.trim().replace(/\\/$/, '');
@@ -1308,13 +1316,22 @@ function enterDash() {
   showP('status');
   loadProf();
 }
+// Los servicios se refrescan solos mientras la pestaña "Estado" está abierta.
+// Se para el intervalo al salir de la pestaña para no hacer peticiones de fondo
+// sin necesidad.
+const STATUS_POLL_MS = 10000;
+let statusPollTimer = null;
+
 function showP(p) {
   document.querySelectorAll('.apg').forEach(x => x.classList.remove('active'));
   document.querySelectorAll('.alink').forEach(b => b.classList.remove('active'));
   document.getElementById('apg-' + p)?.classList.add('active');
   const m = { status: 0, profile: 1, friends: 2, chat: 3, admin: 4, sistema: 5 };
   document.querySelectorAll('.alink')[m[p]]?.classList.add('active');
-  if (p === 'status')  loadStatus();
+
+  if (statusPollTimer) { clearInterval(statusPollTimer); statusPollTimer = null; }
+
+  if (p === 'status')  { loadStatus(); statusPollTimer = setInterval(loadStatus, STATUS_POLL_MS); }
   if (p === 'friends') loadFriends();
   if (p === 'chat')    initChat();
   if (p === 'admin')   loadAdmin();
@@ -1375,7 +1392,8 @@ async function loadStatus() {
   const gl = Date.now() - t0;
   document.getElementById('s-up').textContent  = up + '/' + SVCS.length;
   document.getElementById('s-lat').textContent = Math.round(gl / SVCS.length);
-  document.getElementById('lcheck').textContent = 'Verificado: ' + new Date().toLocaleTimeString('es-ES');
+  document.getElementById('lcheck').textContent =
+    'Verificado: ' + new Date().toLocaleTimeString('es-ES') + ' · se actualiza cada ' + (STATUS_POLL_MS / 1000) + 's';
   // Actualizar el texto "de N" dinámicamente
   const sTotal = document.getElementById('s-total');
   if (sTotal) sTotal.textContent = 'de ' + SVCS.length;

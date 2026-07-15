@@ -48,4 +48,29 @@ else
     pm2 start src/server.js --name nexo-server
 fi
 
+# 5. Compilar y reiniciar nex-server (Go) — ver nex-server/README.md.
+# Defensivo: no todos los despliegues tienen Go instalado ni han configurado
+# NEXO_MK8_* todavía, así que esto nunca debe romper el resto del update.
+if [ -d "$PROJECT_DIR/nex-server" ]; then
+    if command -v go > /dev/null 2>&1; then
+        log "Compilando nex-server (Go)..."
+        if (cd "$PROJECT_DIR/nex-server" && go build -o mk8-auth ./cmd/mk8-auth); then
+            log "nex-server compilado correctamente."
+
+            if pm2 describe nexo-mk8-auth > /dev/null 2>&1; then
+                pm2 restart nexo-mk8-auth
+                log "nexo-mk8-auth reiniciado correctamente."
+            else
+                log "nexo-mk8-auth no está registrado en PM2 — no se arranca automáticamente"
+                log "(necesita NEXO_MK8_ACCESS_KEY / NEXO_MK8_SECURE_PASSWORD configurados primero,"
+                log "ver docs/nex-go-deploy.md). El binario ya quedó compilado y listo para cuando lo arranques."
+            fi
+        else
+            log "ERROR: falló la compilación de nex-server — se deja el binario anterior tal cual."
+        fi
+    else
+        log "ADVERTENCIA: Go no está instalado — saltando build de nex-server (ver docs/nex-go-deploy.md)."
+    fi
+fi
+
 log "=== Actualización completada ==="

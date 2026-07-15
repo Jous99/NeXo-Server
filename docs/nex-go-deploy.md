@@ -72,13 +72,19 @@ No hace falta tocar la config de Nginx ni los certs TLS existentes
 
 ## 6. Actualizar (`scripts/update.sh`)
 
-`scripts/update.sh` hoy es 100% Node (`npm install` + `pm2 restart`). Hasta
-que se integre el build de Go ahí, actualiza `mk8-auth` a mano tras cada
-`git pull`:
+`scripts/update.sh` compila y reinicia `nex-server` automáticamente tras el
+`git pull`, además del proceso Node — no hace falta hacerlo a mano. Es
+defensivo: si Go no está instalado en el VPS, salta ese paso con un aviso en
+vez de romper el resto de la actualización; y si el proceso `nexo-mk8-auth`
+todavía no está registrado en PM2 (primera vez, antes de configurar
+`NEXO_MK8_*`), deja el binario compilado y listo pero no lo arranca solo —
+arráncalo tú la primera vez, una vez tengas la config:
 
 ```bash
-cd nex-server && go build -o mk8-auth ./cmd/mk8-auth && pm2 restart nexo-mk8-auth
+cd nex-server && pm2 start ./mk8-auth --name nexo-mk8-auth && pm2 save
 ```
+
+A partir de ahí, cada `scripts/update.sh` ya lo recompila y reinicia solo.
 
 ## 7. Antes de probar contra una Switch real
 

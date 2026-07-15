@@ -50,7 +50,7 @@ bash install.sh
 ```bash
 # Desde SSH o la terminal de aaPanel
 cd /www/wwwroot
-git clone https://forgejo.joustech.space/NeXo/NeXoNetwork-Server nexo-server
+git clone https://git.joustech.space/NeXo/Nexo-Server.git nexo-server
 cd nexo-server
 ```
 
@@ -81,7 +81,7 @@ JWT_ACCESS_EXPIRES=15m
 JWT_REFRESH_EXPIRES=30d
 
 # Para el panel admin de auto-update
-FORGEJO_REPO_URL=https://forgejo.joustech.space/NeXo/NeXoNetwork-Server.git
+FORGEJO_REPO_URL=https://git.joustech.space/NeXo/Nexo-Server.git
 FORGEJO_TOKEN=tu_token_de_acceso_forgejo
 ADMIN_UPDATE_SECRET=otra_clave_secreta_para_el_webhook
 ```

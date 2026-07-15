@@ -50,6 +50,11 @@ go build -o mk8-auth ./cmd/mk8-auth
 
 Requiere Go 1.23+.
 
+> En desarrollo local no hace falta hacer esto a mano: `npm run dev` (raíz del
+> repo) ya compila y arranca `mk8-auth` automáticamente si detecta Go
+> instalado y `NEXO_MK8_ACCESS_KEY`/`NEXO_MK8_SECURE_PASSWORD` configurados en
+> `.env` — ver `scripts/dev-all.js`. Esta sección es para build manual/producción.
+
 ## Configuración
 
 Lee el mismo `.env` que Node, un nivel arriba (`../.env`) — variables nuevas

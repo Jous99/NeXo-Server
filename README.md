@@ -116,15 +116,7 @@ npm run dev
 
 Esto levanta el servidor Node completo (web, auth, HTTP de cada juego, y el NEX/TCP casero que ya usa el emulador) en `http://localhost:3000`.
 
-Si además quieres levantar el servidor de auth NEX real en Go — necesario para Mario Kart 8 Deluxe en hardware real, **no** para el emulador:
-
-```bash
-cd nex-server
-go build -o mk8-auth ./cmd/mk8-auth
-./mk8-auth
-```
-
-Requiere completar las variables `NEXO_MK8_*` en tu `.env` (ver [.env.example](./.env.example)). Antes de probar contra una Switch real, lee [nex-server/README.md](./nex-server/README.md) — documenta qué valores todavía no están confirmados.
+`npm run dev` también compila y arranca `nex-server/mk8-auth` (Go) automáticamente si tienes Go instalado y las variables `NEXO_MK8_*` completadas en tu `.env` (ver [.env.example](./.env.example)) — necesario para Mario Kart 8 Deluxe en hardware real, **no** para el emulador. Si falta cualquiera de las dos cosas, sigue solo con Node sin romper nada. Antes de probar contra una Switch real, lee [nex-server/README.md](./nex-server/README.md) — documenta qué valores todavía no están confirmados.
 
 ---
 
