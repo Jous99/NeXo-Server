@@ -36,6 +36,7 @@ TU_IP_AQUI dauth-lp1.ndas.srv.nintendo.net
 TU_IP_AQUI aauth-lp1.ndas.srv.nintendo.net
 TU_IP_AQUI accounts.nintendo.com
 TU_IP_AQUI api.accounts.nintendo.com
+TU_IP_AQUI cdn.accounts.nintendo.com
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  BLOQUE 2: BAAS (token de usuario por juego)                             ║
@@ -50,6 +51,8 @@ TU_IP_AQUI e1c218b5657e4e03b6e0-sb.baas.nintendo.com    # Pokémon Scarlet/Viole
 TU_IP_AQUI 7fbcac5a1e52b070d5a2-sb.baas.nintendo.com    # Pokémon Sword/Shield
 TU_IP_AQUI 9dc9e6e4765c77a5d4d1-sb.baas.nintendo.com    # ARMS
 TU_IP_AQUI f4a0f589eca62d8e8f79-sb.baas.nintendo.com    # Smash Bros Ultimate
+TU_IP_AQUI ead00c7dc4b91df4-sb.baas.nintendo.com
+TU_IP_AQUI 7d3231955ef40ca3-sb.baas.nintendo.com
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  BLOQUE 3: TELEMETRÍA Y REPORTES (anti-ban crítico)                      ║
@@ -95,6 +98,7 @@ TU_IP_AQUI api-lp1.pctl.srv.nintendo.net
 TU_IP_AQUI ctest.cdn.nintendo.net
 TU_IP_AQUI nasc.nintendowifi.net
 TU_IP_AQUI pptest.nintendo.net
+TU_IP_AQUI conntest.nintendowifi.net
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  BLOQUE 7: AMIGOS Y PRESENCIA                                            ║
@@ -107,11 +111,13 @@ TU_IP_AQUI friends-lp1.s.n.srv.nintendo.net
 # ╚══════════════════════════════════════════════════════════════════════════╝
 TU_IP_AQUI bcat-list-lp1.cdn.nintendo.net
 TU_IP_AQUI bcat-dl-lp1.cdn.nintendo.net
+TU_IP_AQUI bcat-list-lp1-sb.cdn.nintendo.net
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  BLOQUE 9: SERVIDORES DE JUEGOS                                          ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
 TU_IP_AQUI g9s300c4msl.lp1.s.n.srv.nintendo.net
+TU_IP_AQUI g9s300c4msl-sb.lp1.s.n.srv.nintendo.net
 TU_IP_AQUI api.lp1.npln.srv.nintendo.net
 
 # ══════════════════════════════════════════════════════════════════════════════
