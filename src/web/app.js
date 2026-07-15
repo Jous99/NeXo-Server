@@ -1180,7 +1180,11 @@ function saveApi() {
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 async function apiFetch(path, opts = {}) {
-  const h = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  // Solo mandamos Content-Type: application/json cuando hay body — Fastify
+  // rechaza con 400 "Body cannot be empty..." si el header dice JSON pero
+  // el body viene vacío (afectaba a /admin/system/update, /auth/logout-all
+  // y /admin/users/:id/unban, que hacen POST sin body).
+  const h = { ...(opts.body ? { 'Content-Type': 'application/json' } : {}), ...(opts.headers || {}) };
   if (AT) h['Authorization'] = 'Bearer ' + AT;
   try {
     const r = await fetch(API + path, { ...opts, headers: h });
@@ -1686,7 +1690,7 @@ async function doUpdate() {
   const msg = document.getElementById('update-msg');
   btn.disabled = true; btn.textContent = 'Actualizando...';
   msg.style.display = 'none';
-  const { ok } = await apiFetch('/admin/system/update', { method: 'POST' });
+  const { ok, status, data } = await apiFetch('/admin/system/update', { method: 'POST' });
   if (ok) {
     btn.classList.add('success'); btn.textContent = '✓ Actualización iniciada';
     msg.style.display = 'block'; msg.style.color = '#15803d';
@@ -1695,7 +1699,8 @@ async function doUpdate() {
   } else {
     btn.disabled = false; btn.textContent = 'Actualizar servidor';
     msg.style.display = 'block'; msg.style.color = 'var(--rd)';
-    msg.textContent = 'Error al iniciar la actualización.';
+    const detail = data?.error || ('HTTP ' + status);
+    msg.textContent = 'Error al iniciar la actualización: ' + detail;
   }
 }
 

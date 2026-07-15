@@ -79,12 +79,13 @@ DB_NAME=nexo_network
 JWT_SECRET=GENERA_UNO_LARGO_Y_ALEATORIO_MINIMO_64_CHARS
 JWT_ACCESS_EXPIRES=15m
 JWT_REFRESH_EXPIRES=30d
-
-# Para el panel admin de auto-update
-FORGEJO_REPO_URL=https://git.joustech.space/NeXo/Nexo-Server.git
-FORGEJO_TOKEN=tu_token_de_acceso_forgejo
-ADMIN_UPDATE_SECRET=otra_clave_secreta_para_el_webhook
 ```
+
+El panel admin (botón "Actualizar") no necesita ninguna variable extra — usa
+el remoto que ya tenga configurado `git` en este checkout, y solo exige que
+tu cuenta tenga `is_admin=1`. La primera cuenta admin se bootstrapea a mano
+en MySQL (no hay otra forma — promoverse a admin vía la API ya requiere ser
+admin): `UPDATE users SET is_admin = TRUE WHERE username = 'tu_usuario';`
 
 ---
 
