@@ -213,16 +213,26 @@ async function changePassword(nexoId, { currentPassword, newPassword }) {
 //  Friends
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function sendFriendRequest(requesterNexoId, addresseeNexoId) {
-    if (requesterNexoId === addresseeNexoId) {
-        throw Object.assign(new Error('Cannot add yourself'), { code: 'BAD_REQUEST' });
+async function sendFriendRequest(requesterNexoId, addresseeInput) {
+    // El campo acepta tanto el NexoID (NXID-XXXX-XXXX-XXXX) como el nombre
+    // de usuario — lo natural es escribir el username del amigo, no el ID largo.
+    const target = String(addresseeInput || '').trim();
+    if (!target) {
+        throw Object.assign(new Error('Introduce un usuario o NexoID'), { code: 'BAD_REQUEST' });
     }
 
     const [req] = await db.query('SELECT id FROM users WHERE nexo_id = ?', [requesterNexoId]);
-    const [adr] = await db.query('SELECT id FROM users WHERE nexo_id = ?', [addresseeNexoId]);
+    const [adr] = await db.query(
+        'SELECT id, nexo_id FROM users WHERE nexo_id = ? OR username = ? LIMIT 1',
+        [target, target]
+    );
 
     if (!req.length || !adr.length) {
-        throw Object.assign(new Error('User not found'), { code: 'NOT_FOUND' });
+        throw Object.assign(new Error('Usuario no encontrado'), { code: 'NOT_FOUND' });
+    }
+
+    if (adr[0].nexo_id === requesterNexoId) {
+        throw Object.assign(new Error('No puedes añadirte a ti mismo'), { code: 'BAD_REQUEST' });
     }
 
     const requesterId = req[0].id;

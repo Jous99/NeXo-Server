@@ -423,6 +423,41 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
 .chat-send{padding:.55rem 1.1rem;background:var(--red);color:white;border:none;border-radius:var(--rmd);font-family:var(--font);font-weight:800;font-size:13px;cursor:pointer;transition:background .15s;}
 .chat-send:hover{background:var(--rd);}
 .chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--tm);font-size:14px;font-weight:700;gap:.6rem;}
+
+/* Botón "volver" del chat — solo visible en móvil (ver media query) */
+.chat-back{display:none;align-items:center;justify-content:center;width:30px;height:30px;margin-right:4px;border:none;background:var(--gb);border-radius:8px;cursor:pointer;flex-shrink:0;padding:0;}
+
+/* ══════════════════ MÓVIL ══════════════════ */
+@media(max-width:600px){
+  /* Landing: oculta los enlaces de sección (son solo anclas), deja logo + Portal */
+  .nav{padding:0 1rem;}
+  .nav-links{display:none;}
+
+  /* Dashboard nav: se envuelve; las pestañas pasan a una fila propia scrollable */
+  .anav{height:auto;min-height:56px;flex-wrap:wrap;padding:.5rem 1rem;gap:8px;}
+  .anav > .nl{order:1;}
+  .anav > div:last-child{order:2;margin-left:auto;}
+  .alinks{order:3;width:100%;overflow-x:auto;flex-wrap:nowrap;padding-top:8px;border-top:1px solid var(--gb);-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .alinks::-webkit-scrollbar{display:none;}
+  .alink{flex-shrink:0;padding:9px 15px;font-size:13px;}
+
+  /* Menos padding en el contenido para aprovechar la pantalla */
+  .acnt{padding:1rem;}
+
+  /* Chat: una sola columna estilo app (lista ↔ conversación) */
+  .chat-wrap{height:calc(100dvh - 155px);border-radius:var(--rmd);}
+  .chat-sidebar{width:100%;min-width:0;border-right:none;}
+  .chat-main{display:none;}
+  .chat-wrap.room-open .chat-sidebar{display:none;}
+  .chat-wrap.room-open .chat-main{display:flex;}
+  .chat-back{display:inline-flex;}
+  .chat-msg{max-width:85%;}
+  .chat-inp,.chat-send{font-size:16px;}  /* 16px evita el zoom automático de iOS al enfocar */
+
+  /* Barra de amigos: input + botón en columna para que quepan */
+  .far{flex-direction:column;align-items:stretch;gap:8px;}
+  .far .fi4{width:100%;}
+}
 </style>
 </head>
 <body>
@@ -788,7 +823,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
       <div class="jcs"></div>
       <div class="fbar">
         <div class="ph" style="margin:0;">Mis <span>Amigos</span></div>
-        <div class="far"><input class="fi4" type="text" id="fadd" placeholder="NexoID del amigo..."><button class="bsv" onclick="addFriend()">+ Añadir</button></div>
+        <div class="far"><input class="fi4" type="text" id="fadd" placeholder="Usuario o NexoID del amigo..."><button class="bsv" onclick="addFriend()">+ Añadir</button></div>
       </div>
       <div id="psec" style="margin-bottom:1.25rem;display:none;">
         <div style="font-size:11px;font-weight:800;color:var(--tm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.65rem;">Solicitudes pendientes</div>
@@ -1577,6 +1612,9 @@ async function openRoom(room_id, other_id) {
   if (!main) return;
   main.innerHTML = \`
     <div class="chat-hdr">
+      <button class="chat-back" onclick="chatBackToList()" aria-label="Volver">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--tx)"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+      </button>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--red)"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
       \${escHtml(name)}
     </div>
@@ -1586,8 +1624,17 @@ async function openRoom(room_id, other_id) {
              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend();}">
       <button class="chat-send" onclick="chatSend()">Enviar</button>
     </div>\`;
+  // Modo móvil: al abrir una conversación se oculta la lista y se muestra el chat.
+  document.querySelector('.chat-wrap')?.classList.add('room-open');
   renderChatRooms();
   await loadRoomMessages(room_id);
+}
+
+// Volver de una conversación a la lista (solo relevante en móvil).
+function chatBackToList() {
+  document.querySelector('.chat-wrap')?.classList.remove('room-open');
+  chatCurrentRoom = null;
+  renderChatRooms();
 }
 
 async function loadRoomMessages(room_id) {
