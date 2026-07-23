@@ -2,6 +2,7 @@
 
 const bcrypt   = require('bcryptjs');
 const db       = require('../db');
+const settings = require('./settings');
 const { generateNexoId, generateRefreshToken, hashToken } = require('../utils');
 
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12');
@@ -26,6 +27,13 @@ function refreshExpiresAt() {
  * Returns { nexo_id, nickname }
  */
 async function register({ username, email, password, nickname, lang, region }) {
+    // Registros abiertos/cerrados (controlado desde el panel admin)
+    if (!(await settings.registrationsEnabled())) {
+        const err = new Error(await settings.registrationsClosedMessage());
+        err.code  = 'FORBIDDEN';
+        throw err;
+    }
+
     // Check uniqueness
     const [existing] = await db.query(
         'SELECT id FROM users WHERE username = ? OR email = ?',

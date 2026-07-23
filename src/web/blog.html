@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeXo — Blog</title>
+<style>
+  :root{ --bg:#0a0e1a; --panel:#111726; --line:#1e2740; --txt:#e6ecf5; --mut:#8a97b1; --accent:#00a8e8; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--txt); font-family:system-ui,Segoe UI,Roboto,sans-serif; }
+  a{ color:var(--accent); text-decoration:none; }
+  .wrap{ max-width:720px; margin:0 auto; padding:40px 24px; }
+  h1{ font-size:28px; margin:0 0 6px; }
+  .sub{ color:var(--mut); margin:0 0 28px; }
+  .post{ display:block; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-bottom:12px; }
+  .post b{ font-size:17px; color:var(--txt); }
+  .post .meta{ color:var(--mut); font-size:13px; margin-top:4px; }
+  .post .sum{ color:var(--mut); font-size:14px; margin-top:8px; }
+  .empty{ color:var(--mut); }
+  .back{ display:inline-block; margin-bottom:20px; font-size:14px; }
+  article h1{ margin-bottom:4px; }
+  article .body{ margin-top:20px; line-height:1.65; white-space:pre-wrap; font-size:15px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/">← Volver</a>
+  <div id="content"><p class="empty">Cargando…</p></div>
+</div>
+<script>
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function fmt(d){ try{ return new Date(d).toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'}); }catch(e){ return ''; } }
+
+function getParam(name){ return new URLSearchParams(location.search).get(name); }
+
+async function loadList(){
+  const res = await fetch('/api/content/blog');
+  const j = await res.json();
+  const posts = j.data || [];
+  const el = document.getElementById('content');
+  let html = '<h1>Blog</h1><p class="sub">Novedades y anuncios de NeXo Network.</p>';
+  if(!posts.length){ html += '<p class="empty">Todavía no hay entradas.</p>'; el.innerHTML = html; return; }
+  html += posts.map(p => `
+    <a class="post" href="/blog?post=${encodeURIComponent(p.slug)}">
+      <b>${esc(p.title)}</b>
+      <div class="meta">${fmt(p.created_at)}${p.author ? ' · ' + esc(p.author) : ''}</div>
+      ${p.summary ? `<div class="sum">${esc(p.summary)}</div>` : ''}
+    </a>`).join('');
+  el.innerHTML = html;
+}
+
+async function loadPost(slug){
+  const el = document.getElementById('content');
+  try{
+    const res = await fetch('/api/content/blog/' + encodeURIComponent(slug));
+    if(!res.ok){ el.innerHTML = '<p class="empty">Post no encontrado.</p><p><a href="/blog">← Todos los posts</a></p>'; return; }
+    const j = await res.json();
+    const p = j.data;
+    el.innerHTML = `
+      <p><a href="/blog">← Todos los posts</a></p>
+      <article>
+        <h1>${esc(p.title)}</h1>
+        <div class="meta" style="color:var(--mut);font-size:13px;">${fmt(p.created_at)}${p.author ? ' · ' + esc(p.author) : ''}</div>
+        <div class="body">${esc(p.body)}</div>
+      </article>`;
+  }catch(e){ el.innerHTML = '<p class="empty">No se pudo cargar el post.</p>'; }
+}
+
+const slug = getParam('post');
+if(slug) loadPost(slug); else loadList();
+</script>
+</body>
+</html>

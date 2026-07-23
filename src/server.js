@@ -32,6 +32,9 @@ const bcastRoutes        = require('./modules/raptor/bcat-api');
 const switchFriendsApi   = require('./modules/raptor/switch-friends-api');
 const chatApiRoutes      = require('./modules/raptor/chat-api');
 
+// ── Contenido web (ajustes del sitio, roadmap, blog) ──────────────────────────
+const contentRoutes      = require('./modules/content/routes');
+
 // ── Sistema ───────────────────────────────────────────────────────────────────
 const systemRoutes = require('./routes/system');
 
@@ -52,6 +55,9 @@ const nintendoStubs = require('./modules/nintendo/stubs');
 // ── Web (HTML embebido) ───────────────────────────────────────────────────────
 const webHtml    = require('./web/app');
 const emuHtml    = fs.readFileSync(path.join(__dirname, 'web/nexo-emu.html'), 'utf8');
+const manageHtml  = fs.readFileSync(path.join(__dirname, 'web/admin-panel.html'), 'utf8');
+const roadmapHtml = fs.readFileSync(path.join(__dirname, 'web/roadmap.html'), 'utf8');
+const blogHtml    = fs.readFileSync(path.join(__dirname, 'web/blog.html'), 'utf8');
 
 // ─── Mapa de subdominios → manejador ─────────────────────────────────────────
 // Tu dominio base configurado en .env (ej: "nexonetwork.space")
@@ -181,6 +187,19 @@ async function buildApp() {
         return reply.type('text/html').send(emuHtml);
     });
 
+    // ── Panel de administración de contenido (registros, roadmap, blog) ───────
+    fastify.get('/manage', async (req, reply) => {
+        return reply.type('text/html').send(manageHtml);
+    });
+
+    // ── Páginas públicas de roadmap y blog ────────────────────────────────────
+    fastify.get('/roadmap', async (req, reply) => {
+        return reply.type('text/html').send(roadmapHtml);
+    });
+    fastify.get('/blog', async (req, reply) => {
+        return reply.type('text/html').send(blogHtml);
+    });
+
     // ══════════════════════════════════════════════════════════════════════════
     //  ROUTER POR SUBDOMINIO
     //  El emulador conecta a subdominios diferentes según el servicio.
@@ -276,6 +295,9 @@ async function buildApp() {
 
     // chat-lp1.nexonetwork.space — Mensajería de texto entre usuarios del emulador
     fastify.register(chatApiRoutes, { prefix: '/' });
+
+    // Contenido web: /api/content/* (público) y /api/content/admin/* (admin)
+    fastify.register(contentRoutes, { prefix: '/' });
 
     // nintendo-stubs — Servicios Nintendo que la Switch llama pero que solo
     // necesitan respuesta básica (error reporting, actualizaciones, eShop básico).

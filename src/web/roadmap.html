@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeXo — Roadmap</title>
+<style>
+  :root{ --bg:#0a0e1a; --panel:#111726; --line:#1e2740; --txt:#e6ecf5; --mut:#8a97b1; --accent:#00a8e8; --ok:#25c274; --warn:#e8a100; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--txt); font-family:system-ui,Segoe UI,Roboto,sans-serif; }
+  a{ color:var(--accent); text-decoration:none; }
+  .wrap{ max-width:760px; margin:0 auto; padding:40px 24px; }
+  h1{ font-size:28px; margin:0 0 6px; }
+  .sub{ color:var(--mut); margin:0 0 28px; }
+  .col{ margin-bottom:26px; }
+  .col h2{ font-size:15px; text-transform:uppercase; letter-spacing:.05em; color:var(--mut); margin:0 0 12px; }
+  .item{ background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--line); border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+  .item.in_progress{ border-left-color:var(--warn); }
+  .item.done{ border-left-color:var(--ok); }
+  .item b{ font-size:15px; }
+  .item p{ margin:6px 0 0; color:var(--mut); font-size:14px; white-space:pre-wrap; }
+  .empty{ color:var(--mut); }
+  .back{ display:inline-block; margin-bottom:20px; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/">← Volver</a>
+  <h1>Roadmap</h1>
+  <p class="sub">Lo que está hecho, en marcha y por venir en NeXo Network.</p>
+  <div id="content"><p class="empty">Cargando…</p></div>
+</div>
+<script>
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+const LABELS = { done:'Hecho', in_progress:'En progreso', planned:'Planeado' };
+const ORDER  = ['in_progress','planned','done'];
+async function load(){
+  try{
+    const res = await fetch('/api/content/roadmap');
+    const j = await res.json();
+    const items = j.data || [];
+    const el = document.getElementById('content');
+    if(!items.length){ el.innerHTML = '<p class="empty">Todavía no hay entradas en el roadmap.</p>'; return; }
+    let html = '';
+    for(const st of ORDER){
+      const group = items.filter(i => i.status === st);
+      if(!group.length) continue;
+      html += `<div class="col"><h2>${LABELS[st]}</h2>` + group.map(i => `
+        <div class="item ${i.status}">
+          <b>${esc(i.title)}</b>
+          ${i.description ? `<p>${esc(i.description)}</p>` : ''}
+        </div>`).join('') + `</div>`;
+    }
+    el.innerHTML = html;
+  }catch(e){
+    document.getElementById('content').innerHTML = '<p class="empty">No se pudo cargar el roadmap.</p>';
+  }
+}
+load();
+</script>
+</body>
+</html>

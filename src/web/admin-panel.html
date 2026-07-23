@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeXo — Panel de contenido</title>
+<style>
+  :root{ --bg:#0a0e1a; --panel:#111726; --panel2:#0d1320; --line:#1e2740; --txt:#e6ecf5; --mut:#8a97b1; --accent:#00a8e8; --ok:#25c274; --warn:#e8a100; --danger:#e5484d; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--txt); font-family:system-ui,Segoe UI,Roboto,sans-serif; }
+  a{ color:var(--accent); }
+  header{ display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--line); background:var(--panel2); position:sticky; top:0; }
+  header h1{ font-size:18px; margin:0; }
+  header .who{ color:var(--mut); font-size:13px; }
+  .wrap{ max-width:900px; margin:0 auto; padding:24px; }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:20px; }
+  .card h2{ margin:0 0 14px; font-size:16px; }
+  label{ display:block; font-size:13px; color:var(--mut); margin:10px 0 4px; }
+  input[type=text], input[type=password], input[type=number], textarea, select{
+    width:100%; padding:10px 12px; background:var(--panel2); border:1px solid var(--line);
+    border-radius:8px; color:var(--txt); font-size:14px; font-family:inherit; }
+  textarea{ min-height:120px; resize:vertical; }
+  button{ cursor:pointer; border:none; border-radius:8px; padding:10px 16px; font-size:14px; font-weight:600; color:#fff; background:var(--accent); }
+  button.ghost{ background:transparent; border:1px solid var(--line); color:var(--txt); }
+  button.danger{ background:var(--danger); }
+  button.sm{ padding:6px 10px; font-size:12px; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .switch{ display:inline-flex; align-items:center; gap:10px; font-size:15px; }
+  .toggle{ position:relative; width:48px; height:26px; background:var(--line); border-radius:20px; transition:.2s; }
+  .toggle.on{ background:var(--ok); }
+  .toggle::after{ content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; background:#fff; border-radius:50%; transition:.2s; }
+  .toggle.on::after{ left:25px; }
+  .item{ border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px; background:var(--panel2); }
+  .item .top{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+  .badge{ font-size:11px; padding:2px 8px; border-radius:20px; border:1px solid var(--line); color:var(--mut); }
+  .badge.planned{ color:var(--mut); }
+  .badge.in_progress{ color:var(--warn); border-color:var(--warn); }
+  .badge.done{ color:var(--ok); border-color:var(--ok); }
+  .badge.draft{ color:var(--warn); border-color:var(--warn); }
+  .muted{ color:var(--mut); font-size:13px; }
+  .msg{ padding:10px 12px; border-radius:8px; font-size:13px; margin:10px 0; display:none; }
+  .msg.ok{ display:block; background:rgba(37,194,116,.12); color:var(--ok); }
+  .msg.err{ display:block; background:rgba(229,72,77,.12); color:var(--danger); }
+  .hidden{ display:none; }
+  .grid2{ display:grid; grid-template-columns:1fr 120px; gap:10px; }
+  .center{ max-width:380px; margin:80px auto; }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ────────────────────────────────────────────────────────────── -->
+<div id="login" class="center">
+  <div class="card">
+    <h2>Panel de contenido NeXo</h2>
+    <p class="muted">Inicia sesión con una cuenta <b>administradora</b>.</p>
+    <div id="loginMsg" class="msg"></div>
+    <label>Usuario / Email / NexoID</label>
+    <input type="text" id="lUser" autocomplete="username">
+    <label>Contraseña</label>
+    <input type="password" id="lPass" autocomplete="current-password">
+    <div class="row" style="margin-top:14px;">
+      <button onclick="doLogin()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PANEL ────────────────────────────────────────────────────────────── -->
+<div id="panel" class="hidden">
+  <header>
+    <h1>NeXo · Panel de contenido</h1>
+    <div class="row">
+      <span class="who" id="who"></span>
+      <button class="ghost sm" onclick="logout()">Salir</button>
+    </div>
+  </header>
+  <div class="wrap">
+
+    <!-- Registros -->
+    <div class="card">
+      <h2>Registros de cuentas</h2>
+      <div id="regMsg" class="msg"></div>
+      <div class="switch">
+        <div id="regToggle" class="toggle" onclick="toggleReg()"></div>
+        <span id="regLabel">—</span>
+      </div>
+      <label>Mensaje cuando están cerrados (lo ve el usuario al intentar registrarse)</label>
+      <textarea id="regMessage" style="min-height:60px;"></textarea>
+      <div class="row" style="margin-top:12px;">
+        <button onclick="saveReg()">Guardar</button>
+      </div>
+    </div>
+
+    <!-- Roadmap -->
+    <div class="card">
+      <h2>Roadmap</h2>
+      <div id="rmMsg" class="msg"></div>
+      <div id="rmList"></div>
+      <hr style="border-color:var(--line); margin:16px 0;">
+      <h3 id="rmFormTitle" style="font-size:14px;">Nueva entrada</h3>
+      <input type="hidden" id="rmId">
+      <label>Título</label>
+      <input type="text" id="rmTitle">
+      <label>Descripción</label>
+      <textarea id="rmDesc" style="min-height:70px;"></textarea>
+      <div class="grid2">
+        <div>
+          <label>Estado</label>
+          <select id="rmStatus">
+            <option value="planned">Planeado</option>
+            <option value="in_progress">En progreso</option>
+            <option value="done">Hecho</option>
+          </select>
+        </div>
+        <div>
+          <label>Orden</label>
+          <input type="number" id="rmOrder" value="0">
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button onclick="saveRoadmap()">Guardar</button>
+        <button class="ghost" onclick="resetRoadmapForm()">Limpiar</button>
+      </div>
+    </div>
+
+    <!-- Blog -->
+    <div class="card">
+      <h2>Blog</h2>
+      <div id="blMsg" class="msg"></div>
+      <div id="blList"></div>
+      <hr style="border-color:var(--line); margin:16px 0;">
+      <h3 id="blFormTitle" style="font-size:14px;">Nueva entrada</h3>
+      <input type="hidden" id="blId">
+      <label>Título</label>
+      <input type="text" id="blTitle">
+      <label>Resumen (opcional, se muestra en la lista)</label>
+      <input type="text" id="blSummary">
+      <label>Contenido</label>
+      <textarea id="blBody"></textarea>
+      <div class="grid2">
+        <div>
+          <label>Autor (opcional)</label>
+          <input type="text" id="blAuthor">
+        </div>
+        <div>
+          <label>Publicado</label>
+          <select id="blPublished">
+            <option value="1">Sí</option>
+            <option value="0">Borrador</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button onclick="saveBlog()">Guardar</button>
+        <button class="ghost" onclick="resetBlogForm()">Limpiar</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let TOKEN = localStorage.getItem('nexo_admin_token') || '';
+let regEnabled = true;
+
+// ── Helpers de API ──────────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  opts.headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+  if (TOKEN) opts.headers['Authorization'] = 'Bearer ' + TOKEN;
+  const res = await fetch(path, opts);
+  let data = {};
+  try { data = await res.json(); } catch (e) {}
+  if (!res.ok) throw new Error(data.error || ('Error ' + res.status));
+  return data;
+}
+function show(id, msg, type){ const e=document.getElementById(id); e.textContent=msg; e.className='msg '+type; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// ── Login ────────────────────────────────────────────────────────────────────
+async function doLogin(){
+  const login = document.getElementById('lUser').value.trim();
+  const password = document.getElementById('lPass').value;
+  if(!login || !password){ show('loginMsg','Rellena usuario y contraseña.','err'); return; }
+  try{
+    const r = await api('/auth/login', { method:'POST', body: JSON.stringify({ login, password }) });
+    TOKEN = r.data.access_token;
+    localStorage.setItem('nexo_admin_token', TOKEN);
+    await enterPanel();
+  }catch(e){ show('loginMsg', e.message, 'err'); }
+}
+function logout(){ TOKEN=''; localStorage.removeItem('nexo_admin_token'); location.reload(); }
+
+async function enterPanel(){
+  // Verifica que el token sea de admin cargando los ajustes
+  try{
+    const s = await api('/api/content/admin/settings');
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('panel').classList.remove('hidden');
+    regEnabled = !!s.data.registrations_enabled;
+    document.getElementById('regMessage').value = s.data.registrations_closed_message || '';
+    paintReg();
+    loadRoadmap();
+    loadBlog();
+  }catch(e){
+    show('loginMsg', e.message.includes('Admin') ? 'Esa cuenta no es administradora.' : e.message, 'err');
+    TOKEN=''; localStorage.removeItem('nexo_admin_token');
+  }
+}
+
+// ── Registros ────────────────────────────────────────────────────────────────
+function paintReg(){
+  document.getElementById('regToggle').className = 'toggle' + (regEnabled ? ' on' : '');
+  document.getElementById('regLabel').textContent = regEnabled ? 'Abiertos' : 'Cerrados';
+}
+function toggleReg(){ regEnabled = !regEnabled; paintReg(); }
+async function saveReg(){
+  try{
+    await api('/api/content/admin/settings', { method:'PUT', body: JSON.stringify({
+      registrations_enabled: regEnabled,
+      registrations_closed_message: document.getElementById('regMessage').value,
+    })});
+    show('regMsg','Guardado.','ok');
+  }catch(e){ show('regMsg', e.message, 'err'); }
+}
+
+// ── Roadmap ──────────────────────────────────────────────────────────────────
+async function loadRoadmap(){
+  try{
+    const r = await api('/api/content/admin/roadmap');
+    const el = document.getElementById('rmList');
+    if(!r.data.length){ el.innerHTML = '<p class="muted">Sin entradas todavía.</p>'; return; }
+    el.innerHTML = r.data.map(it => `
+      <div class="item">
+        <div class="top">
+          <div>
+            <b>${esc(it.title)}</b> <span class="badge ${it.status}">${it.status}</span>
+            <div class="muted">${esc(it.description||'')}</div>
+          </div>
+          <div class="row">
+            <button class="ghost sm" onclick='editRoadmap(${JSON.stringify(it)})'>Editar</button>
+            <button class="danger sm" onclick="delRoadmap(${it.id})">Borrar</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }catch(e){ show('rmMsg', e.message, 'err'); }
+}
+function editRoadmap(it){
+  document.getElementById('rmId').value = it.id;
+  document.getElementById('rmTitle').value = it.title || '';
+  document.getElementById('rmDesc').value = it.description || '';
+  document.getElementById('rmStatus').value = it.status || 'planned';
+  document.getElementById('rmOrder').value = it.sort_order || 0;
+  document.getElementById('rmFormTitle').textContent = 'Editar entrada #' + it.id;
+  window.scrollTo(0, document.body.scrollHeight);
+}
+function resetRoadmapForm(){
+  document.getElementById('rmId').value = '';
+  document.getElementById('rmTitle').value = '';
+  document.getElementById('rmDesc').value = '';
+  document.getElementById('rmStatus').value = 'planned';
+  document.getElementById('rmOrder').value = 0;
+  document.getElementById('rmFormTitle').textContent = 'Nueva entrada';
+}
+async function saveRoadmap(){
+  const id = document.getElementById('rmId').value;
+  const payload = {
+    title: document.getElementById('rmTitle').value,
+    description: document.getElementById('rmDesc').value,
+    status: document.getElementById('rmStatus').value,
+    sort_order: parseInt(document.getElementById('rmOrder').value) || 0,
+  };
+  if(!payload.title.trim()){ show('rmMsg','El título es obligatorio.','err'); return; }
+  try{
+    if(id) await api('/api/content/admin/roadmap/'+id, { method:'PUT', body: JSON.stringify(payload) });
+    else   await api('/api/content/admin/roadmap',      { method:'POST', body: JSON.stringify(payload) });
+    show('rmMsg','Guardado.','ok'); resetRoadmapForm(); loadRoadmap();
+  }catch(e){ show('rmMsg', e.message, 'err'); }
+}
+async function delRoadmap(id){
+  if(!confirm('¿Borrar esta entrada del roadmap?')) return;
+  try{ await api('/api/content/admin/roadmap/'+id, { method:'DELETE' }); loadRoadmap(); }
+  catch(e){ show('rmMsg', e.message, 'err'); }
+}
+
+// ── Blog ─────────────────────────────────────────────────────────────────────
+async function loadBlog(){
+  try{
+    const r = await api('/api/content/admin/blog');
+    const el = document.getElementById('blList');
+    if(!r.data.length){ el.innerHTML = '<p class="muted">Sin entradas todavía.</p>'; return; }
+    el.innerHTML = r.data.map(p => `
+      <div class="item">
+        <div class="top">
+          <div>
+            <b>${esc(p.title)}</b> ${p.published ? '' : '<span class="badge draft">borrador</span>'}
+            <div class="muted">${esc(p.summary||'')} · /blog?post=${esc(p.slug)}</div>
+          </div>
+          <div class="row">
+            <button class="ghost sm" onclick="editBlog(${p.id})">Editar</button>
+            <button class="danger sm" onclick="delBlog(${p.id})">Borrar</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }catch(e){ show('blMsg', e.message, 'err'); }
+}
+async function editBlog(id){
+  try{
+    const r = await api('/api/content/admin/blog/'+id);
+    const p = r.data;
+    document.getElementById('blId').value = p.id;
+    document.getElementById('blTitle').value = p.title || '';
+    document.getElementById('blSummary').value = p.summary || '';
+    document.getElementById('blBody').value = p.body || '';
+    document.getElementById('blAuthor').value = p.author || '';
+    document.getElementById('blPublished').value = p.published ? '1' : '0';
+    document.getElementById('blFormTitle').textContent = 'Editar post #' + p.id;
+    window.scrollTo(0, document.body.scrollHeight);
+  }catch(e){ show('blMsg', e.message, 'err'); }
+}
+function resetBlogForm(){
+  ['blId','blTitle','blSummary','blBody','blAuthor'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('blPublished').value = '1';
+  document.getElementById('blFormTitle').textContent = 'Nueva entrada';
+}
+async function saveBlog(){
+  const id = document.getElementById('blId').value;
+  const payload = {
+    title: document.getElementById('blTitle').value,
+    summary: document.getElementById('blSummary').value,
+    body: document.getElementById('blBody').value,
+    author: document.getElementById('blAuthor').value,
+    published: document.getElementById('blPublished').value === '1',
+  };
+  if(!payload.title.trim() || !payload.body.trim()){ show('blMsg','Título y contenido son obligatorios.','err'); return; }
+  try{
+    if(id) await api('/api/content/admin/blog/'+id, { method:'PUT', body: JSON.stringify(payload) });
+    else   await api('/api/content/admin/blog',      { method:'POST', body: JSON.stringify(payload) });
+    show('blMsg','Guardado.','ok'); resetBlogForm(); loadBlog();
+  }catch(e){ show('blMsg', e.message, 'err'); }
+}
+async function delBlog(id){
+  if(!confirm('¿Borrar este post?')) return;
+  try{ await api('/api/content/admin/blog/'+id, { method:'DELETE' }); loadBlog(); }
+  catch(e){ show('blMsg', e.message, 'err'); }
+}
+
+// Auto-entrar si ya hay token guardado
+if(TOKEN) enterPanel();
+</script>
+</body>
+</html>

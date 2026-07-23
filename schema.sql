@@ -366,3 +366,47 @@ CREATE TABLE IF NOT EXISTS mk8_tournament_players (
 INSERT IGNORE INTO titles (title_id, name, compatibility)
 VALUES ('0100000000100000', 'Super Mario Maker 2',    'perfect'),
        ('0100152000022000', 'Mario Kart 8 Deluxe',    'perfect');
+
+-- ─────────────────────────────────────────────────────────────────────────────
+--  SITE SETTINGS  (configuración global editable desde el panel admin)
+--  Clave/valor simple. registrations_enabled controla si se aceptan registros.
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS site_settings (
+    setting_key   VARCHAR(64)  NOT NULL PRIMARY KEY,
+    setting_value TEXT         DEFAULT NULL,
+    updated_at    DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+INSERT IGNORE INTO site_settings (setting_key, setting_value) VALUES
+    ('registrations_enabled',        '1'),
+    ('registrations_closed_message', 'Los registros están cerrados temporalmente.');
+
+-- ─────────────────────────────────────────────────────────────────────────────
+--  ROADMAP  (hoja de ruta pública, gestionada desde el panel admin)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS roadmap_items (
+    id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    title         VARCHAR(160)  NOT NULL,
+    description   TEXT          DEFAULT NULL,
+    status        ENUM('planned','in_progress','done') NOT NULL DEFAULT 'planned',
+    sort_order    INT           NOT NULL DEFAULT 0,
+    created_at    DATETIME      DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_roadmap_order (sort_order)
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+--  BLOG  (entradas de blog/noticias, gestionadas desde el panel admin)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS blog_posts (
+    id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    slug          VARCHAR(180)  NOT NULL UNIQUE,   -- para la URL, ej: "primer-post"
+    title         VARCHAR(200)  NOT NULL,
+    summary       VARCHAR(400)  DEFAULT NULL,
+    body          MEDIUMTEXT    NOT NULL,          -- contenido (texto/markdown)
+    author        VARCHAR(64)   DEFAULT NULL,
+    published     BOOLEAN       DEFAULT TRUE,      -- borrador si es FALSE
+    created_at    DATETIME      DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_blog_pub (published, created_at)
+) ENGINE=InnoDB;
