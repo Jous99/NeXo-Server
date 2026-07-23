@@ -1,0 +1,4 @@
+# Los scripts de shell SIEMPRE con saltos de línea LF (Unix), aunque se editen
+# en Windows. Evita el error "syntax error near unexpected token $'{\r'" al
+# ejecutarlos en el servidor Linux.
+*.sh text eol=lf

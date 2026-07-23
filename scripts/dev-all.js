@@ -49,13 +49,48 @@ function startNode() {
     });
 }
 
+// Localiza el binario de Go de forma robusta. aaPanel/PM2 arrancan con un PATH
+// mínimo que a menudo NO incluye /usr/local/go/bin, así que "go" no se encuentra
+// aunque esté instalado. Orden: 1) variable GO_BIN del .env  2) el PATH actual
+// 3) rutas de instalación típicas.  Devuelve la ruta al binario o null.
+let GO_PATH = null;
+function resolveGo() {
+    require('dotenv').config({ path: path.join(ROOT, '.env') });
+    if (process.env.GO_BIN && fs.existsSync(process.env.GO_BIN)) return process.env.GO_BIN;
+
+    const finder = process.platform === 'win32' ? 'where' : 'which';
+    const probe = spawnSync(finder, ['go'], { encoding: 'utf8' });
+    if (probe.status === 0 && probe.stdout.trim()) {
+        return probe.stdout.trim().split(/\r?\n/)[0].trim();
+    }
+
+    const home = process.env.HOME || process.env.USERPROFILE || '';
+    const candidates = process.platform === 'win32'
+        ? ['C:\\Program Files\\Go\\bin\\go.exe', 'C:\\Go\\bin\\go.exe']
+        : ['/usr/local/go/bin/go', '/usr/lib/go/bin/go', '/opt/go/bin/go',
+           '/snap/bin/go', '/usr/bin/go', home && path.join(home, 'go', 'bin', 'go')];
+    for (const c of candidates) {
+        if (c && fs.existsSync(c)) return c;
+    }
+    return null;
+}
+
+// Env con el directorio de Go añadido al PATH, para que `go build` y su toolchain
+// funcionen aunque el PATH del proceso venga vacío (caso aaPanel/PM2).
+function goEnv() {
+    const dir = path.dirname(GO_PATH);
+    return { ...process.env, PATH: `${dir}${path.delimiter}${process.env.PATH || ''}` };
+}
+
 // Compila nex-server (síncrono, antes de arrancar nada). Devuelve true si
 // hay que arrancarlo, false si toca saltárselo.
 function prepareGo() {
     if (!fs.existsSync(NEX_SERVER_DIR)) return false;
 
-    if (spawnSync('go', ['version'], { stdio: 'ignore' }).error) {
-        log('nex-go', '33', 'Go no está instalado — saltando nex-server. Ver nex-server/README.md.');
+    GO_PATH = resolveGo();
+    if (!GO_PATH || spawnSync(GO_PATH, ['version'], { stdio: 'ignore' }).error) {
+        log('nex-go', '33', 'Go no está instalado o no se encuentra — saltando nex-server. ' +
+            'Si Go SÍ está instalado, añade GO_BIN=/ruta/a/go en tu .env. Ver nex-server/README.md.');
         return false;
     }
 
@@ -65,8 +100,8 @@ function prepareGo() {
         return false;
     }
 
-    log('nex-go', '33', 'Compilando nex-server...');
-    const build = spawnSync('go', ['build', '-o', BIN_NAME, './cmd/mk8-auth'], { cwd: NEX_SERVER_DIR });
+    log('nex-go', '33', `Compilando nex-server (${GO_PATH})...`);
+    const build = spawnSync(GO_PATH, ['build', '-o', BIN_NAME, './cmd/mk8-auth'], { cwd: NEX_SERVER_DIR, env: goEnv() });
     if (build.status !== 0) {
         log('nex-go', '31', 'Falló la compilación de nex-server:');
         process.stderr.write(build.stderr);
