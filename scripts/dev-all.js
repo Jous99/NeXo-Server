@@ -20,7 +20,12 @@ const fs   = require('fs');
 
 const ROOT           = path.resolve(__dirname, '..');
 const NEX_SERVER_DIR = path.join(ROOT, 'nex-server');
-const BIN_NAME        = process.platform === 'win32' ? 'mk8-auth.exe' : 'mk8-auth';
+const EXE = process.platform === 'win32' ? '.exe' : '';
+// Binarios Go a compilar y arrancar: auth (emite tickets) + secure (juego).
+const BINARIES = [
+    { name: `mk8-auth${EXE}`,   pkg: './cmd/mk8-auth',   label: 'nex-auth' },
+    { name: `mk8-secure${EXE}`, pkg: './cmd/mk8-secure', label: 'nex-secure' },
+];
 
 const children = [];
 
@@ -100,21 +105,25 @@ function prepareGo() {
         return false;
     }
 
-    log('nex-go', '33', `Compilando nex-server (${GO_PATH})...`);
-    const build = spawnSync(GO_PATH, ['build', '-o', BIN_NAME, './cmd/mk8-auth'], { cwd: NEX_SERVER_DIR, env: goEnv() });
-    if (build.status !== 0) {
-        log('nex-go', '31', 'Falló la compilación de nex-server:');
-        process.stderr.write(build.stderr);
-        return false;
+    for (const bin of BINARIES) {
+        log('nex-go', '33', `Compilando ${bin.name} (${GO_PATH})...`);
+        const build = spawnSync(GO_PATH, ['build', '-o', bin.name, bin.pkg], { cwd: NEX_SERVER_DIR, env: goEnv() });
+        if (build.status !== 0) {
+            log('nex-go', '31', `Falló la compilación de ${bin.name}:`);
+            process.stderr.write(build.stderr);
+            return false;
+        }
     }
 
     return true;
 }
 
 function startGo() {
-    const go = spawn(path.join(NEX_SERVER_DIR, BIN_NAME), [], { cwd: NEX_SERVER_DIR, env: process.env });
-    pipePrefixed(go, 'nex-go', '33'); // amarillo
-    children.push(go);
+    for (const bin of BINARIES) {
+        const go = spawn(path.join(NEX_SERVER_DIR, bin.name), [], { cwd: NEX_SERVER_DIR, env: process.env });
+        pipePrefixed(go, bin.label, '33'); // amarillo
+        children.push(go);
+    }
 }
 
 function shutdown() {

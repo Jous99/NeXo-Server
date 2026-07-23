@@ -89,7 +89,9 @@ func main() {
 
 func secureStationURL() string {
 	host := envOr("NEXO_TCP_HOST", "127.0.0.1")
-	port := envOr("NEXO_MK8_TCP_PORT", "29900")
+	// El ticket dirige al cliente al servidor "secure" REAL sobre UDP (cmd/mk8-secure),
+	// no al antiguo puente Node TCP. Debe coincidir con NEXO_MK8_SECURE_UDP_PORT de mk8-secure.
+	port := envOr("NEXO_MK8_SECURE_UDP_PORT", "60001")
 	return "prudps:/address=" + host + ";port=" + port + ";CID=1;PID=2;sid=1;stream=10;type=2"
 }
 

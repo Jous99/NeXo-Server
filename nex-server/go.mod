@@ -8,6 +8,7 @@ require (
 	github.com/PretendoNetwork/nex-protocols-go/v2 v2.3.4
 	github.com/go-sql-driver/mysql v1.10.0
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.9
 )
 
 require (
