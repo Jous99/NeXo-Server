@@ -1,10 +1,10 @@
 #Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-    NeXoNetwork — Setup automático para emulador NeXo-emu en Windows
+    NeXoNetwork - Setup automatico para emulador NeXo-emu en Windows
 .DESCRIPTION
     Este script:
-      1. Obtiene la IP de nexonetwork.space automáticamente
+      1. Obtiene la IP de nexonetwork.space automaticamente
       2. Instala el certificado CA de NeXoNetwork en Windows
       3. Actualiza el archivo hosts de Windows con los dominios de Nintendo
       4. Configura el emulador NeXo-emu para usar NeXoNetwork
@@ -16,28 +16,28 @@
 $ErrorActionPreference = "Stop"
 $NEXO_DOMAIN = "nexonetwork.space"
 $HOSTS_FILE  = "C:\Windows\System32\drivers\etc\hosts"
-$MARKER_START = "# ── NeXoNetwork START ──"
-$MARKER_END   = "# ── NeXoNetwork END ──"
+$MARKER_START = "# == NeXoNetwork START =="
+$MARKER_END   = "# == NeXoNetwork END =="
 $EMU_DIR      = "$env:USERPROFILE\Documents\NeXo-emu"
 
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║     NeXoNetwork — Emulator Setup         ║" -ForegroundColor Cyan
-Write-Host "╚══════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "     NeXoNetwork - Emulator Setup" -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# ── 1. Resolver IP de nexonetwork.space ───────────────────────────────────────
+# 1. Resolver IP de nexonetwork.space
 Write-Host "[1/4] Resolviendo IP de $NEXO_DOMAIN..." -ForegroundColor Yellow
 try {
     $nexoIP = (Resolve-DnsName $NEXO_DOMAIN -Type A -ErrorAction Stop | Where-Object { $_.Type -eq 'A' } | Select-Object -First 1).IPAddress
     Write-Host "      IP: $nexoIP" -ForegroundColor Green
 } catch {
-    Write-Host "      Error resolviendo $NEXO_DOMAIN. ¿Tienes internet?" -ForegroundColor Red
+    Write-Host "      Error resolviendo $NEXO_DOMAIN. Tienes internet?" -ForegroundColor Red
     Write-Host "      Introduce la IP manualmente: " -ForegroundColor Yellow -NoNewline
     $nexoIP = Read-Host
 }
 
-# ── 2. Instalar certificado CA ────────────────────────────────────────────────
+# 2. Instalar certificado CA
 Write-Host "[2/4] Instalando certificado CA de NeXoNetwork..." -ForegroundColor Yellow
 $certPath = Join-Path $PSScriptRoot "..\certs\nexo-ca.crt"
 if (Test-Path $certPath) {
@@ -45,7 +45,7 @@ if (Test-Path $certPath) {
         $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($certPath)
         $store = New-Object System.Security.Cryptography.X509Certificates.X509Store("Root", "LocalMachine")
         $store.Open("ReadWrite")
-        # Verificar si ya está instalado
+        # Verificar si ya esta instalado
         $existing = $store.Certificates | Where-Object { $_.Thumbprint -eq $cert.Thumbprint }
         if ($existing) {
             Write-Host "      Certificado ya instalado." -ForegroundColor Green
@@ -56,14 +56,14 @@ if (Test-Path $certPath) {
         $store.Close()
     } catch {
         Write-Host "      Error instalando certificado: $_" -ForegroundColor Red
-        Write-Host "      Instálalo manualmente: doble clic en nexo-ca.crt → Instalar → Equipo local → Entidades de certificación raíz de confianza" -ForegroundColor Yellow
+        Write-Host "      Instalalo manualmente: doble clic en nexo-ca.crt -> Instalar -> Equipo local -> Entidades de certificacion raiz de confianza" -ForegroundColor Yellow
     }
 } else {
     Write-Host "      nexo-ca.crt no encontrado en $certPath" -ForegroundColor Red
-    Write-Host "      Descárgalo del servidor o cópialo desde NeXoNetwork-Server/certs/" -ForegroundColor Yellow
+    Write-Host "      Descargalo del servidor o copialo desde NeXoNetwork-Server/certs/" -ForegroundColor Yellow
 }
 
-# ── 3. Actualizar hosts de Windows ───────────────────────────────────────────
+# 3. Actualizar hosts de Windows
 Write-Host "[3/4] Actualizando archivo hosts de Windows..." -ForegroundColor Yellow
 
 $nintendoDomains = @(
@@ -111,8 +111,9 @@ if ($hostsContent -match [regex]::Escape($MARKER_START)) {
 }
 
 # Crear nuevo bloque
+$fecha = Get-Date -Format 'yyyy-MM-dd HH:mm'
 $newBlock = "`n$MARKER_START`n"
-$newBlock += "# Generado por setup-emulator.ps1 — $(Get-Date -Format 'yyyy-MM-dd HH:mm')`n"
+$newBlock += "# Generado por setup-emulator.ps1 - $fecha`n"
 foreach ($domain in $nintendoDomains) {
     $newBlock += "$nexoIP $domain`n"
 }
@@ -125,7 +126,7 @@ $newBlock += "$MARKER_END`n"
 $hostsContent + $newBlock | Set-Content $HOSTS_FILE -Encoding ASCII -NoNewline
 Write-Host "      Hosts actualizado con $($nintendoDomains.Count) dominios redirigidos + $($blockedDomains.Count) bloqueados." -ForegroundColor Green
 
-# ── 4. Configurar emulador ───────────────────────────────────────────────────
+# 4. Configurar emulador
 Write-Host "[4/4] Configurando emulador NeXo-emu..." -ForegroundColor Yellow
 
 # Buscar directorio de datos del emulador
@@ -167,23 +168,23 @@ if ($emuDataDir) {
 
         Set-Content $configFile $config -Encoding UTF8
     } else {
-        Write-Host "      Config no encontrado — el emulador lo creará al primer inicio." -ForegroundColor Gray
+        Write-Host "      Config no encontrado - el emulador lo creara al primer inicio." -ForegroundColor Gray
     }
 } else {
-    Write-Host "      Directorio del emulador no encontrado en rutas estándar." -ForegroundColor Yellow
-    Write-Host "      Abre NeXo-emu manualmente y configura la cuenta desde Herramientas → Perfil" -ForegroundColor Yellow
+    Write-Host "      Directorio del emulador no encontrado en rutas estandar." -ForegroundColor Yellow
+    Write-Host "      Abre NeXo-emu manualmente y configura la cuenta desde Herramientas -> Perfil" -ForegroundColor Yellow
 }
 
-# ── Resumen ──────────────────────────────────────────────────────────────────
+# Resumen
 Write-Host ""
-Write-Host "══════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host " Setup completado. Próximos pasos:" -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host " Setup completado. Proximos pasos:" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  1. Abre NeXo-emu" -ForegroundColor White
-Write-Host "  2. Ve a Herramientas → Configurar → Web" -ForegroundColor White
-Write-Host "     Perfil → Añadir cuenta" -ForegroundColor White
-Write-Host "  3. Se abrirá el navegador → login en NeXoNetwork" -ForegroundColor White
-Write-Host "  4. ¡Listo para jugar online!" -ForegroundColor White
+Write-Host "  2. Ve a Herramientas -> Configurar -> Web" -ForegroundColor White
+Write-Host "     Perfil -> Anadir cuenta" -ForegroundColor White
+Write-Host "  3. Se abrira el navegador -> login en NeXoNetwork" -ForegroundColor White
+Write-Host "  4. Listo para jugar online!" -ForegroundColor White
 Write-Host ""
 Write-Host "  Servidor: https://$NEXO_DOMAIN" -ForegroundColor Green
-Write-Host "══════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
