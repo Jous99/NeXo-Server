@@ -18,6 +18,13 @@ const db = require('../../db');
 // Dominio base del servidor NeXo
 const BASE = process.env.BASE_DOMAIN || 'nexonetwork.space';
 
+// Host/IP para los servidores de juego NEX (PRUDP sobre UDP). El UDP NO pasa por
+// Cloudflare, así que aquí conviene poner la IP pública DIRECTA del servidor
+// (ej. NEXO_NEX_HOST=86.127.246.201) para que el juego conecte al origen y no al
+// proxy. Si no se define, cae al subdominio mk8-lp1 (que solo sirve si el DNS de
+// ese subdominio apunta directo al origen, en gris).
+const NEX_HOST = process.env.NEXO_NEX_HOST || `mk8-lp1.${BASE}`;
+
 // ── Tabla de rewrites ─────────────────────────────────────────────────────────
 // Mapea hostnames de Nintendo → hostnames de NeXo.
 // El emulador llama a ResolveUrl(dns) que busca aquí antes de conectar.
@@ -72,23 +79,25 @@ function buildRewrites() {
             source:      'api.lp1.npln.srv.nintendo.net',
             destination: `smm2-lp1.${BASE}`,
         },
-        // ── Mario Kart 8 Deluxe — NEX matchmaking ────────────────────────────
+        // ── Mario Kart 8 Deluxe — NEX matchmaking (UDP → IP directa) ─────────
+        // Apuntan a NEX_HOST (IP pública directa) para que el UDP llegue al origen
+        // sin pasar por Cloudflare.
         {
             source:      'g7sfc1xhmc8.lp1.s.n.srv.nintendo.net',
-            destination: `mk8-lp1.${BASE}`,
+            destination: NEX_HOST,
         },
         // Servidor NEX real de MK8D visto en el log del emulador (con el % dinámico).
-        // Sin esta regla, el emulador cae al fallback 127.0.0.1 → error 2038-2306.
+        // Sin esta regla, el emulador cae al fallback → no llega al servidor NEX.
         {
             source:      'g2b309e01-%.s.n.srv.nintendo.net',
-            destination: `mk8-lp1.${BASE}`,
+            destination: NEX_HOST,
         },
         // Catch-all: cualquier otro servidor de juego *.s.n.srv.nintendo.net sin
         // regla exacta. Los de amigos/SMM2 tienen entrada exacta y tienen prioridad
         // (el emulador busca coincidencia exacta antes que el comodín).
         {
             source:      '*.s.n.srv.nintendo.net',
-            destination: `mk8-lp1.${BASE}`,
+            destination: NEX_HOST,
         },
         {
             source:      'api-lp1.np.community.srv.nintendo.net',
