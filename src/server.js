@@ -13,6 +13,39 @@ process.on('uncaughtException', (err) => {
     console.error('⚠️  uncaughtException (la web sigue en pie):', err);
 });
 
+// ── Registro a fichero (logs/server.log) ──────────────────────────────────────
+// Guardamos TODA la salida de consola en un fichero para poder mostrarla en el
+// panel admin SIN depender de PM2 (aaPanel/Docker no siempre exponen el CLI pm2).
+// Funciona sea cual sea la forma de arrancar el servidor.
+(() => {
+    const fsLog   = require('fs');
+    const pathLog = require('path');
+    const dir     = pathLog.join(__dirname, '..', 'logs');
+    const file    = pathLog.join(dir, 'server.log');
+    try {
+        fsLog.mkdirSync(dir, { recursive: true });
+        // Rotación simple: si el log supera 5 MB, lo movemos a .1 y empezamos limpio.
+        if (fsLog.existsSync(file) && fsLog.statSync(file).size > 5 * 1024 * 1024) {
+            try { fsLog.renameSync(file, file + '.1'); } catch { /* ignorar */ }
+        }
+        // Abrimos el fichero en modo 'append' y escribimos de forma SÍNCRONA en
+        // cada línea. Así el fichero existe al instante y cada log queda en disco
+        // aunque el proceso muera de golpe (más fiable que un stream con buffer).
+        const fd = fsLog.openSync(file, 'a');
+        for (const ch of ['stdout', 'stderr']) {
+            const orig = process[ch].write.bind(process[ch]);
+            process[ch].write = (chunk, enc, cb) => {
+                try { fsLog.writeSync(fd, typeof chunk === 'string' ? chunk : chunk.toString()); }
+                catch { /* nunca romper la consola */ }
+                return orig(chunk, enc, cb);
+            };
+        }
+        console.log(`🗒️  Logs del servidor → ${file}`);
+    } catch (e) {
+        console.error('No se pudo iniciar el log a fichero:', e.message);
+    }
+})();
+
 const fs       = require('fs');
 const path     = require('path');
 const Fastify    = require('fastify');
@@ -192,6 +225,39 @@ async function buildApp() {
         version: require('../package.json').version,
         ts: Date.now(),
     }));
+
+    // ── Estado del servidor NEX (Go / mk8-auth) ───────────────────────────────
+    // nex es un proceso Go aparte que habla UDP (PRUDP), así que el navegador no
+    // puede comprobarlo directo. Aquí miramos si el proceso está vivo escaneando
+    // /proc (sin depender de pm2/pgrep) y si el binario ya está compilado.
+    fastify.get('/health/nex', async () => {
+        const binDir  = path.join(__dirname, '..', 'nex-server');
+        const built   = fs.existsSync(path.join(binDir, 'mk8-auth')) ||
+                        fs.existsSync(path.join(binDir, 'mk8-auth.exe'));
+
+        // ¿Hay un proceso cuyo EJECUTABLE se llame "mk8-auth"? Miramos solo el
+        // argv[0] (primer token de cmdline, separado por \0), no toda la línea:
+        // así no damos falso positivo con un "go build -o mk8-auth" ni con scripts
+        // que mencionen el nombre.
+        let running = false;
+        try {
+            for (const pid of fs.readdirSync('/proc')) {
+                if (!/^\d+$/.test(pid)) continue;
+                try {
+                    const argv0 = fs.readFileSync(`/proc/${pid}/cmdline`, 'utf8').split('\0')[0] || '';
+                    const base  = argv0.split('/').pop();
+                    if (base === 'mk8-auth' || base === 'mk8-auth.exe') { running = true; break; }
+                } catch { /* proceso que desapareció, sin permisos, etc. */ }
+            }
+        } catch { /* sistema sin /proc (p.ej. Windows en desarrollo) */ }
+
+        return {
+            ok: true,
+            running,
+            built,
+            port: parseInt(process.env.NEXO_MK8_AUTH_UDP_PORT || '60000'),
+        };
+    });
 
     // ── Página del emulador ───────────────────────────────────────────────────
     fastify.get('/emulator', async (req, reply) => {

@@ -914,19 +914,27 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
         </div>
       </div>
 
-      <!-- Logs de actualización -->
+      <!-- Logs del servidor EN VIVO (tiempo real) -->
       <div class="sys-card">
         <h4 style="display:flex;justify-content:space-between;align-items:center;">
-          Logs del servidor
-          <span style="display:flex;gap:6px;align-items:center;">
-            <select id="log-source" onchange="loadLogs()" style="font-size:11px;padding:4px 8px;">
-              <option value="server">Servidor (PM2)</option>
-              <option value="update">Actualización</option>
-            </select>
-            <button class="bsv" onclick="loadLogs()" style="font-size:11px;padding:5px 12px;">Refrescar</button>
+          Logs del servidor <span style="font-size:11px;color:var(--tm);font-weight:600;">· en vivo</span>
+          <span style="display:flex;gap:12px;align-items:center;">
+            <label style="display:flex;gap:5px;align-items:center;font-size:11px;color:var(--tm);cursor:pointer;">
+              <input type="checkbox" id="log-live" checked onchange="toggleLiveLogs()"> En vivo (2s)
+            </label>
+            <button class="bsv" onclick="loadServerLogs()" style="font-size:11px;padding:5px 12px;">Refrescar</button>
           </span>
         </h4>
         <div class="log-box" id="log-box">Cargando logs...</div>
+      </div>
+
+      <!-- Logs de actualización (aparte) -->
+      <div class="sys-card">
+        <h4 style="display:flex;justify-content:space-between;align-items:center;">
+          Logs de actualización
+          <button class="bsv" onclick="loadUpdateLogs()" style="font-size:11px;padding:5px 12px;">Refrescar</button>
+        </h4>
+        <div class="log-box" id="log-box-update">Cargando logs...</div>
       </div>
     </div>
 
@@ -1055,6 +1063,13 @@ async function apiFetch(path, opts = {}) {
   if (AT) h['Authorization'] = 'Bearer ' + AT;
   try {
     const r = await fetch(API + path, { ...opts, headers: h });
+    // Sesión caducada: si una petición AUTENTICADA devuelve 401, el token ya no
+    // vale → cerramos sesión y volvemos a la página principal. Excluimos login y
+    // registro, donde un 401 significa credenciales incorrectas, no expiración.
+    if (r.status === 401 && AT && !path.startsWith('/auth/login') && !path.startsWith('/auth/register')) {
+      handleSessionExpired();
+      return { ok: false, status: 401, data: { ok: false, error: 'Sesión caducada' } };
+    }
     let d;
     try { d = await r.json(); } catch { d = { ok: false, error: 'Respuesta inválida del servidor' }; }
     return { ok: r.ok, status: r.status, data: d };
@@ -1161,10 +1176,24 @@ async function logoutAll() {
 }
 function clearSess() {
   AT = ''; RT = ''; CU = null;
+  if (typeof stopLiveLogs === 'function') stopLiveLogs(); // corta el polling de logs
   ['nexo_at', 'nexo_rt', 'nexo_cu'].forEach(k => localStorage.removeItem(k));
   document.getElementById('app-nav').style.display = 'none';
   document.getElementById('app-cnt').style.display = 'none';
   document.getElementById('app-auth').style.display = 'flex';
+}
+
+// Sesión caducada: limpia la sesión, cierra el panel y vuelve a la página
+// principal (landing). El flag evita que varias peticiones simultáneas que
+// fallen con 401 disparen el aviso varias veces.
+let _sessExpiredShown = false;
+function handleSessionExpired() {
+  if (_sessExpiredShown) return;
+  _sessExpiredShown = true;
+  clearSess();
+  closeApp();
+  toast('Tu sesión ha caducado. Vuelve a iniciar sesión.', 'error');
+  setTimeout(() => { _sessExpiredShown = false; }, 3000);
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
@@ -1201,12 +1230,13 @@ function showP(p) {
   document.querySelectorAll('.alink')[m[p]]?.classList.add('active');
 
   if (statusPollTimer) { clearInterval(statusPollTimer); statusPollTimer = null; }
+  stopLiveLogs(); // al cambiar de página, cortamos el refresco en vivo de logs
 
   if (p === 'status')  { loadStatus(); statusPollTimer = setInterval(loadStatus, STATUS_POLL_MS); }
   if (p === 'friends') loadFriends();
   if (p === 'chat')    initChat();
   if (p === 'admin')   loadAdmin();
-  if (p === 'sistema') { loadSysStatus(); loadLogs(); }
+  if (p === 'sistema') { loadSysStatus(); loadUpdateLogs(); toggleLiveLogs(); }
 }
 
 // ─── STATUS ───────────────────────────────────────────────────────────────────
@@ -1219,6 +1249,9 @@ const SVCS = [
   { name: 'Notifications',      ep: '/api/v1/notification',   icon: '🔔', desc: 'WebSocket notificaciones' },
   { name: 'Config / Rewrites',  ep: '/api/v1/rewrites',       icon: '⚙️', desc: 'Configuración del emulador' },
   { name: 'BCAT',               ep: '/api/v1/bcat',           icon: '📦', desc: 'Entrega de contenido' },
+  // NEX Auth (Go): servidor de tickets de Mario Kart 8 por UDP. No se comprueba
+  // con un fetch normal (es UDP) sino con el endpoint /health/nex — ver checkSvc.
+  { name: 'NEX Auth (Go · MK8)', ep: '/health/nex',           icon: '🏁', desc: 'Servidor de tickets NEX (UDP)', nex: true },
   // Mario Maker 2 (games:true) se quita de esta lista a propósito por ahora
   // — no está listo para mostrarse como servicio monitoreado.
 ];
@@ -1231,14 +1264,21 @@ async function loadStatus() {
   const gameSvcs  = SVCS.filter(s => s.game);
 
   const checkSvc = async (s) => {
-    let ok = false, lat = 0;
+    let ok = false, lat = 0, detail = '';
     try {
       const t = Date.now();
       const r = await fetch(API + s.ep, { method: 'GET', signal: AbortSignal.timeout(5000) });
       lat = Date.now() - t;
-      ok = r.status < 500;
+      if (s.nex) {
+        // nex: el endpoint responde 200 siempre; lo que importa es el campo running.
+        const j = await r.json().catch(() => ({}));
+        ok = !!j.running;
+        detail = j.running ? '' : (j.built ? 'Compilado pero parado' : 'No compilado');
+      } else {
+        ok = r.status < 500;
+      }
     } catch (_) {}
-    return { ...s, ok, lat };
+    return { ...s, ok, lat, detail };
   };
 
   // Comprobar todos en paralelo
@@ -1278,7 +1318,7 @@ async function loadStatus() {
 }
 
 function renderSvc(s, isGame = false) {
-  const latTxt = s.ok ? s.lat + 'ms' : '—';
+  const latTxt = s.ok ? s.lat + 'ms' : (s.detail || '—');
   const pill   = s.ok ? 'on' : 'off';
   const label  = s.ok ? 'Online' : 'Offline';
   const dot    = s.ok ? 'on'    : 'off';
@@ -1551,14 +1591,40 @@ async function loadSysStatus() {
     document.getElementById('sys-cdate').textContent  = d.git.commit_date || '—';
   }
 }
-async function loadLogs() {
+// ── Logs del servidor EN VIVO ─────────────────────────────────────────────────
+let logLiveTimer = null;
+const LOG_LIVE_MS = 2000;
+
+async function loadServerLogs() {
   const lb = document.getElementById('log-box');
-  const sel = document.getElementById('log-source');
-  const source = sel ? sel.value : 'server';
-  lb.textContent = 'Cargando logs...';
-  const { ok, data } = await apiFetch('/admin/system/logs?source=' + source + '&lines=120');
+  if (!lb) return;
+  // Si el usuario está mirando el final, seguimos pegados abajo; si ha subido a
+  // leer algo, respetamos su posición y no le arrastramos el scroll.
+  const stuckToBottom = lb.scrollHeight - lb.scrollTop - lb.clientHeight < 40;
+  const { ok, data } = await apiFetch('/admin/system/logs?source=server&lines=200');
+  lb.textContent = ok ? (data.data.logs || 'Sin logs todavía.') : 'Error al cargar logs.';
+  if (stuckToBottom) lb.scrollTop = lb.scrollHeight;
+}
+
+async function loadUpdateLogs() {
+  const lb = document.getElementById('log-box-update');
+  if (!lb) return;
+  const { ok, data } = await apiFetch('/admin/system/logs?source=update&lines=120');
   lb.textContent = ok ? (data.data.logs || 'Sin logs.') : 'Error al cargar logs.';
   lb.scrollTop = lb.scrollHeight;
+}
+
+// Activa/desactiva el refresco automático según el checkbox "En vivo".
+function toggleLiveLogs() {
+  stopLiveLogs();
+  const on = document.getElementById('log-live')?.checked;
+  if (on) {
+    loadServerLogs();
+    logLiveTimer = setInterval(loadServerLogs, LOG_LIVE_MS);
+  }
+}
+function stopLiveLogs() {
+  if (logLiveTimer) { clearInterval(logLiveTimer); logLiveTimer = null; }
 }
 async function doUpdate() {
   const btn = document.getElementById('update-btn');

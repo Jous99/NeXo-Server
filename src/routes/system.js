@@ -80,40 +80,39 @@ async function systemRoutes(fastify) {
             return reply.send({ ok: true, data: { source, logs: logs || 'Sin logs todavía.' } });
         }
 
-        // ── Logs REALES del proceso en marcha (vía PM2) ───────────────────────
-        const proc = process.env.PM2_APP_NAME || 'nexo-server';
+        // ── Logs REALES del proceso en marcha ─────────────────────────────────
+        // 1) Fichero propio (logs/server.log) que el servidor escribe él mismo.
+        //    Es la fuente principal: funciona SIN PM2.
+        const selfFile = path.join(ROOT, 'logs', 'server.log');
+        let logs = await run(`tail -n ${n} "${selfFile}"`);
 
-        // 1) Preguntar a PM2 dónde guarda los ficheros de log de este proceso.
-        let outPath = '', errPath = '';
-        try {
-            const found = JSON.parse(await run('pm2 jlist')).find((p) => p.name === proc);
-            if (found && found.pm2_env) {
-                outPath = found.pm2_env.pm_out_log_path || '';
-                errPath = found.pm2_env.pm_err_log_path || '';
-            }
-        } catch { /* PM2 no disponible o salida no-JSON — usamos el fallback */ }
-
-        // 2) Leer las últimas líneas de stdout y stderr.
-        let logs = '';
-        if (outPath || errPath) {
-            const [out, err] = await Promise.all([
-                outPath ? run(`tail -n ${n} "${outPath}"`) : Promise.resolve(''),
-                errPath ? run(`tail -n ${n} "${errPath}"`) : Promise.resolve(''),
-            ]);
-            logs = [
-                err.trim() && `── stderr ──\n${err.trim()}`,
-                out.trim() && `── stdout ──\n${out.trim()}`,
-            ].filter(Boolean).join('\n\n');
-        }
-
-        // 3) Fallback: pedírselos directamente a pm2 logs.
+        // 2) Fallback opcional: PM2, por si el proceso lleva corriendo desde antes
+        //    de tener el log propio y PM2 sí está disponible.
         if (!logs.trim()) {
-            logs = await run(`pm2 logs ${proc} --nostream --lines ${n}`);
+            const proc = process.env.PM2_APP_NAME || 'nexo-server';
+            try {
+                const found = JSON.parse(await run('pm2 jlist')).find((p) => p.name === proc);
+                if (found && found.pm2_env) {
+                    const [out, err] = await Promise.all([
+                        found.pm2_env.pm_out_log_path ? run(`tail -n ${n} "${found.pm2_env.pm_out_log_path}"`) : Promise.resolve(''),
+                        found.pm2_env.pm_err_log_path ? run(`tail -n ${n} "${found.pm2_env.pm_err_log_path}"`) : Promise.resolve(''),
+                    ]);
+                    logs = [
+                        err.trim() && `── stderr ──\n${err.trim()}`,
+                        out.trim() && `── stdout ──\n${out.trim()}`,
+                    ].filter(Boolean).join('\n\n');
+                }
+            } catch { /* sin PM2 — no pasa nada, seguimos */ }
         }
 
         return reply.send({
             ok: true,
-            data: { source, logs: logs.trim() || 'Sin logs del servidor (¿está PM2 disponible?).' },
+            data: {
+                source,
+                logs: logs.trim() ||
+                    'Sin logs todavía. Reinicia el servidor una vez con el código nuevo ' +
+                    'para que empiece a escribir en logs/server.log.',
+            },
         });
     });
 }
