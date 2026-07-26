@@ -68,7 +68,19 @@ if [ -d "$PROJECT_DIR/nex-server" ]; then
 
     if [ -n "$GO_BIN" ] && [ -x "$GO_BIN" ]; then
         log "Compilando nex-server (Go: $GO_BIN)..."
-        if (cd "$PROJECT_DIR/nex-server" && PATH="$(dirname "$GO_BIN"):$PATH" "$GO_BIN" build -o mk8-auth ./cmd/mk8-auth); then
+        log "Versión de Go instalada: $("$GO_BIN" version 2>&1)"
+        log "go.mod requiere: $(grep -E '^go [0-9]' "$PROJECT_DIR/nex-server/go.mod" 2>/dev/null | head -1)"
+        # Volcamos la salida del build AL LOG en vivo (-v muestra cada paquete que
+        # compila; también verás aquí si Go se pone a descargar módulos o una
+        # toolchain nueva). timeout evita que se quede colgado en silencio.
+        # GOTOOLCHAIN=local: NO intentar descargar otra versión de Go; si la
+        # instalada no vale, falla rápido con un mensaje claro en vez de colgarse.
+        ( cd "$PROJECT_DIR/nex-server" \
+            && PATH="$(dirname "$GO_BIN"):$PATH" GOTOOLCHAIN=local \
+               timeout 600 "$GO_BIN" build -v -o mk8-auth ./cmd/mk8-auth ) 2>&1 | tee -a "$LOG_FILE"
+        BUILD_CODE=${PIPESTATUS[0]}
+
+        if [ "$BUILD_CODE" -eq 0 ]; then
             log "nex-server compilado correctamente."
 
             if pm2 describe nexo-mk8-auth > /dev/null 2>&1; then
@@ -79,8 +91,14 @@ if [ -d "$PROJECT_DIR/nex-server" ]; then
                 log "(necesita NEXO_MK8_ACCESS_KEY / NEXO_MK8_SECURE_PASSWORD configurados primero,"
                 log "ver docs/nex-go-deploy.md). El binario ya quedó compilado y listo para cuando lo arranques."
             fi
+        elif [ "$BUILD_CODE" -eq 124 ]; then
+            log "ERROR: la compilación superó el límite de 10 min y se abortó (código 124)."
+            log "Suele ser por descarga de módulos lenta. Compila una vez a mano para cachearlos:"
+            log "   cd nex-server && $GO_BIN build -o mk8-auth ./cmd/mk8-auth"
         else
-            log "ERROR: falló la compilación de nex-server — se deja el binario anterior tal cual."
+            log "ERROR: falló la compilación de nex-server (código $BUILD_CODE) — se deja el binario anterior."
+            log "Si el mensaje de arriba habla de la versión de Go, tu Go es más antiguo que el que pide go.mod."
+            log "Instala esa versión (ver docs/nex-go-deploy.md) o ajusta la directiva 'go' de nex-server/go.mod."
         fi
     else
         log "ADVERTENCIA: no se encontró el binario de Go. Si Go SÍ está instalado, añade GO_BIN=/ruta/a/go al .env (p.ej. GO_BIN=/usr/local/go/bin/go). Ver docs/nex-go-deploy.md."

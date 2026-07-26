@@ -23,7 +23,9 @@ async function systemRoutes(fastify) {
     fastify.post('/update', async (req, reply) => {
         reply.send({ ok: true, message: 'Actualización iniciada. El servidor se reiniciará en unos segundos.' });
         setTimeout(() => {
-            exec(`bash "${SCRIPT}"`, { cwd: ROOT, timeout: 120000 }, (err, stdout, stderr) => {
+            // 11 min: el primer build de Go (descarga de módulos) puede pasar de
+            // 2 min. El propio update.sh limita el build a 10 min por dentro.
+            exec(`bash "${SCRIPT}"`, { cwd: ROOT, timeout: 660000 }, (err, stdout, stderr) => {
                 if (err) fastify.log.error('Update error:', stderr);
                 else     fastify.log.info('Update ok:', stdout.slice(-200));
             });
