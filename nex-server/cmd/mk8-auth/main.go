@@ -82,9 +82,14 @@ func main() {
 	endpoint.RegisterServiceProtocol(protocol)
 
 	port := envIntOr("NEXO_MK8_AUTH_UDP_PORT", 60000)
+	// Transporte WebSocket seguro (WSS): el emulador NeXo tuneliza el NEX por
+	// WebSocket/TLS, no por UDP. nex-go ya lo soporta (PRUDPLite sobre WSS).
+	// Los certificados los reutilizamos de los que ya generamos (certs/).
+	certFile := envOr("NEXO_TLS_CERT", "../certs/server.crt")
+	keyFile := envOr("NEXO_TLS_KEY", "../certs/server.key")
 	v := server.LibraryVersions.Main
-	log.Printf("mk8-auth escuchando UDP :%d (access key=%q, NEX version=%d.%d.%d)", port, accessKey, v.Major, v.Minor, v.Patch)
-	server.Listen(port)
+	log.Printf("mk8-auth escuchando WSS :%d (access key=%q, NEX version=%d.%d.%d, cert=%s)", port, accessKey, v.Major, v.Minor, v.Patch, certFile)
+	server.ListenWebSocketSecure(port, certFile, keyFile)
 }
 
 func secureStationURL() string {
