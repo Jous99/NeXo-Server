@@ -235,21 +235,9 @@ async function buildApp() {
         const built   = fs.existsSync(path.join(binDir, 'mk8-auth')) ||
                         fs.existsSync(path.join(binDir, 'mk8-auth.exe'));
 
-        // ¿Hay un proceso cuyo EJECUTABLE se llame "mk8-auth"? Miramos solo el
-        // argv[0] (primer token de cmdline, separado por \0), no toda la línea:
-        // así no damos falso positivo con un "go build -o mk8-auth" ni con scripts
-        // que mencionen el nombre.
-        let running = false;
-        try {
-            for (const pid of fs.readdirSync('/proc')) {
-                if (!/^\d+$/.test(pid)) continue;
-                try {
-                    const argv0 = fs.readFileSync(`/proc/${pid}/cmdline`, 'utf8').split('\0')[0] || '';
-                    const base  = argv0.split('/').pop();
-                    if (base === 'mk8-auth' || base === 'mk8-auth.exe') { running = true; break; }
-                } catch { /* proceso que desapareció, sin permisos, etc. */ }
-            }
-        } catch { /* sistema sin /proc (p.ej. Windows en desarrollo) */ }
+        // ¿Está corriendo el proceso mk8-auth? (mira el ejecutable, no toda la
+        // línea de comando — misma función que usa el arranque automático.)
+        const running = nexProcessRunning();
 
         return {
             ok: true,
@@ -392,6 +380,66 @@ async function buildApp() {
     return fastify;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  NEX (Go) — arranque automático de mk8-auth junto con Node
+// ─────────────────────────────────────────────────────────────────────────────
+// ¿Hay ya un proceso cuyo EJECUTABLE se llame "mk8-auth"? (mismo criterio que
+// /health/nex). Evita lanzar una segunda copia que chocaría en el puerto UDP.
+function nexProcessRunning() {
+    try {
+        for (const pid of fs.readdirSync('/proc')) {
+            if (!/^\d+$/.test(pid)) continue;
+            try {
+                const argv0 = fs.readFileSync(`/proc/${pid}/cmdline`, 'utf8').split('\0')[0] || '';
+                const base  = argv0.split('/').pop();
+                if (base === 'mk8-auth' || base === 'mk8-auth.exe') return true;
+            } catch { /* proceso que desapareció, sin permisos, etc. */ }
+        }
+    } catch { /* sistema sin /proc (p.ej. Windows en desarrollo) */ }
+    return false;
+}
+
+// Lanza el servidor NEX Go (mk8-auth) como proceso HIJO de Node, de modo que
+// arranca y muere junto con él. Defensivo: solo si el binario está compilado y
+// las claves configuradas; no duplica el proceso si ya corre; y nunca tumba la
+// web si algo falla.
+function startNexServices() {
+    const cp     = require('child_process');
+    const binDir = path.join(__dirname, '..', 'nex-server');
+    const bin    = path.join(binDir, process.platform === 'win32' ? 'mk8-auth.exe' : 'mk8-auth');
+
+    if (!fs.existsSync(bin)) {
+        console.log('ℹ️  nex (mk8-auth) no está compilado — se omite el arranque automático.');
+        return;
+    }
+    if (!process.env.NEXO_MK8_ACCESS_KEY || !process.env.NEXO_MK8_SECURE_PASSWORD) {
+        console.log('ℹ️  nex: faltan NEXO_MK8_ACCESS_KEY / NEXO_MK8_SECURE_PASSWORD en .env — no se arranca.');
+        return;
+    }
+    if (nexProcessRunning()) {
+        console.log('ℹ️  nex (mk8-auth) ya está en marcha — no se lanza otra copia.');
+        return;
+    }
+
+    try {
+        const child = cp.spawn(bin, [], { cwd: binDir, env: process.env });
+        child.stdout.on('data', (d) => process.stdout.write('[nex] ' + d));
+        child.stderr.on('data', (d) => process.stderr.write('[nex] ' + d));
+        child.on('exit',  (code) => console.log(`[nex] mk8-auth terminó (código ${code}).`));
+        child.on('error', (e)    => console.error('[nex] no se pudo lanzar mk8-auth:', e.message));
+
+        // Cuando Node se cierra, cerramos también nex para no dejarlo huérfano.
+        const kill = () => { try { child.kill(); } catch { /* ya estaba muerto */ } };
+        process.on('exit', kill);
+        process.on('SIGINT',  () => { kill(); process.exit(0); });
+        process.on('SIGTERM', () => { kill(); process.exit(0); });
+
+        console.log('🏁 nex (mk8-auth) arrancado automáticamente junto con Node.');
+    } catch (e) {
+        console.error('⚠️  Falló el arranque automático de nex (la web sigue en pie):', e.message);
+    }
+}
+
 async function start() {
     const app  = await buildApp();
     const port = parseInt(process.env.PORT || '3000');
@@ -428,6 +476,9 @@ async function start() {
         console.error('⚠️  No se pudieron iniciar los servidores NEX TCP. ' +
             'La web sigue funcionando; el multijugador quedará desactivado.', err.message);
     }
+
+    // ── NEX Go (mk8-auth) — arranca junto con Node ──────────────────────────────
+    startNexServices();
 
     console.log(`\n🎮 NeXoNetwork Server en http://${host}:${port}`);
     console.log(`   Dominio base: ${BASE_DOMAIN}`);
