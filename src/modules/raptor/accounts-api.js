@@ -263,8 +263,6 @@ async function accountsApiRoutes(fastify) {
 
     // Alias: algunos clientes usan /api/v1/user/authenticate
     fastify.post('/api/v1/user/authenticate', async (req, reply) => {
-        req.url = '/api/v1/auth/authenticate';
-        // Redirige internamente
         const { username, password } = req.body || {};
         if (!username || !password) return reply.code(400).send({ result: 'Failed', error: 'Missing credentials' });
 
