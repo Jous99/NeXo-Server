@@ -550,7 +550,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
       <div class="ep"><span class="em g">POST</span><div class="ep-p">/admin/users/:id/ban</div><div class="ep-d">Banear usuario</div></div>
       <div class="ep"><span class="em b">GET</span><div class="ep-p">/admin/system/status</div><div class="ep-d">Estado del servidor</div></div>
       <div class="ep"><span class="em g">POST</span><div class="ep-p">/admin/system/update</div><div class="ep-d">Pull desde Forgejo</div></div>
-      <div class="ep"><span class="em b">GET</span><div class="ep-p">/admin/system/logs</div><div class="ep-d">Logs de actualización</div></div>
+      <div class="ep"><span class="em b">GET</span><div class="ep-p">/admin/system/logs</div><div class="ep-d">Logs del servidor (PM2) y de actualización</div></div>
       <div class="ep"><span class="em b">GET</span><div class="ep-p">/health</div><div class="ep-d">Health check</div></div>
     </div>
   </div>
@@ -917,8 +917,14 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
       <!-- Logs de actualización -->
       <div class="sys-card">
         <h4 style="display:flex;justify-content:space-between;align-items:center;">
-          Logs de actualización
-          <button class="bsv" onclick="loadLogs()" style="font-size:11px;padding:5px 12px;">Refrescar</button>
+          Logs del servidor
+          <span style="display:flex;gap:6px;align-items:center;">
+            <select id="log-source" onchange="loadLogs()" style="font-size:11px;padding:4px 8px;">
+              <option value="server">Servidor (PM2)</option>
+              <option value="update">Actualización</option>
+            </select>
+            <button class="bsv" onclick="loadLogs()" style="font-size:11px;padding:5px 12px;">Refrescar</button>
+          </span>
         </h4>
         <div class="log-box" id="log-box">Cargando logs...</div>
       </div>
@@ -1546,8 +1552,11 @@ async function loadSysStatus() {
   }
 }
 async function loadLogs() {
-  const { ok, data } = await apiFetch('/admin/system/logs?lines=80');
   const lb = document.getElementById('log-box');
+  const sel = document.getElementById('log-source');
+  const source = sel ? sel.value : 'server';
+  lb.textContent = 'Cargando logs...';
+  const { ok, data } = await apiFetch('/admin/system/logs?source=' + source + '&lines=120');
   lb.textContent = ok ? (data.data.logs || 'Sin logs.') : 'Error al cargar logs.';
   lb.scrollTop = lb.scrollHeight;
 }
