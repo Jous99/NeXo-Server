@@ -77,6 +77,19 @@ function buildRewrites() {
             source:      'g7sfc1xhmc8.lp1.s.n.srv.nintendo.net',
             destination: `mk8-lp1.${BASE}`,
         },
+        // Servidor NEX real de MK8D visto en el log del emulador (con el % dinámico).
+        // Sin esta regla, el emulador cae al fallback 127.0.0.1 → error 2038-2306.
+        {
+            source:      'g2b309e01-%.s.n.srv.nintendo.net',
+            destination: `mk8-lp1.${BASE}`,
+        },
+        // Catch-all: cualquier otro servidor de juego *.s.n.srv.nintendo.net sin
+        // regla exacta. Los de amigos/SMM2 tienen entrada exacta y tienen prioridad
+        // (el emulador busca coincidencia exacta antes que el comodín).
+        {
+            source:      '*.s.n.srv.nintendo.net',
+            destination: `mk8-lp1.${BASE}`,
+        },
         {
             source:      'api-lp1.np.community.srv.nintendo.net',
             destination: `mk8-lp1.${BASE}`,
