@@ -2,6 +2,17 @@
 
 require('dotenv').config();
 
+// ── Red de seguridad global ───────────────────────────────────────────────────
+// Evita que un error asíncrono suelto (una promesa rechazada sin catch, una
+// excepción no capturada en algún handler, la BD caída, etc.) tumbe TODO el
+// proceso y con él la web. Registramos el error y seguimos sirviendo.
+process.on('unhandledRejection', (reason) => {
+    console.error('⚠️  unhandledRejection (la web sigue en pie):', reason);
+});
+process.on('uncaughtException', (err) => {
+    console.error('⚠️  uncaughtException (la web sigue en pie):', err);
+});
+
 const fs       = require('fs');
 const path     = require('path');
 const Fastify    = require('fastify');
@@ -332,35 +343,45 @@ async function start() {
     const nexHost = process.env.NEXO_TCP_HOST || host;
 
     try {
+        // La WEB es el servicio crítico: si no arranca, sí abortamos.
         await app.listen({ port, host });
-
-        // Start TCP NEX servers for each game
-        mk8NexTcp.startTcpServer(host, mk8TcpPort, nexHost, mk8TcpPort);
-        smm2NexTcp.startTcpServer(host, smm2TcpPort, nexHost, smm2TcpPort, BASE_DOMAIN);
-
-        console.log(`\n🎮 NeXoNetwork Server en http://${host}:${port}`);
-        console.log(`   Dominio base: ${BASE_DOMAIN}`);
-        console.log(`\n   🏁 MK8 NEX TCP:  ${host}:${mk8TcpPort}`);
-        console.log(`   🍄 SMM2 NEX TCP: ${host}:${smm2TcpPort}`);
-        console.log(`\n   Subdominios que debes configurar en aaPanel:`);
-        console.log(`   → ${BASE_DOMAIN}                     (web + portal)`);
-        console.log(`   → accounts-api-lp1.${BASE_DOMAIN}   (auth emulador)`);
-        console.log(`   → profile-lp1.${BASE_DOMAIN}        (perfiles)`);
-        console.log(`   → friends-lp1.${BASE_DOMAIN}        (amigos)`);
-        console.log(`   → config-lp1.${BASE_DOMAIN}         (configuración)`);
-        console.log(`   → bcat-lp1.${BASE_DOMAIN}           (BCAT)`);
-        console.log(`   → notification-lp1.${BASE_DOMAIN}   (notificaciones)`);
-        console.log(`   → connector-lp1.${BASE_DOMAIN}      (connector)`);
-        console.log(`   → status-lp1.${BASE_DOMAIN}         (estado)`);
-        console.log(`   → smm2-lp1.${BASE_DOMAIN}           (Mario Maker 2 + NEX)`);
-        console.log(`   → mk8-lp1.${BASE_DOMAIN}            (Mario Kart 8 + NEX)`);
-        console.log(`\n   Puertos TCP para NEX (abrir en firewall):`);
-        console.log(`   → ${mk8TcpPort}  (MK8 PRUDP)`);
-        console.log(`   → ${smm2TcpPort}  (SMM2 PRUDP)\n`);
     } catch (err) {
         app.log.error(err);
         process.exit(1);
     }
+
+    // ── Servidores NEX TCP (opcionales) ─────────────────────────────────────────
+    // Estos son para el multijugador de los juegos. Si alguno falla (puerto
+    // ocupado, etc.) NO debe tumbar la web: la envolvemos en su propio try/catch
+    // y, además, cada servidor tiene su server.on('error') interno. Resultado:
+    // la web sigue en pie aunque los servidores de juego no estén bien.
+    try {
+        mk8NexTcp.startTcpServer(host, mk8TcpPort, nexHost, mk8TcpPort);
+        smm2NexTcp.startTcpServer(host, smm2TcpPort, nexHost, smm2TcpPort, BASE_DOMAIN);
+    } catch (err) {
+        console.error('⚠️  No se pudieron iniciar los servidores NEX TCP. ' +
+            'La web sigue funcionando; el multijugador quedará desactivado.', err.message);
+    }
+
+    console.log(`\n🎮 NeXoNetwork Server en http://${host}:${port}`);
+    console.log(`   Dominio base: ${BASE_DOMAIN}`);
+    console.log(`\n   🏁 MK8 NEX TCP:  ${host}:${mk8TcpPort}`);
+    console.log(`   🍄 SMM2 NEX TCP: ${host}:${smm2TcpPort}`);
+    console.log(`\n   Subdominios que debes configurar en aaPanel:`);
+    console.log(`   → ${BASE_DOMAIN}                     (web + portal)`);
+    console.log(`   → accounts-api-lp1.${BASE_DOMAIN}   (auth emulador)`);
+    console.log(`   → profile-lp1.${BASE_DOMAIN}        (perfiles)`);
+    console.log(`   → friends-lp1.${BASE_DOMAIN}        (amigos)`);
+    console.log(`   → config-lp1.${BASE_DOMAIN}         (configuración)`);
+    console.log(`   → bcat-lp1.${BASE_DOMAIN}           (BCAT)`);
+    console.log(`   → notification-lp1.${BASE_DOMAIN}   (notificaciones)`);
+    console.log(`   → connector-lp1.${BASE_DOMAIN}      (connector)`);
+    console.log(`   → status-lp1.${BASE_DOMAIN}         (estado)`);
+    console.log(`   → smm2-lp1.${BASE_DOMAIN}           (Mario Maker 2 + NEX)`);
+    console.log(`   → mk8-lp1.${BASE_DOMAIN}            (Mario Kart 8 + NEX)`);
+    console.log(`\n   Puertos TCP para NEX (abrir en firewall):`);
+    console.log(`   → ${mk8TcpPort}  (MK8 PRUDP)`);
+    console.log(`   → ${smm2TcpPort}  (SMM2 PRUDP)\n`);
 }
 
 start();

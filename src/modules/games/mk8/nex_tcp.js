@@ -342,6 +342,15 @@ function startTcpServer(host, port, nexHost, nexPort) {
         });
     });
 
+    // Si el listen falla (p.ej. puerto ocupado, EADDRINUSE), NO debe tumbar el
+    // proceso: la web (HTTP) tiene que seguir en pie aunque este servidor NEX no
+    // arranque. Sin este handler, Node lanzaría el error como excepción no
+    // capturada y mataría todo el proceso.
+    server.on('error', (err) => {
+        console.error(`⚠️  MK8 NEX TCP no pudo arrancar en ${host}:${port} (${err.code || err.message}). ` +
+            `La web sigue funcionando; el multijugador de MK8 quedará desactivado.`);
+    });
+
     server.listen(port, host, () => {
         console.log(`🏁 MK8 NEX TCP server listening on ${host}:${port}`);
     });
