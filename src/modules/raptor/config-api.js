@@ -159,31 +159,51 @@ async function configApiRoutes(fastify) {
     });
 
     // ── GET /api/v1/titles ────────────────────────────────────────────────────
-    // Lista de juegos con online activo. Incluye SMM2 aunque no esté en la DB.
+    // Lista de juegos con online en NeXo. La consume el emulador
+    // (online_initiator.cpp → AskServer) para pintar la columna "NeXo Online".
+    //
+    // Formato de cada entrada:  { title_id, name, compatibility }
+    //   compatibility: 'online' → totalmente jugable  |  'wip' → en progreso/parcial
+    //
+    // IMPORTANTE: title_id debe ser el REAL del juego (el mismo program_id que ve
+    // el emulador), en MAYÚSCULAS, para que la columna haga match.
     fastify.get('/api/v1/titles', async (req, reply) => {
         if (req.subdomain !== 'config-lp1' && req.subdomain !== 'www' && req.subdomain !== '') {
             return reply.code(404).send({ error: 'not found' });
         }
 
-        let titles = [];
+        let rows = [];
         try {
-            const [rows] = await db.query('SELECT title_id, name, compatibility FROM titles LIMIT 500');
-            titles = rows;
+            const [r] = await db.query('SELECT title_id, name, compatibility FROM titles LIMIT 500');
+            rows = r;
         } catch {
-            titles = [];
+            rows = [];
         }
 
-        // Asegurar que SMM2 siempre aparece aunque no esté en la DB
-        const smm2Id = '0100000000100000';
-        if (!titles.find(t => t.title_id?.toLowerCase() === smm2Id)) {
-            titles.push({
-                title_id:      smm2Id,
-                name:          'Super Mario Maker 2',
-                compatibility: 'online',
+        // Juegos con servidor NEX propio en NeXo. Se garantizan SIEMPRE (con su
+        // title_id real), aunque la tabla `titles` esté vacía o desactualizada.
+        // Al añadir un módulo de juego nuevo en src/modules/games, añádelo aquí.
+        const KNOWN_SUPPORTED = [
+            { title_id: '0100152000022000', name: 'Mario Kart 8 Deluxe', compatibility: 'online' },
+            { title_id: '01009B90006DC000', name: 'Super Mario Maker 2', compatibility: 'online' },
+        ];
+
+        // Fusiona DB + conocidos, normalizando a mayúsculas y deduplicando por id.
+        // Los KNOWN_SUPPORTED tienen prioridad (id/nombre/estado correctos).
+        const byId = new Map();
+        for (const t of rows) {
+            if (!t.title_id) continue;
+            byId.set(t.title_id.toUpperCase(), {
+                title_id:      t.title_id.toUpperCase(),
+                name:          t.name,
+                compatibility: t.compatibility || 'online',
             });
         }
+        for (const g of KNOWN_SUPPORTED) {
+            byId.set(g.title_id.toUpperCase(), g);
+        }
 
-        return reply.send({ result: 'Success', titles });
+        return reply.send({ result: 'Success', titles: [...byId.values()] });
     });
 
     fastify.get('/api/v1/config', async (req, reply) => {
