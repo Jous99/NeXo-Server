@@ -64,7 +64,12 @@ if (Test-Path $certPath) {
 }
 
 # 3. Actualizar hosts de Windows
-Write-Host "[3/4] Actualizando archivo hosts de Windows..." -ForegroundColor Yellow
+# NOTA: NeXo-emu ya redirige TODOS los dominios de Nintendo internamente
+# (ver src/core/online_initiator.cpp: comodines *.nintendo.* + catch-all), asi
+# que este bloque de hosts es OPCIONAL para NeXo-emu. Se mantiene por si usas
+# otro emulador que resuelva por el hosts del sistema. El hosts de Windows NO
+# soporta comodines, por eso aqui va una lista explicita en vez de *.nintendo.*.
+Write-Host "[3/4] Actualizando archivo hosts de Windows (opcional con NeXo-emu)..." -ForegroundColor Yellow
 
 $nintendoDomains = @(
     "dauth-lp1.ndas.srv.nintendo.net",
@@ -94,7 +99,10 @@ $nintendoDomains = @(
     "conntest.nintendowifi.net"
 )
 
-$blockedDomains = @(
+# Telemetria y actualizaciones de sistema. Se REDIRIGEN al servidor NeXo (que
+# responde 204 / "sin actualizacion"), igual que scripts/atmosphere-hosts.txt.
+# No se usa 0.0.0.0: redirigir evita que la consola/emulador reintente en bucle.
+$telemetryDomains = @(
     "receive-lp1.er.srv.nintendo.net",
     "receive-lp1.dg.srv.nintendo.net",
     "atum.hac.lp1.d4c.nintendo.net",
@@ -117,14 +125,15 @@ $newBlock += "# Generado por setup-emulator.ps1 - $fecha`n"
 foreach ($domain in $nintendoDomains) {
     $newBlock += "$nexoIP $domain`n"
 }
-foreach ($domain in $blockedDomains) {
-    $newBlock += "0.0.0.0 $domain`n"
+foreach ($domain in $telemetryDomains) {
+    $newBlock += "$nexoIP $domain`n"
 }
 $newBlock += "$MARKER_END`n"
 
 # Escribir archivo actualizado
 $hostsContent + $newBlock | Set-Content $HOSTS_FILE -Encoding ASCII -NoNewline
-Write-Host "      Hosts actualizado con $($nintendoDomains.Count) dominios redirigidos + $($blockedDomains.Count) bloqueados." -ForegroundColor Green
+$totalDomains = $nintendoDomains.Count + $telemetryDomains.Count
+Write-Host "      Hosts actualizado: $totalDomains dominios redirigidos al servidor NeXo (incl. telemetria/updates)." -ForegroundColor Green
 
 # 4. Configurar emulador
 Write-Host "[4/4] Configurando emulador NeXo-emu..." -ForegroundColor Yellow
