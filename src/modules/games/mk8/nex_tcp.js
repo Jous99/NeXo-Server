@@ -24,20 +24,26 @@ const db = require('../../../db');
 // handshake falla y el juego da error 2038-2306. Por eso el servidor NEX debe
 // presentar un certificado TLS. El emulador NO verifica el cert (fuerza
 // verify_option=0 en ssl.cpp), así que vale un autofirmado.
-// Certificado por defecto: certs/nex-server.{crt,key} (generado con openssl).
-// Se puede sobreescribir con NEXO_NEX_TLS_CERT / NEXO_NEX_TLS_KEY.
+// Reusa el mismo certificado que ya usa el servidor (certs/server.crt), el que
+// genera scripts/gen-certs.sh y que el mk8-auth (Go) usa para WSS. Se puede
+// sobreescribir con NEXO_NEX_TLS_CERT / NEXO_NEX_TLS_KEY.
 function loadNexTlsOptions() {
-    const certPath = process.env.NEXO_NEX_TLS_CERT ||
-        path.join(__dirname, '../../../../certs/nex-server.crt');
-    const keyPath = process.env.NEXO_NEX_TLS_KEY ||
-        path.join(__dirname, '../../../../certs/nex-server.key');
-    try {
-        const opts = { cert: fs.readFileSync(certPath), key: fs.readFileSync(keyPath) };
-        opts._certPath = certPath;
-        return opts;
-    } catch {
-        return null; // Sin certs → se cae a TCP plano (MK8 no conectará; ver aviso).
+    const root = path.join(__dirname, '../../../../');
+    // Candidatos en orden: variable de entorno, cert del servidor, cert propio NEX.
+    const candidates = [
+        [process.env.NEXO_NEX_TLS_CERT, process.env.NEXO_NEX_TLS_KEY],
+        [path.join(root, 'certs/server.crt'), path.join(root, 'certs/server.key')],
+        [path.join(root, 'certs/nex-server.crt'), path.join(root, 'certs/nex-server.key')],
+    ];
+    for (const [certPath, keyPath] of candidates) {
+        if (!certPath || !keyPath) continue;
+        try {
+            const opts = { cert: fs.readFileSync(certPath), key: fs.readFileSync(keyPath) };
+            opts._certPath = certPath;
+            return opts;
+        } catch { /* probar el siguiente candidato */ }
     }
+    return null; // Sin certs → TCP plano (MK8 no conectará; ver aviso).
 }
 
 const { Buf, Out, decodePRUDP, encodePRUDP, decodeRMC, rmcOk, rmcErr,
