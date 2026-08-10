@@ -12,8 +12,33 @@
  */
 
 const net = require('net');
+const tls = require('tls');
+const fs = require('fs');
+const path = require('path');
 const prudp = require('../prudp_core');
 const db = require('../../../db');
+
+// ─── TLS para NEX seguro (prudps) ────────────────────────────────────────────
+// MK8 conecta al servidor NEX con "prudps" = PRUDP sobre TLS. El emulador NeXo
+// abre un socket TCP y hace un handshake SSL; si el servidor habla TCP plano, el
+// handshake falla y el juego da error 2038-2306. Por eso el servidor NEX debe
+// presentar un certificado TLS. El emulador NO verifica el cert (fuerza
+// verify_option=0 en ssl.cpp), así que vale un autofirmado.
+// Certificado por defecto: certs/nex-server.{crt,key} (generado con openssl).
+// Se puede sobreescribir con NEXO_NEX_TLS_CERT / NEXO_NEX_TLS_KEY.
+function loadNexTlsOptions() {
+    const certPath = process.env.NEXO_NEX_TLS_CERT ||
+        path.join(__dirname, '../../../../certs/nex-server.crt');
+    const keyPath = process.env.NEXO_NEX_TLS_KEY ||
+        path.join(__dirname, '../../../../certs/nex-server.key');
+    try {
+        const opts = { cert: fs.readFileSync(certPath), key: fs.readFileSync(keyPath) };
+        opts._certPath = certPath;
+        return opts;
+    } catch {
+        return null; // Sin certs → se cae a TCP plano (MK8 no conectará; ver aviso).
+    }
+}
 
 const { Buf, Out, decodePRUDP, encodePRUDP, decodeRMC, rmcOk, rmcErr,
         handlePRUDPPacket, createConnectionState,
@@ -289,7 +314,7 @@ function dispatchRanking(proto, callId, method, body, state) {
 function startTcpServer(host, port, nexHost, nexPort) {
     const dispatch = createDispatcher(nexHost, nexPort);
 
-    const server = net.createServer((socket) => {
+    const onConnection = (socket) => {
         const state = createConnectionState();
         const frags = {};
 
@@ -340,7 +365,20 @@ function startTcpServer(host, port, nexHost, nexPort) {
         socket.on('timeout', () => {
             socket.destroy();
         });
-    });
+    };
+
+    // MK8 usa prudps (PRUDP sobre TLS): el servidor debe presentar un certificado.
+    // Si hay certs → TLS; si no, TCP plano como antes (pero MK8 no conectará).
+    const tlsOpts = loadNexTlsOptions();
+    const server = tlsOpts
+        ? tls.createServer(tlsOpts, onConnection)
+        : net.createServer(onConnection);
+    if (tlsOpts) {
+        console.log(`[MK8 NEX TCP] TLS activado (prudps) — cert: ${tlsOpts._certPath}`);
+    } else {
+        console.warn('[MK8 NEX TCP] ⚠️  Sin certificados TLS (certs/nex-server.{crt,key}). ' +
+            'MK8 usa prudps y NO conectará sin TLS. Genera los certs o define NEXO_NEX_TLS_CERT/KEY.');
+    }
 
     // Si el listen falla (p.ej. puerto ocupado, EADDRINUSE), NO debe tumbar el
     // proceso: la web (HTTP) tiene que seguir en pie aunque este servidor NEX no
