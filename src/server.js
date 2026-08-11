@@ -87,6 +87,7 @@ const smm2Routes    = require('./modules/games/smm2/routes');
 const smm2NexTcp    = require('./modules/games/smm2/nex_tcp');
 const mk8Routes     = require('./modules/games/mk8/routes');
 const mk8NexTcp     = require('./modules/games/mk8/nex_tcp');
+const mk8Bridge     = require('./modules/games/mk8/nex_bridge');
 
 // ── NEX WebSocket unificado ───────────────────────────────────────────────────
 // Ambos juegos (MK8 y SMM2) usan las mismas rutas WS (/nex, /ws),
@@ -470,7 +471,17 @@ async function start() {
     // y, además, cada servidor tiene su server.on('error') interno. Resultado:
     // la web sigue en pie aunque los servidores de juego no estén bien.
     try {
-        mk8NexTcp.startTcpServer(host, mk8TcpPort, nexHost, mk8TcpPort);
+        // MK8: puente al NEX real (Go) o stub interno, según NEXO_MK8_BRIDGE.
+        // - Puente (recomendado): el emulador (prudps/TLS) → puente → nex-go (WSS),
+        //   que hace el NEX de verdad (firmas, Kerberos, matchmaking).
+        // - Stub: implementación mínima en Node (sin firmas). Solo para pruebas.
+        if (process.env.NEXO_MK8_BRIDGE === 'true') {
+            const goHost = process.env.NEXO_MK8_GO_HOST || '127.0.0.1';
+            const goPort = process.env.NEXO_MK8_GO_WSS_PORT || process.env.NEXO_MK8_AUTH_UDP_PORT || '60000';
+            mk8Bridge.startBridge(host, mk8TcpPort, `wss://${goHost}:${goPort}/`);
+        } else {
+            mk8NexTcp.startTcpServer(host, mk8TcpPort, nexHost, mk8TcpPort);
+        }
         smm2NexTcp.startTcpServer(host, smm2TcpPort, nexHost, smm2TcpPort, BASE_DOMAIN);
     } catch (err) {
         console.error('⚠️  No se pudieron iniciar los servidores NEX TCP. ' +
