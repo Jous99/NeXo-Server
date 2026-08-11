@@ -784,7 +784,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gb);}
         </div>
         <div>
           <div class="pn" id="pname">Cargando...</div>
-          <div class="pnid" id="pnexoid">NXID-...</div>
+          <div class="pnid" id="pnexoid">SW-...</div>
           <div class="ponl"><span style="width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;"></span>En línea</div>
           <div style="font-size:11px;color:var(--tm);margin-top:4px;">Haz clic en la foto para cambiarla</div>
         </div>

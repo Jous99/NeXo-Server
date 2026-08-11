@@ -3,14 +3,16 @@
 const crypto = require('crypto');
 
 /**
- * Generates a unique NexoID in the format NXID-XXXX-XXXX-XXXX
- * Uses cryptographically random bytes, uppercase alphanumeric.
+ * Genera un "friend code" estilo Nintendo Switch: SW-XXXX-XXXX-XXXX (12 dígitos
+ * en grupos de 4), para integrarse igual que el código de amigo real.
+ * Usa bytes criptográficamente aleatorios.
+ *
+ * Para cambiar la identidad (p.ej. prefijo propio "NX-"), edita solo PREFIX.
  */
 function generateNexoId() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no ambiguous chars (0,O,I,1)
-    const rand  = (n) => Array.from(crypto.randomBytes(n))
-        .map(b => chars[b % chars.length]).join('');
-    return `NXID-${rand(4)}-${rand(4)}-${rand(4)}`;
+    const PREFIX = 'SW';
+    const digits = (n) => Array.from(crypto.randomBytes(n), (b) => (b % 10).toString()).join('');
+    return `${PREFIX}-${digits(4)}-${digits(4)}-${digits(4)}`;
 }
 
 /**
