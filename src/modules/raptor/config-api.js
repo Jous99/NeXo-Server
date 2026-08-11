@@ -25,6 +25,14 @@ const BASE = process.env.BASE_DOMAIN || 'nexonetwork.space';
 // ese subdominio apunta directo al origen, en gris).
 const NEX_HOST = process.env.NEXO_NEX_HOST || `mk8-lp1.${BASE}`;
 
+// Puerto del servidor de juego NEX (PRUDP/TCP). El juego conecta al host NEX en
+// el 443 (prudps), pero nuestro servidor escucha aquí (por defecto 29900). Si
+// NEX_HOST es una IP, mandamos el destino como "IP:PUERTO" para que el emulador
+// redirija el connect del 443 a este puerto. Si NEX_HOST es un dominio, no se
+// añade puerto (esa redirección se resuelve por IP en el emulador).
+const NEX_PORT = process.env.NEXO_MK8_TCP_PORT || '29900';
+const NEX_DEST = /^\d{1,3}(\.\d{1,3}){3}$/.test(NEX_HOST) ? `${NEX_HOST}:${NEX_PORT}` : NEX_HOST;
+
 // ── Tabla de rewrites ─────────────────────────────────────────────────────────
 // Mapea hostnames de Nintendo → hostnames de NeXo.
 // El emulador llama a ResolveUrl(dns) que busca aquí antes de conectar.
@@ -84,20 +92,20 @@ function buildRewrites() {
         // sin pasar por Cloudflare.
         {
             source:      'g7sfc1xhmc8.lp1.s.n.srv.nintendo.net',
-            destination: NEX_HOST,
+            destination: NEX_DEST,
         },
         // Servidor NEX real de MK8D visto en el log del emulador (con el % dinámico).
         // Sin esta regla, el emulador cae al fallback → no llega al servidor NEX.
         {
             source:      'g2b309e01-%.s.n.srv.nintendo.net',
-            destination: NEX_HOST,
+            destination: NEX_DEST,
         },
         // Catch-all: cualquier otro servidor de juego *.s.n.srv.nintendo.net sin
         // regla exacta. Los de amigos/SMM2 tienen entrada exacta y tienen prioridad
         // (el emulador busca coincidencia exacta antes que el comodín).
         {
             source:      '*.s.n.srv.nintendo.net',
-            destination: NEX_HOST,
+            destination: NEX_DEST,
         },
         {
             source:      'api-lp1.np.community.srv.nintendo.net',
