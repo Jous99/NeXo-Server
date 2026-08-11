@@ -69,7 +69,7 @@ func main() {
 	}
 
 	// NEX4+ (Switch): nex-protocols-common-go/v2 todavía no implementa este
-	// método — ver internal/authserver/ticket.go.
+	// método (LoginWithContext) — ver internal/authserver/ticket.go.
 	protocol.SetHandlerValidateAndRequestTicketWithParam(
 		authserver.NewValidateAndRequestTicketWithParamHandler(store, &authserver.Config{
 			SecureServerAccount: secureAccount,
@@ -78,6 +78,27 @@ func main() {
 			SessionKeyLength:    commonProtocol.SessionKeyLength,
 		}),
 	)
+
+	// ⭐ NEX4 (Switch): el método 2 (LoginEx) se despacha a
+	// ValidateAndRequestTicketWithCustomData — ¡ES EL QUE USA MK8 DELUXE! El común
+	// solo lo cablea a la ruta legacy (SetHandlerLoginEx), así que lo conectamos
+	// aquí al MISMO handler loginEx del común (idéntica firma), que ya hace todo:
+	// valida la cuenta, genera el ticket Kerberos real y arma la respuesta.
+	// Lo envolvemos con logs para ver el username y el resultado.
+	baseLoginEx := protocol.LoginEx
+	protocol.SetHandlerValidateAndRequestTicketWithCustomData(func(
+		hErr error, packet nex.PacketInterface, callID uint32,
+		strUserName types.String, oExtraData types.DataHolder,
+	) (*nex.RMCMessage, *nex.Error) {
+		log.Printf("[auth] LoginEx/WithCustomData (MK8D) recibido: username=%q", string(strUserName))
+		resp, rerr := baseLoginEx(hErr, packet, callID, strUserName, oExtraData)
+		if rerr != nil {
+			log.Printf("[auth] ❌ LoginEx error para username=%q: %v", string(strUserName), rerr)
+		} else {
+			log.Printf("[auth] ✅ ticket emitido (LoginEx) para username=%q", string(strUserName))
+		}
+		return resp, rerr
+	})
 
 	endpoint.RegisterServiceProtocol(protocol)
 
