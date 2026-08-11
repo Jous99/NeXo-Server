@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -59,26 +60,36 @@ func (s *Store) AddSpecialAccount(account *nex.Account) {
 }
 
 // ByPID implements the nex.PRUDPEndPoint.AccountDetailsByPID callback.
-// El PID de NEX es directamente `users.id` — no hay columna espejo (ver
-// schema.sql: un trigger pid=id no es viable en MySQL/MariaDB de forma simple).
+// El PID de NEX es el `nex_principal_id` (el hash u64 del perfil local del
+// emulador que el juego usa como principal — ver acc.cpp: account_id.Hash()).
 func (s *Store) ByPID(pid types.PID) (*nex.Account, *nex.Error) {
 	if account, ok := s.specialByPID[uint64(pid)]; ok {
 		return account, nil
 	}
-	return s.lookup("id = ?", uint64(pid))
+	return s.lookup("nex_principal_id = ?", uint64(pid))
 }
 
 // ByUsername implements the nex.PRUDPEndPoint.AccountDetailsByUsername callback.
+// En el ticket-granting de NEX, el "username" ES el principal ID (numérico): el
+// emulador manda el hash u64 de su perfil local. Lo resolvemos por
+// nex_principal_id. Si no es numérico (otros usos), caemos a la columna username.
 func (s *Store) ByUsername(username string) (*nex.Account, *nex.Error) {
 	if account, ok := s.specialByName[username]; ok {
 		return account, nil
+	}
+	if _, err := strconv.ParseUint(username, 10, 64); err == nil {
+		return s.lookup("nex_principal_id = ?", username)
 	}
 	return s.lookup("username = ?", username)
 }
 
 func (s *Store) lookup(where string, arg any) (*nex.Account, *nex.Error) {
+	// Devolvemos nex_principal_id como PID para que el ticket y la conexión
+	// "secure" usen el MISMO identificador que el emulador. Exigimos que estén
+	// puestos nex_principal_id y nex_password (sin ellos no hay NEX posible).
 	row := s.db.QueryRow(
-		fmt.Sprintf("SELECT id, username, nex_password FROM users WHERE %s AND is_banned = 0 LIMIT 1", where),
+		fmt.Sprintf("SELECT nex_principal_id, username, nex_password FROM users "+
+			"WHERE %s AND is_banned = 0 AND nex_principal_id IS NOT NULL AND nex_password IS NOT NULL LIMIT 1", where),
 		arg,
 	)
 
