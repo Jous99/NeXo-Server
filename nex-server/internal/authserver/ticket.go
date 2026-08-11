@@ -14,6 +14,7 @@ package authserver
 import (
 	"crypto/rand"
 	"fmt"
+	"log"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -65,15 +66,21 @@ func NewValidateAndRequestTicketWithParamHandler(lookup AccountLookup, cfg *Conf
 		connection := packet.Sender().(*nex.PRUDPConnection)
 		endpoint := connection.Endpoint().(*nex.PRUDPEndPoint)
 
+		log.Printf("[auth] ValidateAndRequestTicketWithParam recibido: username=%q", string(param.Username))
+
 		source, accErr := lookup.ByUsername(string(param.Username))
 		if accErr != nil {
+			log.Printf("[auth] ❌ lookup de cuenta FALLÓ para username=%q: %v", string(param.Username), accErr)
 			return nil, accErr
 		}
+		log.Printf("[auth] ✓ cuenta encontrada (PID=%d) — emitiendo ticket Kerberos...", source.PID)
 
 		encryptedTicket, tErr := issueTicket(endpoint, source, cfg)
 		if tErr != nil {
+			log.Printf("[auth] ❌ fallo emitiendo ticket para PID=%d: %v", source.PID, tErr)
 			return nil, tErr
 		}
+		log.Printf("[auth] ✅ ticket emitido para PID=%d — SecureStationURL=%s", source.PID, cfg.SecureStationURL)
 
 		result := ticket_granting_types.NewValidateAndRequestTicketResult()
 		result.SourcePID = source.PID
