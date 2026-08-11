@@ -92,12 +92,14 @@ function startBridge(host, tcpPort, goWssUrl) {
         const outbox = [];        // paquetes en cola hasta que el WS esté abierto
         let wsOpen = false;
         let tx = 0, rx = 0;       // contadores para depurar el flujo
+        let firstChunk = true;    // para volcar los primeros bytes del emulador
 
         // Conexión WebSocket al servidor Go (una por conexión de emulador, para
         // que nex-go vea cada emulador como un cliente distinto).
         const ws = new WebSocket(goWssUrl, { rejectUnauthorized: false });
 
         ws.on('open', () => {
+            console.log(`[MK8 PUENTE] WS a nex-go ABIERTO (${who})`);
             wsOpen = true;
             for (const p of outbox) { ws.send(p); tx++; }
             outbox.length = 0;
@@ -106,15 +108,41 @@ function startBridge(host, tcpPort, goWssUrl) {
             // Respuesta de nex-go: un paquete Lite → al emulador tal cual.
             rx++;
             const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
+            if (rx <= 3) console.log(`[MK8 PUENTE] ←Go ${buf.length}B: ${buf.slice(0, 24).toString('hex')}`);
             if (!socket.destroyed) socket.write(buf);
         });
         ws.on('error', (e) => console.error(`[MK8 PUENTE] error WS (${who}): ${e.message}`));
+        ws.on('unexpected-response', (_req, res) => {
+            console.error(`[MK8 PUENTE] nex-go rechazó el WebSocket (${who}): HTTP ${res.statusCode}. ` +
+                `¿Ruta o puerto WSS incorrectos?`);
+        });
         ws.on('close', () => { if (!socket.destroyed) socket.destroy(); });
 
         socket.on('data', (data) => {
+            // DIAGNÓSTICO: volcar los primeros bytes que manda el emulador tras TLS.
+            if (firstChunk) {
+                firstChunk = false;
+                const head = data.slice(0, 32);
+                console.log(`[MK8 PUENTE] emulador→ primer chunk ${data.length}B: ${head.toString('hex')}`);
+                // ¿Es un upgrade WebSocket? ("GET " = 0x47 0x45 0x54 0x20)
+                if (head.slice(0, 4).toString() === 'GET ') {
+                    console.log('[MK8 PUENTE] ⚠️  El emulador habla WebSocket (prudpws), NO PRUDPLite crudo. ' +
+                        'Hay que proxyar WS↔WS (cambio de plan, pero MÁS simple).');
+                } else if (head[0] === 0x80) {
+                    console.log('[MK8 PUENTE] ✓ Primer byte 0x80 = PRUDPLite crudo, como esperábamos.');
+                } else {
+                    console.log(`[MK8 PUENTE] ❓ Primer byte 0x${head[0].toString(16)} — formato desconocido.`);
+                }
+            }
             buffer = Buffer.concat([buffer, data]);
             const [packets, rest] = extractLitePackets(buffer);
             buffer = rest;
+            // Si hay bytes acumulados pero no salió ningún paquete, avisamos con el
+            // primer byte (para ver si NO es 0x80 = no es PRUDPLite crudo).
+            if (packets.length === 0 && buffer.length > 0) {
+                console.log(`[MK8 PUENTE] sin paquete completo aún (buffer=${buffer.length}B, ` +
+                    `byte0=0x${buffer[0].toString(16)})`);
+            }
             for (const p of packets) {
                 if (wsOpen) { ws.send(p); tx++; }
                 else outbox.push(p);
@@ -150,7 +178,7 @@ function startBridge(host, tcpPort, goWssUrl) {
     });
 
     server.listen(tcpPort, host, () => {
-        console.log(`🌉 MK8 PUENTE escuchando TLS en ${host}:${tcpPort}  →  ${goWssUrl}`);
+        console.log(`🌉 MK8 PUENTE [v3-diag] escuchando TLS en ${host}:${tcpPort}  →  ${goWssUrl}`);
     });
 
     return server;
