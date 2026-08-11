@@ -477,8 +477,8 @@ async function start() {
         // - Stub: implementación mínima en Node (sin firmas). Solo para pruebas.
         if (process.env.NEXO_MK8_BRIDGE === 'true') {
             const goHost = process.env.NEXO_MK8_GO_HOST || '127.0.0.1';
-            const goPort = process.env.NEXO_MK8_GO_WSS_PORT || process.env.NEXO_MK8_AUTH_UDP_PORT || '60000';
-            mk8Bridge.startBridge(host, mk8TcpPort, `wss://${goHost}:${goPort}/`);
+            const goPort = parseInt(process.env.NEXO_MK8_GO_WSS_PORT || process.env.NEXO_MK8_AUTH_UDP_PORT || '60000');
+            mk8Bridge.startBridge(host, mk8TcpPort, goHost, goPort);
         } else {
             mk8NexTcp.startTcpServer(host, mk8TcpPort, nexHost, mk8TcpPort);
         }
