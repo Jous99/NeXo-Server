@@ -138,3 +138,115 @@ func issueTicket(endpoint *nex.PRUDPEndPoint, source *nex.Account, cfg *Config) 
 
 	return encryptedTicket, nil
 }
+
+// issueTicketZeroKey es como issueTicket pero cifra el ticket con una clave de
+// ORIGEN a ceros (16 bytes 0x00). El emulador NeXo no entrega credencial NEX al
+// juego, así que MK8D usa una clave Kerberos cero (igual que el stub original
+// "keys are 0x00"). La clave de DESTINO (del servidor secure) sí se deriva
+// normal, porque la usa el servidor secure para leer los datos internos.
+func issueTicketZeroKey(endpoint *nex.PRUDPEndPoint, source *nex.Account, cfg *Config) ([]byte, *nex.Error) {
+	target := cfg.SecureServerAccount
+
+	sourceKey := make([]byte, 16) // CLAVE CERO
+	targetKey := nex.DeriveKerberosKey(target.PID, []byte(target.Password))
+
+	sessionKey := make([]byte, cfg.SessionKeyLength)
+	if _, err := rand.Read(sessionKey); err != nil {
+		return nil, nex.NewError(nex.ResultCodes.Authentication.Unknown, "failed to generate session key")
+	}
+
+	internalData := nex.NewKerberosTicketInternalData(endpoint.Server)
+	internalData.Issued = types.NewDateTime(0).Now()
+	internalData.SourcePID = source.PID
+	internalData.SessionKey = sessionKey
+
+	encryptedInternalData, err := internalData.Encrypt(targetKey, nex.NewByteStreamOut(endpoint.LibraryVersions(), endpoint.ByteStreamSettings()))
+	if err != nil {
+		return nil, nex.NewError(nex.ResultCodes.Authentication.Unknown, fmt.Sprintf("failed to encrypt internal data: %s", err))
+	}
+
+	ticket := nex.NewKerberosTicket()
+	ticket.SessionKey = sessionKey
+	ticket.TargetPID = target.PID
+	ticket.InternalData = types.NewBuffer(encryptedInternalData)
+
+	encryptedTicket, err := ticket.Encrypt(sourceKey, nex.NewByteStreamOut(endpoint.LibraryVersions(), endpoint.ByteStreamSettings()))
+	if err != nil {
+		return nil, nex.NewError(nex.ResultCodes.Authentication.Unknown, fmt.Sprintf("failed to encrypt ticket: %s", err))
+	}
+
+	return encryptedTicket, nil
+}
+
+// NewValidateAndRequestTicketWithCustomDataHandler es el handler del método que
+// usa MK8 Deluxe (LoginEx en NEX4). Emite el ticket con clave de origen a ceros
+// (issueTicketZeroKey) y responde en el MISMO formato que el loginEx del común
+// de Pretendo (retval, pid, buffer del ticket, RVConnectionData, msg, sourceKey).
+func NewValidateAndRequestTicketWithCustomDataHandler(lookup AccountLookup, cfg *Config) func(
+	err error,
+	packet nex.PacketInterface,
+	callID uint32,
+	strUserName types.String,
+	oExtraData types.DataHolder,
+) (*nex.RMCMessage, *nex.Error) {
+	return func(
+		reqErr error,
+		packet nex.PacketInterface,
+		callID uint32,
+		strUserName types.String,
+		oExtraData types.DataHolder,
+	) (*nex.RMCMessage, *nex.Error) {
+		if reqErr != nil {
+			return nil, nex.NewError(nex.ResultCodes.Core.InvalidArgument, reqErr.Error())
+		}
+
+		connection := packet.Sender().(*nex.PRUDPConnection)
+		endpoint := connection.Endpoint().(*nex.PRUDPEndPoint)
+		server := endpoint.Server
+
+		log.Printf("[auth] (zero-key) WithCustomData username=%q", string(strUserName))
+
+		source, accErr := lookup.ByUsername(string(strUserName))
+		if accErr != nil {
+			log.Printf("[auth] ❌ cuenta no encontrada para %q: %v", string(strUserName), accErr)
+			return nil, accErr
+		}
+
+		encryptedTicket, tErr := issueTicketZeroKey(endpoint, source, cfg)
+		if tErr != nil {
+			log.Printf("[auth] ❌ fallo emitiendo ticket (zero-key): %v", tErr)
+			return nil, tErr
+		}
+		log.Printf("[auth] ✅ ticket (zero-key) emitido para PID=%d, StationURL=%s", source.PID, cfg.SecureStationURL)
+
+		retval := types.NewQResultSuccess(nex.ResultCodes.Core.Unknown)
+		pidPrincipal := source.PID
+		pbufResponse := types.NewBuffer(encryptedTicket)
+		pConnectionData := types.NewRVConnectionData()
+		strReturnMsg := types.NewString(cfg.BuildName)
+		pSourceKey := types.NewString("")
+
+		pConnectionData.StationURL = cfg.SecureStationURL
+		pConnectionData.SpecialProtocols = types.List[types.UInt8]([]types.UInt8{})
+		pConnectionData.StationURLSpecialProtocols = types.NewStationURL("")
+		pConnectionData.Time = types.NewDateTime(0).Now()
+		pConnectionData.StructureVersion = 1
+
+		stream := nex.NewByteStreamOut(endpoint.LibraryVersions(), endpoint.ByteStreamSettings())
+		retval.WriteTo(stream)
+		pidPrincipal.WriteTo(stream)
+		pbufResponse.WriteTo(stream)
+		pConnectionData.WriteTo(stream)
+		strReturnMsg.WriteTo(stream)
+		if server.LibraryVersions.Main.GreaterOrEqual("4.0.0") {
+			pSourceKey.WriteTo(stream)
+		}
+
+		response := nex.NewRMCSuccess(endpoint, stream.Bytes())
+		response.ProtocolID = ticket_granting.ProtocolID
+		response.MethodID = ticket_granting.MethodLoginEx
+		response.CallID = callID
+
+		return response, nil
+	}
+}

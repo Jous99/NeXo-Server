@@ -81,25 +81,18 @@ func main() {
 
 	// ⭐ NEX4 (Switch): el método 2 (LoginEx) se despacha a
 	// ValidateAndRequestTicketWithCustomData — ¡ES EL QUE USA MK8 DELUXE! El común
-	// solo lo cablea a la ruta legacy (SetHandlerLoginEx), así que lo conectamos
-	// aquí al MISMO handler loginEx del común (idéntica firma), que ya hace todo:
-	// valida la cuenta, genera el ticket Kerberos real y arma la respuesta.
-	// Lo envolvemos con logs para ver el username y el resultado.
-	baseLoginEx := protocol.LoginEx
-	protocol.SetHandlerValidateAndRequestTicketWithCustomData(func(
-		hErr error, packet nex.PacketInterface, callID uint32,
-		strUserName types.String, oExtraData types.DataHolder,
-	) (*nex.RMCMessage, *nex.Error) {
-		log.Printf("[auth] LoginEx/WithCustomData (MK8D) recibido: username=%q", string(strUserName))
-		log.Printf("[auth] oExtraData (token/credencial que manda el juego): %v", oExtraData)
-		resp, rerr := baseLoginEx(hErr, packet, callID, strUserName, oExtraData)
-		if rerr != nil {
-			log.Printf("[auth] ❌ LoginEx error para username=%q: %v", string(strUserName), rerr)
-		} else {
-			log.Printf("[auth] ✅ ticket emitido (LoginEx) para username=%q", string(strUserName))
-		}
-		return resp, rerr
-	})
+	// solo lo cablea a la ruta legacy y, además, cifra el ticket con una clave
+	// derivada del password. Pero el emulador NeXo no da credencial NEX al juego,
+	// que usa una clave Kerberos CERO. Por eso usamos nuestro handler propio, que
+	// emite el ticket con clave de origen a ceros (ver internal/authserver).
+	protocol.SetHandlerValidateAndRequestTicketWithCustomData(
+		authserver.NewValidateAndRequestTicketWithCustomDataHandler(store, &authserver.Config{
+			SecureServerAccount: secureAccount,
+			SecureStationURL:    commonProtocol.SecureStationURL,
+			BuildName:           string(commonProtocol.BuildName),
+			SessionKeyLength:    commonProtocol.SessionKeyLength,
+		}),
+	)
 
 	endpoint.RegisterServiceProtocol(protocol)
 
