@@ -91,6 +91,7 @@ func main() {
 		strUserName types.String, oExtraData types.DataHolder,
 	) (*nex.RMCMessage, *nex.Error) {
 		log.Printf("[auth] LoginEx/WithCustomData (MK8D) recibido: username=%q", string(strUserName))
+		log.Printf("[auth] oExtraData (token/credencial que manda el juego): %v", oExtraData)
 		resp, rerr := baseLoginEx(hErr, packet, callID, strUserName, oExtraData)
 		if rerr != nil {
 			log.Printf("[auth] ❌ LoginEx error para username=%q: %v", string(strUserName), rerr)
